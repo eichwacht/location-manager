@@ -869,6 +869,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
               <button class="lt" id="b-adr"><svg viewBox="0 0 24 24"><path d="M3 20V9l9-6 9 6v11"/><path d="M9 20v-6h6v6"/><path d="M3 20h18"/></svg>Adressen</button>
               <button class="lt" id="b-namen"><svg viewBox="0 0 24 24"><path d="M5 6h14M12 6v13M8 19h8"/></svg>Ortsnamen</button>
               <button class="lt" id="b-wp"><svg viewBox="0 0 24 24"><path d="M12 3c2 3 5 5 5 9a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3 1-6 1-8z"/></svg><span id="wp-txt">Wärmeplan Bremen</span></button>
+              <button class="lt" id="b-wpb"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/><circle cx="16" cy="9" r="1.5"/></svg><span id="wpb-txt">Wärmeplan Bilder</span></button>
               <button class="lt rot" id="b-sperr"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9l6-6M3 15L15 3M3 21L21 3M9 21l12-12M15 21l6-6"/></svg>Sperrzonen</button>
             </div>
           </div>
@@ -980,7 +981,11 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <div class="card">
           <strong>Wärmeplanung</strong>
           <div class="s">Ebene „Wärmeplan Bremen" (Einblendungen): Klick schaltet Wärmeversorgungsgebiete nach § 18 WPG → Eignung Luftwärmepumpe nach § 19 WPG → aus. Quelle: Wärmeplan der Stadtgemeinde Bremen, GeoInformation Bremen (WMS), Stand Beschluss 2025; nur Stadtgebiet Bremen. Strategische Planung ohne Rechtswirkung. Bremerhaven, Geestland und Südkreis Cuxhaven liegen nur als PDF vor (Stufe 2: Bildpaket).</div>
-          <div class="row" style="align-items:flex-start;gap:16px"><div><div class="s"><b>Legende Wärmeversorgungsgebiete</b></div><img id="wp-leg1" alt="Legende" style="max-width:100%;background:#fff;border-radius:8px;padding:4px"></div><div><div class="s"><b>Legende Eignung Luftwärmepumpe</b></div><img id="wp-leg2" alt="Legende" style="max-width:100%;background:#fff;border-radius:8px;padding:4px"></div></div>
+          <div class="s" style="margin-top:8px"><b>Wärmeplan-Bilder (Bremerhaven, Geestland, Südkreis Cuxhaven)</b></div>
+          <div class="s" id="wpb-info">Kein Bildpaket geladen.</div>
+          <div class="row"><label class="btn" style="margin:0">Bildpaket laden (JSON) <input type="file" id="wpb-file" accept="application/json" style="display:none"></label><button class="btn ghost" id="wpb-clear" style="display:none">Bildpaket entfernen</button></div>
+          <div class="s">Das Paket liegt in `10-d2d` (Urheberrecht der Kommunen und Gutachter, deshalb nicht öffentlich); einmal je Gerät laden, bleibt im Browserspeicher. Einpassung über die amtlichen Gemeindegrenzen, Genauigkeit etwa 50 m.</div>
+          <div class="row" style="align-items:flex-start;gap:16px;margin-top:10px"><div><div class="s"><b>Legende Wärmeversorgungsgebiete</b></div><img id="wp-leg1" alt="Legende" style="max-width:100%;background:#fff;border-radius:8px;padding:4px"></div><div><div class="s"><b>Legende Eignung Luftwärmepumpe</b></div><img id="wp-leg2" alt="Legende" style="max-width:100%;background:#fff;border-radius:8px;padding:4px"></div></div>
         </div>
         <div class="card">
           <strong>Sperrzonen</strong>
@@ -1315,9 +1320,12 @@ async function bulkRun(refresh=false){
   try{
     for(const t of todo){
       if(bulk.ctrl.signal.aborted) break;
+      const tk=Date.now(); const tick=setInterval(()=>{ $('#a-status').textContent=`Kachel ${i+1} von ${todo.length} wird geladen … ${Math.round((Date.now()-tk)/1000)} s (Overpass braucht je Kachel 10 bis 90 s)`; },1000);
       $('#a-status').textContent=`Kachel ${i+1} von ${todo.length} wird geladen …`; $('#a-bar i').style.width=(100*i/todo.length).toFixed(1)+'%';
       const [s_,w_,n_,e_]=tileBounds(t); const bb=`(${s_},${w_},${n_},${e_})`;
-      const d=parseAdr(await overpassQuery(`[out:json][timeout:180];way["highway"]["name"]${bb};out geom;nwr["addr:housenumber"]${bb};out center;`,bulk.ctrl.signal));
+      let d; try{ d=parseAdr(await overpassQuery(`[out:json][timeout:180];way["highway"]["name"]${bb};out geom;nwr["addr:housenumber"]${bb};out center;`,bulk.ctrl.signal)); }
+      catch(err){ clearInterval(tick); if(bulk.ctrl.signal.aborted) throw err; m.fehler=(m.fehler||0)+1; $('#a-status').textContent='Kachel übersprungen ('+(err.message||err)+'), weiter …'; await new Promise(r=>setTimeout(r,3000)); i++; continue; }
+      clearInterval(tick);
       const parts=splitTo14(d); const pairs=[...parts.entries()];
       // Zoom-14-Kacheln ohne Daten ebenfalls als leer ablegen, damit später kein Netz nötig ist
       const [S,W,N,E]=tileBounds(t); const sub=tilesIn(L.latLngBounds([S,W],[N,E]).pad(-0.001),14);
@@ -1331,6 +1339,7 @@ async function bulkRun(refresh=false){
       await new Promise(r=>setTimeout(r,800));
     }
     if(Object.keys(m.done).length>=all.length){ m.finished=new Date().toISOString(); await idb.set('adr_bulk_v2',m); $('#a-status').textContent='Fertig. Adressen erscheinen jetzt sofort.'; toast('Adressdaten vollständig'); }
+    else if(m.fehler){ $('#a-status').textContent=`Durchlauf beendet, ${m.fehler} Kacheln übersprungen. „Weiter laden" holt sie nach.`; m.fehler=0; await idb.set('adr_bulk_v2',m); }
     else $('#a-status').textContent='Angehalten. „Weiter laden" setzt fort.';
   }catch(e){ $('#a-status').textContent='Abgebrochen: '+(e.message||e)+'. „Weiter laden" setzt fort.'; }
   bulk.running=false; bulk.ctrl=null; await bulkInfo();
@@ -1667,6 +1676,17 @@ $('#b-wp').onclick=()=>wpSet(wpIdx>=WP_STUFEN.length-1?-1:wpIdx+1);
 let farbTag=today(); setInterval(()=>{ if(today()!==farbTag){ farbTag=today(); D.locations.forEach(render); } },60000);
 
 
+
+/* ---------- Wärmeplan-Bilder (eingepasste PDF-Karten, Paket in IndexedDB) ---------- */
+let wpbOn=false, wpbPaket=null; const wpbLayers=[];
+function wpbInfo(){ const el=$('#wpb-info'); if(!el) return; if(!wpbPaket){ el.textContent='Kein Bildpaket geladen.'; $('#wpb-clear').style.display='none'; return; } el.innerHTML=wpbPaket.bilder.map(b=>`<div>• ${esc(b.titel)} <span style="opacity:.8">(${esc(b.quelle||'')})</span></div>`).join('')+`<div>Paket vom ${esc(wpbPaket.stand||'?')}</div>`; $('#wpb-clear').style.display=''; }
+function wpbBuild(){ wpbLayers.forEach(l=>map.removeLayer(l)); wpbLayers.length=0; if(!wpbPaket) return; wpbPaket.bilder.forEach(b=>{ const bb=b.bounds; const l=L.imageOverlay(b.png,[[bb.south,bb.west],[bb.north,bb.east]],{opacity:.75,interactive:false}); wpbLayers.push(l); if(wpbOn) l.addTo(map); }); }
+async function wpbLoadStored(){ try{ const p=await idb.get('wp_paket_v1'); if(p&&p.bilder){ wpbPaket=p; wpbBuild(); wpbInfo(); } }catch(e){} }
+$('#b-wpb').onclick=()=>{ if(!wpbPaket){ toast('Erst Bildpaket im Fenster Daten laden'); show('set'); return; } wpbOn=!wpbOn; $('#b-wpb').classList.toggle('on',wpbOn); wpbLayers.forEach(l=>wpbOn?l.addTo(map):map.removeLayer(l)); };
+$('#wpb-file').onchange=e=>{ const f=e.target.files[0]; if(!f) return; f.text().then(async t=>{ const p=JSON.parse(t); if(!p.bilder||!p.bilder.length||!p.bilder[0].png||!p.bilder[0].bounds) throw 0; wpbPaket=p; try{ await idb.set('wp_paket_v1',p); }catch(err){ toast('Speichern im Browser fehlgeschlagen: '+(err.message||err)); } wpbBuild(); wpbInfo(); toast(p.bilder.length+' Wärmeplan-Bilder geladen'); }).catch(()=>toast('Paket nicht lesbar')); e.target.value=''; };
+$('#wpb-clear').onclick=async()=>{ if(!confirm('Bildpaket aus dem Browserspeicher entfernen?')) return; wpbPaket=null; wpbOn=false; $('#b-wpb').classList.remove('on'); wpbBuild(); wpbInfo(); try{ await idb.set('wp_paket_v1',null); }catch(e){} };
+wpbLoadStored();
+
 /* ---------- Legende (rechts unten) ---------- */
 function legendHtml(){
   const sw=(c,t,op=.55)=>`<div class="li"><span class="sw" style="background:${c};opacity:1;border-color:${c};background:color-mix(in srgb, ${c} ${Math.round(op*100)}%, transparent)"></span><span>${t}</span></div>`;
@@ -1681,6 +1701,7 @@ function legendHtml(){
   h+=`<div class="li"><span class="ci" style="background:#9fd41f;border:2px solid #001a4d"></span><span>Suchtreffer</span></div>`;
   h+=`<div class="li"><span class="ci" style="background:#7a9a1a;border:2px solid #001a4d"></span><span>Mein Standort</span></div>`;
   h+=`<div class="li"><span class="ci" style="background:#7a9a1a;border:2px solid #001a4d;border-radius:50%"></span><span>Street View: Figur auf die Karte ziehen</span></div>`;
+  if(wpbOn&&wpbPaket){ wpbPaket.bilder.forEach(b=>{ h+='<h4>'+esc(b.titel)+'</h4>'+(b.legende||[]).map(x=>`<div class="li"><span class="sw" style="background:${x.farbe};border-color:${x.farbe}"></span><span>${esc(x.text)}</span></div>`).join('')+'<div class="s" style="opacity:.8">'+esc(b.quelle||'')+'</div>'; }); }
   if(wpIdx>=0){ h+='<h4>Wärmeplan Bremen: '+WP_STUFEN[wpIdx].t+'</h4><img src="'+$(wpIdx===0?'#wp-leg1':'#wp-leg2').src+'" alt="Legende Wärmeplan"><div class="s">Quelle: GeoInformation Bremen, Wärmeplan 2025, nur Stadtgebiet Bremen, ohne Rechtswirkung</div>'; }
   h+='<h4>Grundkarte</h4><div class="li"><span>'+({sat:'Satellit (Esri)',dop:'Amtliches Luftbild (LGLN, GeoInformation Bremen, Geobasis NRW)',topo:'Geländekarte (OpenTopoMap)'}[base])+'</span></div>';
   return h;
