@@ -1525,11 +1525,12 @@ async function calSyncAll(quiet=false){
       if(date<today()&&!(D.cal[date]&&D.cal[date].text)) continue; // Vergangenheit ohne Eintrag nicht anfassen
       const text=calText(date); const cur=D.cal[date];
       if(cur&&cur.text===text&&cur.ok) continue;
-      if(!text&&!cur) continue;
+      if(!text&&(!cur||!cur.text)) continue;
       const r=await calApply(date,text);
-      if(text) D.cal[date]={text,ok:r.ok,n:r.n,at:new Date().toISOString()}; else delete D.cal[date];
+      D.cal[date]={text,ok:r.ok,n:r.n,at:new Date().toISOString()};
       changed++;
     }
+    Object.keys(D.cal).forEach(k=>{ if(!D.cal[k].text&&Date.now()-new Date(D.cal[k].at||0).getTime()>30*864e5) delete D.cal[k]; });
     localStorage.setItem(Store.key,JSON.stringify(D));
     if(changed){ if(cur) renderShifts(); if(openWin==='plan') renderPlan(); if(!quiet) toast('Kalender aktualisiert ('+changed+' Tage)'); }
   }catch(e){ gLog('Kalender: '+(e.message||e)); if(!quiet) toast('Kalender: '+(e.message||e)); }
