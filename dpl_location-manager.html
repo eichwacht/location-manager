@@ -1000,6 +1000,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <div class="card">
           <strong>Wärmeplanflächen nur bei Gebäuden</strong>
           <div class="s">Alle Wärmeplanflächen (hellgrün, gelb, dunkelrot) erscheinen nur im Umkreis von 60 m um Hausnummern aus den Adressdaten; bestehende Netzleitungen (rot) immer. Ohne geladene Adressdaten bleiben die Flächen aus.</div>
+          <div class="s" style="margin-top:6px"><b>Grundregel 40-km-Kreis:</b> Jede Hausnummer ohne Planfläche gilt als dezentral (hellgrün), weil Streusiedlungen und kleine Dörfer die Wärmeliniendichte für ein Netz nicht erreichen; jeder bisher ausgewertete Plan stuft solche Orte so ein. Ausnahme: Hausnummern im Umkreis von 800 m um eine Biogasanlage gelten als unklar (gelb), dort sind kleine Dorfnetze möglich.</div>
+        </div>
+        <div class="card">
+          <strong>Biogasanlagen</strong>
+          <div class="s" id="bg-info">Noch nicht geladen.</div>
+          <div class="row"><button class="btn ghost" id="bg-reload">Biogasanlagen neu laden</button></div>
         </div>
         <div class="card">
           <strong>Adressdaten (Straßennamen und Hausnummern)</strong>
@@ -1504,6 +1510,38 @@ async function gebaeudeMaske(bb,w,h){
   return n?mg.getImageData(0,0,w,h).data:null;
 }
 const siedlPolys=()=>[];
+/* Biogasanlagen (OSM) im 40-km-Kreis: Hausnummern im Umkreis 800 m gelten als unklar (gelb) statt dezentral */
+let biogasFc=null, biogasBusy=false;
+async function biogasLoad(force=false){
+  if(biogasBusy) return; biogasBusy=true; const el=$('#bg-info'); if(el) el.textContent='Biogasanlagen werden geladen …';
+  try{ let fc=null; if(!force){ try{ fc=await idb.get('biogas_v1_40km'); }catch(e){} }
+    if(!fc){ const bd=HOME.toBounds(RADIUS_M*2); const bb=`(${bd.getSouth()},${bd.getWest()},${bd.getNorth()},${bd.getEast()})`;
+      const q=`[out:json][timeout:120];(nwr["power"="generator"]["generator:source"="biogas"]${bb};nwr["power"="plant"]["plant:source"="biogas"]${bb};nwr["man_made"="works"]["product"="biogas"]${bb};);out center;`;
+      const j=await overpassQuery(q); const pts=[]; const seen=new Set(); j.elements.forEach(e=>{ const ce=e.center||(e.lat!=null?{lat:e.lat,lon:e.lon}:null); if(!ce) return; const k=ce.lat.toFixed(4)+','+ce.lon.toFixed(4); if(seen.has(k)) return; seen.add(k); pts.push({lat:+ce.lat.toFixed(5),lon:+ce.lon.toFixed(5),name:(e.tags&&e.tags.name)||''}); });
+      fc={loaded:new Date().toISOString(),pts}; try{ await idb.set('biogas_v1_40km',fc); }catch(e){} }
+    biogasFc=fc; bgInfo(); if(wpbPaket||wpbOn) wpbBuild();
+  }catch(e){ if(el) el.textContent='Laden fehlgeschlagen: '+(e.message||e); }
+  finally{ biogasBusy=false; }
+}
+function bgInfo(){ const el=$('#bg-info'); if(!el) return; if(biogasFc) el.textContent=`${biogasFc.pts.length} Anlagen geladen, Stand ${fmtDT(biogasFc.loaded)}. Quelle OpenStreetMap; Hausnummern im Umkreis von 800 m werden gelb (unklar).`; }
+$('#bg-reload').onclick=()=>{ biogasFc=null; biogasLoad(true); };
+idb.get('biogas_v1_40km').then(fc=>{ if(fc){ biogasFc=fc; bgInfo(); if(wpbPaket||wpbOn) wpbBuild(); } else biogasLoad(); }).catch(()=>{});
+/* Grundebene: alle Hausnummern im 40-km-Kreis dezentral (hellgrün), nahe Biogas gelb; Planflächen liegen darüber, Sperrzonen ausgestanzt */
+let grundGen=0, grundLayer=null;
+async function grundEbene(){
+  const gen=++grundGen; const bd=HOME.toBounds(RADIUS_M*2); const bb={west:bd.getWest(),east:bd.getEast(),north:bd.getNorth(),south:bd.getSouth()};
+  const W=3000, my=la=>Math.log(Math.tan(Math.PI/4+la*Math.PI/360)); const H=Math.round(W*(my(bb.north)-my(bb.south))/((bb.east-bb.west)*Math.PI/180)); const mN=my(bb.north), mS=my(bb.south);
+  const px=(lon,lat)=>[(lon-bb.west)/(bb.east-bb.west)*W,(mN-my(lat))/(mN-mS)*H];
+  const tiles=tilesIn(L.latLngBounds([bb.south,bb.west],[bb.north,bb.east]),14);
+  const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d');
+  const mProLon=111320*Math.cos((bb.north+bb.south)/2*Math.PI/180); const r=Math.max(2,60/((bb.east-bb.west)*mProLon/W)); const rb=800/((bb.east-bb.west)*mProLon/W);
+  const bg=(biogasFc&&biogasFc.pts)||[]; let n=0;
+  for(const t of tiles){ const d=await adrLoadTile(t,false); if(gen!==grundGen) return null; if(!d||!d.hn) continue; for(const p of d.hn){ if(HOME.distanceTo([p.lat,p.lon])>RADIUS_M) continue; const [x,y]=px(p.lon,p.lat); let gelb=false; for(const q of bg){ const [bx,by]=px(q.lon,q.lat); if((bx-x)*(bx-x)+(by-y)*(by-y)<rb*rb){ gelb=true; break; } } g.fillStyle=gelb?WP_KLASSEN.wahr.farbe:WP_KLASSEN.dez.farbe; g.beginPath(); g.arc(x,y,r,0,Math.PI*2); g.fill(); n++; } }
+  if(!n) return null;
+  { const im=g.getImageData(0,0,W,H); const d=im.data; for(let i=0;i<d.length;i+=4){ if(d[i+3]) d[i+3]=235; } g.putImageData(im,0,0); }
+  g.globalCompositeOperation='destination-out'; g.fillStyle='#000'; sperrPolys().forEach(poly=>{ g.beginPath(); poly.forEach(ring=>{ ring.forEach((p,i)=>{ const [x,y]=px(p[0],p[1]); if(i) g.lineTo(x,y); else g.moveTo(x,y); }); g.closePath(); }); g.fill('evenodd'); });
+  return {url:cv.toDataURL('image/png'),bb,n};
+}
 function spInfo(){ const el=$('#sp-info'); if(!el) return; if(sperrFc) el.textContent=`${sperrFc.features.length} Flächen geladen, Stand ${fmtDT(sperrFc.loaded)}. Quelle OpenStreetMap; kleine Gewerbehöfe fehlen dort oft.`; }
 $('#b-sperr').onclick=()=>{ sperrOn=!sperrOn; $('#b-sperr').classList.toggle('on',sperrOn); if(sperrOn){ sperrLayer.addTo(map); if(!sperrFc) sperrLoad(); } else map.removeLayer(sperrLayer); };
 $('#sp-reload').onclick=()=>{ sperrFc=null; sperrLoad(true); };
@@ -1723,14 +1761,14 @@ async function wpVekLoad(v){ if(wpVekLayers[v.id]){ map.removeLayer(wpVekLayers[
     { const im=g.getImageData(0,0,W,H); const d=im.data; for(let i=0;i<d.length;i+=4){ if(d[i+3]&&(!gm||!gm[i+3])) d[i+3]=0; else if(d[i+3]) d[i+3]=235; } g.putImageData(im,0,0); }
     g.globalCompositeOperation='destination-out'; g.fillStyle='#000'; sp.forEach(poly=>{ const r0=poly[0]; let inside=false; for(const p of r0){ if(p[0]>bb.west&&p[0]<bb.east&&p[1]>bb.south&&p[1]<bb.north){ inside=true; break; } } if(!inside) return; pathOf(g,poly,false); g.fill('evenodd'); });
     return cv.toDataURL('image/png'); };
-  const hatch=L.imageOverlay(mk(['dez','wahr','pruef']),[[bb.south,bb.west],[bb.north,bb.east]],{opacity:.95,interactive:false,className:'wpb-hatch'});
-  const voll=L.imageOverlay(mk(['sehr','netz']),[[bb.south,bb.west],[bb.north,bb.east]],{opacity:.6,interactive:false});
+  const hatch=L.imageOverlay(mk(['wahr','pruef']),[[bb.south,bb.west],[bb.north,bb.east]],{opacity:.95,interactive:false,className:'wpb-hatch',zIndex:2});
+  const voll=L.imageOverlay(mk(['sehr','netz']),[[bb.south,bb.west],[bb.north,bb.east]],{opacity:.6,interactive:false,zIndex:3});
   const grp=L.layerGroup([hatch,voll]); wpVekLayers[v.id]=grp; return grp; }
 /* Sperrzonen aus den Wärmeplan-Ebenen ausstanzen: dort wird nicht verkauft */
 const sperrPolys=()=>{ const out=[]; if(!sperrFc) return out; sperrFc.features.forEach(f=>{ const g=f.geometry; if(!g) return; if(g.type==='Polygon') out.push(g.coordinates); else if(g.type==='MultiPolygon') g.coordinates.forEach(p=>out.push(p)); }); return out; };
 async function wpbMaskImg(b){ const dims=await new Promise(res=>{ const i=new Image(); i.onload=()=>res([i.naturalWidth,i.naturalHeight]); i.onerror=()=>res(null); i.src=b.png; }); const gm=dims?await gebaeudeMaske(b.bounds,dims[0],dims[1]):null; return new Promise(res=>{ const polys=sperrPolys(); const img=new Image(); img.onload=()=>{ try{ const c=document.createElement('canvas'); c.width=img.naturalWidth; c.height=img.naturalHeight; const g=c.getContext('2d'); g.drawImage(img,0,0); const bb=b.bounds; const my=la=>Math.log(Math.tan(Math.PI/4+la*Math.PI/360)); const mN=my(bb.north), mS=my(bb.south); const px=(lon,lat)=>[(lon-bb.west)/(bb.east-bb.west)*c.width,(mN-my(lat))/(mN-mS)*c.height]; { const hx=f=>{ f=f.replace('#',''); return [parseInt(f.slice(0,2),16),parseInt(f.slice(2,4),16),parseInt(f.slice(4,6),16)]; }; const netz=(b.legende||[]).filter(x=>x.klasse==='netz').map(x=>hx(x.farbe));
       const im=g.getImageData(0,0,c.width,c.height); const d=im.data;
-      for(let i=0;i<d.length;i+=4){ if(!d[i+3]) continue; if(gm&&gm[i+3]) continue; if(netz.some(q=>Math.abs(d[i]-q[0])<40&&Math.abs(d[i+1]-q[1])<40&&Math.abs(d[i+2]-q[2])<40)) continue; d[i+3]=0; } g.putImageData(im,0,0); }
+      const dezc=(b.legende||[]).filter(x=>x.klasse==='dez').map(x=>hx(x.farbe)); for(let i=0;i<d.length;i+=4){ if(!d[i+3]) continue; if(dezc.some(q=>Math.abs(d[i]-q[0])<40&&Math.abs(d[i+1]-q[1])<40&&Math.abs(d[i+2]-q[2])<40)){ d[i+3]=0; continue; } if(gm&&gm[i+3]) continue; if(netz.some(q=>Math.abs(d[i]-q[0])<40&&Math.abs(d[i+1]-q[1])<40&&Math.abs(d[i+2]-q[2])<40)) continue; d[i+3]=0; } g.putImageData(im,0,0); }
       g.globalCompositeOperation='destination-out'; g.fillStyle='#000'; let n=0; polys.forEach(poly=>{ const r0=poly[0]; let inside=false; for(const p of r0){ if(p[0]>bb.west&&p[0]<bb.east&&p[1]>bb.south&&p[1]<bb.north){ inside=true; break; } } if(!inside) return; n++; g.beginPath(); poly.forEach(ring=>{ ring.forEach((p,i)=>{ const [x,y]=px(p[0],p[1]); if(i) g.lineTo(x,y); else g.moveTo(x,y); }); g.closePath(); }); g.fill('evenodd'); }); res(wpbSplit(c,b)); }catch(e){ res({hatch:b.png,solid:null}); } }; img.onerror=()=>res({hatch:b.png,solid:null}); img.src=b.png; }); }
 // Klasse netz (#d42a2a) als eigene Ebene ohne Schraffur abtrennen
 function wpbSplit(c,b){ const g=c.getContext('2d'); const w=c.width,h=c.height; const im=g.getImageData(0,0,w,h); const d=im.data; const sol=new Uint8ClampedArray(d.length); let n=0;
@@ -1742,9 +1780,9 @@ let sperrMaskEl=null;
 function sperrMaskUpdate(){ const c=svgR._container; if(!c) return; const polys=sperrPolys(); if(!polys.length){ c.classList.remove('maskiert'); return; } let defs=c.querySelector('defs'); if(!sperrMaskEl){ sperrMaskEl=document.createElementNS('http://www.w3.org/2000/svg','mask'); sperrMaskEl.setAttribute('id','sperrmaske'); sperrMaskEl.setAttribute('maskUnits','userSpaceOnUse'); defs.appendChild(sperrMaskEl); } const vb=(c.getAttribute('viewBox')||'0 0 0 0').split(' ').map(Number); const b=map.getBounds().pad(0.2); let d=''; polys.forEach(poly=>{ const r0=poly[0]; let hit=false; for(const p of r0){ if(b.contains([p[1],p[0]])){ hit=true; break; } } if(!hit) return; poly.forEach(ring=>{ ring.forEach((p,i)=>{ const q=map.latLngToLayerPoint([p[1],p[0]]); d+=(i?'L':'M')+Math.round(q.x)+' '+Math.round(q.y); }); d+='Z'; }); }); sperrMaskEl.setAttribute('maskUnits','userSpaceOnUse'); sperrMaskEl.setAttribute('x',vb[0]); sperrMaskEl.setAttribute('y',vb[1]); sperrMaskEl.setAttribute('width',vb[2]); sperrMaskEl.setAttribute('height',vb[3]); sperrMaskEl.innerHTML=`<rect x="${vb[0]}" y="${vb[1]}" width="${vb[2]}" height="${vb[3]}" fill="#fff"/><path d="${d}" fill="#000" fill-rule="evenodd"/>`; c.classList.add('maskiert'); }
 map.on('moveend zoomend viewreset',()=>{ if(wpbOn) sperrMaskUpdate(); });
 let wpbGen=0;
-function wpbBuild(){ const gen=++wpbGen; wpbLayers.forEach(l=>map.removeLayer(l)); wpbLayers.length=0; if(wpbPaket) wpbPaket.bilder.forEach(b=>{ const bb=b.bounds; wpbMaskImg(b).then(r=>{ if(gen!==wpbGen) return; const l=L.imageOverlay(r.hatch,[[bb.south,bb.west],[bb.north,bb.east]],{opacity:.95,interactive:false,className:'wpb-hatch'}); wpbLayers.push(l); if(wpbOn) l.addTo(map); if(r.solid){ const l2=L.imageOverlay(r.solid,[[bb.south,bb.west],[bb.north,bb.east]],{opacity:.6,interactive:false}); wpbLayers.push(l2); if(wpbOn) l2.addTo(map); } }); }); sperrMaskUpdate(); WP_VEKTOR.forEach(v=>wpVekLoad(v).then(l=>{ if(l&&gen===wpbGen){ if(!wpbLayers.includes(l)) wpbLayers.push(l); if(wpbOn) l.addTo(map); } })); }
+function wpbBuild(){ const gen=++wpbGen; wpbLayers.forEach(l=>map.removeLayer(l)); wpbLayers.length=0; grundLayer=null; grundEbene().then(r=>{ if(!r||gen!==wpbGen) return; const l=L.imageOverlay(r.url,[[r.bb.south,r.bb.west],[r.bb.north,r.bb.east]],{opacity:.95,interactive:false,className:'wpb-hatch',zIndex:1}); grundLayer=l; wpbLayers.push(l); if(wpbOn) l.addTo(map); }); if(wpbPaket) wpbPaket.bilder.forEach(b=>{ const bb=b.bounds; wpbMaskImg(b).then(r=>{ if(gen!==wpbGen) return; const l=L.imageOverlay(r.hatch,[[bb.south,bb.west],[bb.north,bb.east]],{opacity:.95,interactive:false,className:'wpb-hatch',zIndex:2}); wpbLayers.push(l); if(wpbOn) l.addTo(map); if(r.solid){ const l2=L.imageOverlay(r.solid,[[bb.south,bb.west],[bb.north,bb.east]],{opacity:.6,interactive:false,zIndex:3}); wpbLayers.push(l2); if(wpbOn) l2.addTo(map); } }); }); sperrMaskUpdate(); WP_VEKTOR.forEach(v=>wpVekLoad(v).then(l=>{ if(l&&gen===wpbGen){ if(!wpbLayers.includes(l)) wpbLayers.push(l); if(wpbOn) l.addTo(map); } })); }
 async function wpbLoadStored(){ try{ const p=await idb.get('wp_paket_v1'); if(p&&p.bilder) wpbPaket=p; }catch(e){} wpbBuild(); wpbInfo(); }
-$('#b-wpb').onclick=()=>{ if(!wpbPaket&&!wpbOn) toast('Live: Landkreis Osterholz. Bremerhaven, Südkreis und weitere: Bildpaket im Fenster Daten laden'); wpbOn=!wpbOn; $('#b-wpb').classList.toggle('on',wpbOn); if(wpbOn&&!wpbLayers.length) wpbBuild(); else wpbLayers.forEach(l=>wpbOn?l.addTo(map):map.removeLayer(l)); };
+$('#b-wpb').onclick=()=>{ if(!wpbPaket&&!wpbOn) toast('Live: Landkreis Osterholz. Bremerhaven, Südkreis und weitere: Bildpaket im Fenster Daten laden'); wpbOn=!wpbOn; $('#b-wpb').classList.toggle('on',wpbOn); if(wpbOn&&(!wpbLayers.length||!grundLayer)) wpbBuild(); else wpbLayers.forEach(l=>wpbOn?l.addTo(map):map.removeLayer(l)); };
 $('#wpb-file').onchange=e=>{ const f=e.target.files[0]; if(!f) return; f.text().then(async t=>{ const p=JSON.parse(t); if(!p.bilder||!p.bilder.length||!p.bilder[0].png||!p.bilder[0].bounds) throw 0; wpbPaket=p; try{ await idb.set('wp_paket_v1',p); }catch(err){ toast('Speichern im Browser fehlgeschlagen: '+(err.message||err)); } wpbBuild(); wpbInfo(); toast(p.bilder.length+' Wärmeplan-Bilder geladen'); }).catch(()=>toast('Paket nicht lesbar')); e.target.value=''; };
 $('#wpb-clear').onclick=async()=>{ if(!confirm('Bildpaket aus dem Browserspeicher entfernen?')) return; wpbPaket=null; wpbOn=false; $('#b-wpb').classList.remove('on'); wpbBuild(); wpbInfo(); try{ await idb.set('wp_paket_v1',null); }catch(e){} };
 wpbLoadStored();
@@ -1765,7 +1803,7 @@ function legendHtml(){
   h+=`<div class="li"><span class="ci" style="background:#7a9a1a;border:2px solid #001a4d;border-radius:50%"></span><span>Street View: Figur auf die Karte ziehen</span></div>`;
   if(wpbOn){ h+='<h4>Wärmeplanung</h4>'+Object.values(WP_KLASSEN).filter(x=>!x.alias).map(x=>`<div class="li">${klSwatch(x.farbe)}<span>${esc(x.text)}</span></div>`).join('');
     const kom=WP_VEKTOR.map(v=>v.titel.split(':')[0]+' (live)').concat(wpbPaket?wpbPaket.bilder.map(b=>b.titel.split(':')[0]):[]);
-    h+='<div class="s" style="opacity:.8">Kommunen: '+esc(kom.join(', '))+'. Quellen und Stand je Kommune im Fenster Daten. Strategische Planung ohne Rechtswirkung.</div>'; }
+    h+='<div class="s" style="opacity:.8">Grundregel im ganzen 40-km-Kreis: Hausnummern ohne Planfläche gelten als dezentral (Wärmenetz unwirtschaftlich), im Umkreis von 800 m um Biogasanlagen als unklar. Kommunen mit Plan: '+esc(kom.join(', '))+'. Quellen und Stand je Kommune im Fenster Daten. Strategische Planung ohne Rechtswirkung.</div>'; }
   if(wpIdx>=0){ h+='<h4>Wärmeplan Bremen: '+WP_STUFEN[wpIdx].t+'</h4><img src="'+$(wpIdx===0?'#wp-leg1':'#wp-leg2').src+'" alt="Legende Wärmeplan"><div class="s">Quelle: GeoInformation Bremen, Wärmeplan 2025, nur Stadtgebiet Bremen, ohne Rechtswirkung</div>'; }
   h+='<h4>Grundkarte</h4><div class="li"><span>'+({sat:'Satellit (Esri)',dop:'Amtliches Luftbild (LGLN, GeoInformation Bremen, Geobasis NRW)',topo:'Geländekarte (OpenTopoMap)'}[base])+'</span></div>';
   return h;
