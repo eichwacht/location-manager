@@ -1003,6 +1003,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
           <div class="s" style="margin-top:6px"><b>Grundregel 40-km-Kreis:</b> Jede Hausnummer ohne Planfläche gilt als dezentral (hellgrün), weil Streusiedlungen und kleine Dörfer die Wärmeliniendichte für ein Netz nicht erreichen; jeder bisher ausgewertete Plan stuft solche Orte so ein. Ausnahme: Hausnummern im Umkreis von 800 m um eine Biogasanlage gelten als unklar (gelb), dort sind kleine Dorfnetze möglich.</div>
         </div>
         <div class="card">
+          <strong>Gebäude (für die Wärmeplanflächen)</strong>
+          <div class="s" id="g-info">Noch nicht geladen.</div>
+          <div class="bar" id="g-bar" style="display:none"><i></i></div>
+          <div class="s" id="g-status"></div>
+          <div class="row"><button class="btn primary" id="g-load">Gebäude laden</button><button class="btn" id="g-stop" style="display:none">Anhalten</button></div>
+          <div class="s">OSM-Gebäudeumrisse (Mittelpunkte) für den 40-km-Kreis, ergänzt die Hausnummern, damit auch Häuser ohne Hausnummer eingefärbt werden. Einmal laden, etwa 20 bis 40 Minuten, am besten im WLAN; die Seite kann offen bleiben, beim Schließen geht es später an derselben Stelle weiter.</div>
+        </div>
+        <div class="card">
           <strong>Biogasanlagen</strong>
           <div class="s" id="bg-info">Noch nicht geladen.</div>
           <div class="row"><button class="btn ghost" id="bg-reload">Biogasanlagen neu laden</button></div>
@@ -1506,10 +1514,29 @@ async function gebaeudeMaske(bb,w,h){
   const tiles=tilesIn(L.latLngBounds([bb.south,bb.west],[bb.north,bb.east]),14);
   const mc=document.createElement('canvas'); mc.width=w; mc.height=h; const mg=mc.getContext('2d'); mg.fillStyle='#fff';
   const mProLon=111320*Math.cos((bb.north+bb.south)/2*Math.PI/180); const r=Math.max(2,60/((bb.east-bb.west)*mProLon/w)); let n=0;
-  for(const t of tiles){ const d=await adrLoadTile(t,false); if(!d||!d.hn) continue; for(const p of d.hn){ if(p.lon<bb.west||p.lon>bb.east||p.lat<bb.south||p.lat>bb.north) continue; const [x,y]=px(p.lon,p.lat); mg.beginPath(); mg.arc(x,y,r,0,Math.PI*2); mg.fill(); n++; } }
+  for(const t of tiles){ const d=await adrLoadTile(t,false); if(d&&d.hn) for(const p of d.hn){ if(p.lon<bb.west||p.lon>bb.east||p.lat<bb.south||p.lat>bb.north) continue; const [x,y]=px(p.lon,p.lat); mg.beginPath(); mg.arc(x,y,r,0,Math.PI*2); mg.fill(); n++; } const gb=await gebTile(t); if(gb) for(let i=0;i<gb.length;i+=2){ const la=gb[i],lo=gb[i+1]; if(lo<bb.west||lo>bb.east||la<bb.south||la>bb.north) continue; const [x,y]=px(lo,la); mg.beginPath(); mg.arc(x,y,r,0,Math.PI*2); mg.fill(); n++; } }
   return n?mg.getImageData(0,0,w,h).data:null;
 }
 const siedlPolys=()=>[];
+/* Gebäude (OSM-Gebäudeumrisse, Mittelpunkte): zweite Quelle für die Gebäudemaske, auch Häuser ohne Hausnummer */
+const geb={running:false,ctrl:null,meta:null}; const gebKey=t=>`geb_v1_${t.z}_${t.x}_${t.y}`; const gebCache=new Map();
+async function gebMeta(){ if(!geb.meta){ try{ geb.meta=await idb.get('geb_bulk_v1'); }catch(e){} geb.meta=geb.meta||{done:{},n:0}; } return geb.meta; }
+async function gebTile(t){ const k=gebKey(t); if(gebCache.has(k)) return gebCache.get(k); let d=null; try{ d=await idb.get(k); }catch(e){} if(d) gebCache.set(k,d); return d||null; }
+async function gebInfo(){ const m=await gebMeta(), all=bulkTiles(), n=Object.keys(m.done).length; const el=$('#g-info'); if(!el) return;
+  el.textContent=n?`${n} von ${all.length} Kacheln geladen · ${(m.n||0).toLocaleString('de-DE')} Gebäude${m.finished?' · Stand '+fmtDT(m.finished):''}`:'Noch nicht geladen.';
+  $('#g-load').textContent=n>=all.length?'Vollständig geladen':(n?'Weiter laden':'Gebäude laden'); $('#g-load').style.display=geb.running?'none':''; $('#g-load').disabled=n>=all.length; $('#g-stop').style.display=geb.running?'':'none'; $('#g-bar').style.display=geb.running?'':'none'; }
+async function gebRun(){
+  if(geb.running) return; geb.running=true; geb.ctrl=new AbortController(); const m=await gebMeta(); const all=bulkTiles(); const todo=all.filter(t=>!m.done[gebKey(t)]); let i=0; await gebInfo();
+  try{ for(const t of todo){ if(geb.ctrl.signal.aborted) break; const tk=Date.now(); const tick=setInterval(()=>{ $('#g-status').textContent=`Kachel ${i+1} von ${todo.length} wird geladen … ${Math.round((Date.now()-tk)/1000)} s`; },1000); $('#g-bar i').style.width=(100*i/todo.length).toFixed(1)+'%';
+      const [s_,w_,n_,e_]=tileBounds(t); const bb=`(${s_},${w_},${n_},${e_})`; let j; try{ j=await overpassQuery(`[out:json][timeout:180];way["building"]${bb};out center;`,geb.ctrl.signal); }catch(err){ clearInterval(tick); if(geb.ctrl.signal.aborted) throw err; $('#g-status').textContent='Kachel übersprungen ('+(err.message||err)+'), weiter …'; await new Promise(r=>setTimeout(r,3000)); i++; continue; } clearInterval(tick);
+      const parts=new Map(); let cnt=0; j.elements.forEach(e=>{ const ce=e.center; if(!ce) return; const k=gebKey({z:14,x:tx(ce.lon,14),y:ty(ce.lat,14)}); if(!parts.has(k)) parts.set(k,[]); parts.get(k).push(+ce.lat.toFixed(6),+ce.lon.toFixed(6)); cnt++; });
+      const [S,W,N,E]=tileBounds(t); tilesIn(L.latLngBounds([S,W],[N,E]).pad(-0.001),14).forEach(st=>{ const k=gebKey(st); if(!parts.has(k)) parts.set(k,[]); });
+      const pairs=[...parts.entries()]; pairs.forEach(([k,v])=>gebCache.set(k,v)); m.n=(m.n||0)+cnt; m.done[gebKey(t)]=new Date().toISOString(); if(Object.keys(m.done).length>=all.length) m.finished=new Date().toISOString(); await idb.setMany([...pairs,['geb_bulk_v1',m]]); i++; await gebInfo(); }
+    $('#g-status').textContent=i>=todo.length?'Fertig.':'Angehalten.'; if(i>0&&(wpbPaket||wpbOn)) wpbBuild();
+  }catch(e){ $('#g-status').textContent=geb.ctrl.signal.aborted?'Angehalten.':'Fehler: '+(e.message||e); }
+  finally{ geb.running=false; await gebInfo(); }
+}
+$('#g-load').onclick=()=>gebRun(); $('#g-stop').onclick=()=>{ if(geb.ctrl) geb.ctrl.abort(); }; gebInfo();
 /* Biogasanlagen (OSM) im 40-km-Kreis: Hausnummern im Umkreis 800 m gelten als unklar (gelb) statt dezentral */
 let biogasFc=null, biogasBusy=false;
 async function biogasLoad(force=false){
@@ -1536,7 +1563,8 @@ async function grundEbene(){
   const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d');
   const mProLon=111320*Math.cos((bb.north+bb.south)/2*Math.PI/180); const r=Math.max(2,60/((bb.east-bb.west)*mProLon/W)); const rb=800/((bb.east-bb.west)*mProLon/W);
   const bg=(biogasFc&&biogasFc.pts)||[]; let n=0;
-  for(const t of tiles){ const d=await adrLoadTile(t,false); if(gen!==grundGen) return null; if(!d||!d.hn) continue; for(const p of d.hn){ if(HOME.distanceTo([p.lat,p.lon])>RADIUS_M) continue; const [x,y]=px(p.lon,p.lat); let gelb=false; for(const q of bg){ const [bx,by]=px(q.lon,q.lat); if((bx-x)*(bx-x)+(by-y)*(by-y)<rb*rb){ gelb=true; break; } } g.fillStyle=gelb?WP_KLASSEN.wahr.farbe:WP_KLASSEN.dez.farbe; g.beginPath(); g.arc(x,y,r,0,Math.PI*2); g.fill(); n++; } }
+  const punkt=(lat,lon)=>{ if(HOME.distanceTo([lat,lon])>RADIUS_M) return; const [x,y]=px(lon,lat); let gelb=false; for(const q of bg){ const [bx,by]=px(q.lon,q.lat); if((bx-x)*(bx-x)+(by-y)*(by-y)<rb*rb){ gelb=true; break; } } g.fillStyle=gelb?WP_KLASSEN.wahr.farbe:WP_KLASSEN.dez.farbe; g.beginPath(); g.arc(x,y,r,0,Math.PI*2); g.fill(); n++; };
+  for(const t of tiles){ const d=await adrLoadTile(t,false); if(gen!==grundGen) return null; const gb=await gebTile(t); if(gb) for(let i=0;i<gb.length;i+=2) punkt(gb[i],gb[i+1]); if(!d||!d.hn) continue; for(const p of d.hn){ if(HOME.distanceTo([p.lat,p.lon])>RADIUS_M) continue; const [x,y]=px(p.lon,p.lat); let gelb=false; for(const q of bg){ const [bx,by]=px(q.lon,q.lat); if((bx-x)*(bx-x)+(by-y)*(by-y)<rb*rb){ gelb=true; break; } } g.fillStyle=gelb?WP_KLASSEN.wahr.farbe:WP_KLASSEN.dez.farbe; g.beginPath(); g.arc(x,y,r,0,Math.PI*2); g.fill(); n++; } }
   if(!n) return null;
   { const im=g.getImageData(0,0,W,H); const d=im.data; for(let i=0;i<d.length;i+=4){ if(d[i+3]) d[i+3]=235; } g.putImageData(im,0,0); }
   g.globalCompositeOperation='destination-out'; g.fillStyle='#000'; sperrPolys().forEach(poly=>{ g.beginPath(); poly.forEach(ring=>{ ring.forEach((p,i)=>{ const [x,y]=px(p[0],p[1]); if(i) g.lineTo(x,y); else g.moveTo(x,y); }); g.closePath(); }); g.fill('evenodd'); });
