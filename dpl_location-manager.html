@@ -1485,14 +1485,14 @@ async function sperrLoad(force=false){
       fc={type:'FeatureCollection',loaded:new Date().toISOString(),features:all.features.filter(f=>f.geometry&&/Polygon/.test(f.geometry.type)).map(f=>({type:'Feature',id:f.id,geometry:f.geometry,properties:{art:sperrArt(f.properties),name:f.properties.name||''}})).filter(f=>f.properties.art)};
       try{ await idb.set('sperr_v1_40km',fc); }catch(e){}
     }
-    sperrFc=fc; sperrLayer.clearLayers(); sperrLayer.addData(fc); spInfo(); if(wpbLayers.length) wpbBuild();
+    sperrFc=fc; sperrLayer.clearLayers(); sperrLayer.addData(fc); spInfo(); if(wpbPaket||wpbOn) wpbBuild();
   }catch(e){ toast('Sperrzonen konnten nicht geladen werden: '+(e.message||e)); }
   sperrBusy=false; $('#b-sperr').classList.remove('busy');
 }
 function spInfo(){ const el=$('#sp-info'); if(!el) return; if(sperrFc) el.textContent=`${sperrFc.features.length} Flächen geladen, Stand ${fmtDT(sperrFc.loaded)}. Quelle OpenStreetMap; kleine Gewerbehöfe fehlen dort oft.`; }
 $('#b-sperr').onclick=()=>{ sperrOn=!sperrOn; $('#b-sperr').classList.toggle('on',sperrOn); if(sperrOn){ sperrLayer.addTo(map); if(!sperrFc) sperrLoad(); } else map.removeLayer(sperrLayer); };
 $('#sp-reload').onclick=()=>{ sperrFc=null; sperrLoad(true); };
-idb.get('sperr_v1_40km').then(fc=>{ if(fc){ sperrFc=fc; sperrLayer.addData(fc); spInfo(); if(wpbLayers.length) wpbBuild(); } }).catch(()=>{});
+idb.get('sperr_v1_40km').then(fc=>{ if(fc){ sperrFc=fc; sperrLayer.addData(fc); spInfo(); if(wpbPaket||wpbOn) wpbBuild(); } }).catch(()=>{});
 
 /* ---------- Adressen im Gebiet zählen, Ort und PLZ ermitteln ---------- */
 function inPoly(pt,poly){ let c=false; for(let i=0,j=poly.length-1;i<poly.length;j=i++){ const [yi,xi]=poly[i],[yj,xj]=poly[j]; if(((yi>pt[0])!==(yj>pt[0]))&&(pt[1]<(xj-xi)*(pt[0]-yi)/(yj-yi)+xi)) c=!c; } return c; }
@@ -1701,7 +1701,8 @@ function wpbMaskImg(b){ return new Promise(res=>{ const polys=sperrPolys(); if(!
 let sperrMaskEl=null;
 function sperrMaskUpdate(){ const c=svgR._container; if(!c) return; const polys=sperrPolys(); if(!polys.length){ c.classList.remove('maskiert'); return; } let defs=c.querySelector('defs'); if(!sperrMaskEl){ sperrMaskEl=document.createElementNS('http://www.w3.org/2000/svg','mask'); sperrMaskEl.setAttribute('id','sperrmaske'); sperrMaskEl.setAttribute('maskUnits','userSpaceOnUse'); defs.appendChild(sperrMaskEl); } const vb=(c.getAttribute('viewBox')||'0 0 0 0').split(' ').map(Number); const b=map.getBounds().pad(0.2); let d=''; polys.forEach(poly=>{ const r0=poly[0]; let hit=false; for(const p of r0){ if(b.contains([p[1],p[0]])){ hit=true; break; } } if(!hit) return; poly.forEach(ring=>{ ring.forEach((p,i)=>{ const q=map.latLngToLayerPoint([p[1],p[0]]); d+=(i?'L':'M')+Math.round(q.x)+' '+Math.round(q.y); }); d+='Z'; }); }); sperrMaskEl.setAttribute('maskUnits','userSpaceOnUse'); sperrMaskEl.setAttribute('x',vb[0]); sperrMaskEl.setAttribute('y',vb[1]); sperrMaskEl.setAttribute('width',vb[2]); sperrMaskEl.setAttribute('height',vb[3]); sperrMaskEl.innerHTML=`<rect x="${vb[0]}" y="${vb[1]}" width="${vb[2]}" height="${vb[3]}" fill="#fff"/><path d="${d}" fill="#000" fill-rule="evenodd"/>`; c.classList.add('maskiert'); }
 map.on('moveend zoomend viewreset',()=>{ if(wpbOn) sperrMaskUpdate(); });
-function wpbBuild(){ wpbLayers.forEach(l=>map.removeLayer(l)); wpbLayers.length=0; if(wpbPaket) wpbPaket.bilder.forEach(b=>{ const bb=b.bounds; wpbMaskImg(b).then(url=>{ const l=L.imageOverlay(url,[[bb.south,bb.west],[bb.north,bb.east]],{opacity:.95,interactive:false,className:'wpb-hatch'}); wpbLayers.push(l); if(wpbOn) l.addTo(map); }); }); sperrMaskUpdate(); WP_VEKTOR.forEach(v=>wpVekLoad(v).then(l=>{ if(l){ if(!wpbLayers.includes(l)) wpbLayers.push(l); if(wpbOn) l.addTo(map); } })); }
+let wpbGen=0;
+function wpbBuild(){ const gen=++wpbGen; wpbLayers.forEach(l=>map.removeLayer(l)); wpbLayers.length=0; if(wpbPaket) wpbPaket.bilder.forEach(b=>{ const bb=b.bounds; wpbMaskImg(b).then(url=>{ if(gen!==wpbGen) return; const l=L.imageOverlay(url,[[bb.south,bb.west],[bb.north,bb.east]],{opacity:.95,interactive:false,className:'wpb-hatch'}); wpbLayers.push(l); if(wpbOn) l.addTo(map); }); }); sperrMaskUpdate(); WP_VEKTOR.forEach(v=>wpVekLoad(v).then(l=>{ if(l&&gen===wpbGen){ if(!wpbLayers.includes(l)) wpbLayers.push(l); if(wpbOn) l.addTo(map); } })); }
 async function wpbLoadStored(){ try{ const p=await idb.get('wp_paket_v1'); if(p&&p.bilder) wpbPaket=p; }catch(e){} wpbBuild(); wpbInfo(); }
 $('#b-wpb').onclick=()=>{ if(!wpbPaket&&!wpbOn) toast('Live: Landkreis Osterholz. Bremerhaven, Südkreis und weitere: Bildpaket im Fenster Daten laden'); wpbOn=!wpbOn; $('#b-wpb').classList.toggle('on',wpbOn); if(wpbOn&&!wpbLayers.length) wpbBuild(); else wpbLayers.forEach(l=>wpbOn?l.addTo(map):map.removeLayer(l)); };
 $('#wpb-file').onchange=e=>{ const f=e.target.files[0]; if(!f) return; f.text().then(async t=>{ const p=JSON.parse(t); if(!p.bilder||!p.bilder.length||!p.bilder[0].png||!p.bilder[0].bounds) throw 0; wpbPaket=p; try{ await idb.set('wp_paket_v1',p); }catch(err){ toast('Speichern im Browser fehlgeschlagen: '+(err.message||err)); } wpbBuild(); wpbInfo(); toast(p.bilder.length+' Wärmeplan-Bilder geladen'); }).catch(()=>toast('Paket nicht lesbar')); e.target.value=''; };
