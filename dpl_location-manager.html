@@ -859,6 +859,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #legend .ci{width:14px;height:14px;border-radius:50%;flex:none}
   #legend img{max-width:100%;background:#fff;border-radius:8px;padding:4px;margin-top:4px}
   #legend .txt{font-weight:700;color:var(--hell);text-shadow:0 0 3px var(--navy),0 0 3px var(--navy)}
+  @media (min-width:701px) and (max-width:1400px){ #brbar{bottom:auto;top:12px} #legend{bottom:auto;top:60px;max-height:calc(100% - 150px)} } /* mittlere Breiten: Leiste sonst unter der Werkzeugleiste */
   @media (max-width:700px){ #legbtn{height:32px;font-size:12px} #legend{bottom:auto;top:52px;max-height:calc(100% - 140px)} }
   #search{display:none;position:absolute;left:50%;top:12px;transform:translateX(-50%);width:min(560px,calc(100% - 24px));z-index:960}
   #search.open{display:block}
@@ -2423,9 +2424,32 @@ function hstRender(force=false){ if(!hstOn||!hstFc) return; const z=map.getZoom(
 map.on('moveend',()=>{ clearTimeout(hstTimer); hstTimer=setTimeout(()=>hstRender(),120); });
 $('#b-hst').onclick=()=>{ hstOn=!hstOn; $('#b-hst').classList.toggle('on',hstOn); try{ localStorage.setItem('sle_lm_hst',hstOn?'1':''); }catch(e){} if(hstOn){ hstLayer.addTo(map); if(!hstFc||(hstFc.teile&&Object.keys(hstFc.teile).length<4)) hstLoad(); if(hstFc) hstRender(true); if(map.getZoom()<13) toast('Bahnhöfe Zoom 11 bis 16, Bushaltestellen ab Zoomstufe 13'); } else { map.removeLayer(hstLayer); hstRendered=''; } };
 if($('#hst-reload')) $('#hst-reload').onclick=()=>{ hstFc=null; hstLoad(true); };
+/* ---------- Bahnstrecken (OSM railway=rail/narrow_gauge ohne Nebengleise), Farbe wie Bahnhöfe, nur Zoom 11 bis 16, ohne Beschriftung ---------- */
+map.createPane('bahnPane'); map.getPane('bahnPane').style.zIndex=390; map.getPane('bahnPane').style.pointerEvents='none';
+const bahnR=L.canvas({pane:'bahnPane',padding:0.3}); const bahnLayer=L.layerGroup(); let bahnData=null, bahnBusy=false;
+const bahnSicht=()=>{ const z=map.getZoom(); return z>=11&&z<=16; };
+function bahnBuild(){ bahnLayer.clearLayers(); if(!bahnData||!bahnData.lines.length) return;
+  bahnLayer.addLayer(L.polyline(bahnData.lines,{renderer:bahnR,pane:'bahnPane',color:'#ffffff',weight:5,opacity:.9,interactive:false}));
+  bahnLayer.addLayer(L.polyline(bahnData.lines,{renderer:bahnR,pane:'bahnPane',color:HST_BAHN_FARBE,weight:3,opacity:1,interactive:false})); }
+async function bahnLoad(neu=false){ if(bahnBusy||(bahnData&&!neu)) return; bahnBusy=true;
+  try{ let d=null; if(!neu){ try{ d=await idb.get('bahn_v1_40km'); }catch(e){} }
+    if(!d){ const b=HOME.toBounds(RADIUS_M*2);
+      const j=await overpassQuery(`[out:json][timeout:90];way["railway"~"^(rail|narrow_gauge)$"][!"service"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});out geom qt;`);
+      const lines=[]; j.elements.forEach(e=>{ const u=(e.tags&&e.tags.usage)||''; if(/^(industrial|freight|military|test)$/.test(u)) return;
+        const g=(e.geometry||[]).map(p=>[+p.lat.toFixed(5),+p.lon.toFixed(5)]); if(g.length<2) return;
+        if(!g.some(p=>HOME.distanceTo(L.latLng(p[0],p[1]))<=RADIUS_M+3000)) return; lines.push(g); });
+      d={lines,loaded:new Date().toISOString()}; try{ await idb.set('bahn_v1_40km',d); }catch(e){} }
+    bahnData=d; bahnBuild(); }
+  catch(e){ toast('Bahnstrecken konnten nicht geladen werden (Overpass ausgelastet), später Einblendung erneut einschalten'); }
+  bahnBusy=false; }
+function bahnZoom(){ if(hstOn&&bahnSicht()){ bahnLayer.addTo(map); if(!bahnData) bahnLoad(); } else map.removeLayer(bahnLayer); }
+map.on('zoomend',bahnZoom);
+{ const _hstClick=$('#b-hst').onclick; $('#b-hst').onclick=e=>{ _hstClick(e); bahnZoom(); }; }
+if($('#hst-reload')){ const _r=$('#hst-reload').onclick; $('#hst-reload').onclick=e=>{ _r(e); bahnData=null; bahnLayer.clearLayers(); bahnLoad(true); }; }
+
 idb.get('hst_v1_40km').then(fc=>{ if(fc){ hstFc=fc; hstInfo(); } let on=''; try{ on=localStorage.getItem('sle_lm_hst'); }catch(e){} if(on){ $('#b-hst').click(); } }).catch(()=>{});
 const _legendHtml2=legendHtml;
-legendHtml=function(){ let h=_legendHtml2(); if(hstOn) h+='<div class="s" style="margin-top:8px"><b>Haltestellen</b></div><div class="li"><span class="ci" style="background:'+HST_BAHN_FARBE+';border:2px solid #fff;border-radius:50%"></span><span>Bahnhof, Haltepunkt (sichtbar Zoom 11 bis 16, ohne Beschriftung)</span></div><div class="li"><span class="ci" style="background:#f2d11a;border:2px solid #001a4d;border-radius:50%"></span><span>Bushaltestelle (ab Zoomstufe 13)</span></div>'; return h; };
+legendHtml=function(){ let h=_legendHtml2(); if(hstOn) h+='<div class="s" style="margin-top:8px"><b>Haltestellen</b></div><div class="li"><span class="ci" style="background:'+HST_BAHN_FARBE+';border:2px solid #fff;border-radius:50%"></span><span>Bahnhof, Haltepunkt (sichtbar Zoom 11 bis 16, ohne Beschriftung)</span></div><div class="li"><span class="sw" style="height:4px;border-radius:2px;background:'+HST_BAHN_FARBE+';border:1px solid #fff"></span><span>Bahnstrecke (sichtbar Zoom 11 bis 16)</span></div><div class="li"><span class="ci" style="background:#f2d11a;border:2px solid #001a4d;border-radius:50%"></span><span>Bushaltestelle (ab Zoomstufe 13)</span></div>'; return h; };
 
 /* ---------- ÖPNV-Route (Google Routes API, Verkehrsmittel TRANSIT) ----------
    Kachel an, auf die Karte tippen: Verbindungen vom aktuellen Standort bis zu diesem Punkt (bis zu drei Möglichkeiten).
