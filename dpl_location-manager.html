@@ -2413,7 +2413,7 @@ function hstInfo(){ const el=$('#hst-info'); if(!el) return; if(!hstFc){ el.text
 // nur Haltestellen im sichtbaren Ausschnitt zeichnen; feste Namensschilder nur, wenn wenige im Bild sind (sonst bremst die Karte)
 let hstTimer=null;
 function hstRender(force=false){ if(!hstOn||!hstFc) return; const z=map.getZoom(), b=map.getBounds().pad(0.25);
-  const sicht=hstFc.pts.filter(p=>(p.a!=='bus'||z>=13)&&(p.a!=='bahn'||!!p.n)&&b.contains([p.lat,p.lon]));
+  const sicht=hstFc.pts.filter(p=>(p.a!=='bus'||z>=13)&&(p.a!=='bahn'||(!!p.n&&z>=11&&z<=16))&&b.contains([p.lat,p.lon])); // Bahnhöfe nur Zoom 11 bis 16
   const key=z+'|'+b.toBBoxString().split(',').map(x=>(+x).toFixed(3)).join(','); if(!force&&key===hstRendered) return; hstRendered=key; hstLayer.clearLayers();
   const nBahn=sicht.filter(p=>p.a==='bahn'&&p.n).length, nAlle=sicht.filter(p=>p.n).length;
   sicht.forEach(p=>{ const bahn=p.a==='bahn';
@@ -2425,7 +2425,7 @@ $('#b-hst').onclick=()=>{ hstOn=!hstOn; $('#b-hst').classList.toggle('on',hstOn)
 if($('#hst-reload')) $('#hst-reload').onclick=()=>{ hstFc=null; hstLoad(true); };
 idb.get('hst_v1_40km').then(fc=>{ if(fc){ hstFc=fc; hstInfo(); } let on=''; try{ on=localStorage.getItem('sle_lm_hst'); }catch(e){} if(on){ $('#b-hst').click(); } }).catch(()=>{});
 const _legendHtml2=legendHtml;
-legendHtml=function(){ let h=_legendHtml2(); if(hstOn) h+='<div class="s" style="margin-top:8px"><b>Haltestellen</b></div><div class="li"><span class="ci" style="background:'+HST_BAHN_FARBE+';border:2px solid #fff;border-radius:50%"></span><span>Bahnhof, Haltepunkt (Name ab Zoomstufe 14)</span></div><div class="li"><span class="ci" style="background:#f2d11a;border:2px solid #001a4d;border-radius:50%"></span><span>Bushaltestelle (ab Zoomstufe 13)</span></div>'; return h; };
+legendHtml=function(){ let h=_legendHtml2(); if(hstOn) h+='<div class="s" style="margin-top:8px"><b>Haltestellen</b></div><div class="li"><span class="ci" style="background:'+HST_BAHN_FARBE+';border:2px solid #fff;border-radius:50%"></span><span>Bahnhof, Haltepunkt (sichtbar Zoom 11 bis 16, Name ab 14)</span></div><div class="li"><span class="ci" style="background:#f2d11a;border:2px solid #001a4d;border-radius:50%"></span><span>Bushaltestelle (ab Zoomstufe 13)</span></div>'; return h; };
 
 /* ---------- ÖPNV-Route (Google Routes API, Verkehrsmittel TRANSIT) ----------
    Kachel an, auf die Karte tippen: Verbindungen vom aktuellen Standort bis zu diesem Punkt (bis zu drei Möglichkeiten).
