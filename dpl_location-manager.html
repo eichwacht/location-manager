@@ -2387,6 +2387,7 @@ dlfImport(); klRender(); kDatenInfo(); geoQueue(); if(gReady()) setTimeout(()=>c
 
 /* ---------- Haltestellen Bus und Bahn (OpenStreetMap), Einblendung im Menü Einblendungen ---------- */
 // Einmal laden (Overpass), danach aus dem Speicher (IndexedDB hst_v1_40km). Bahnhöfe und Haltepunkte immer, Bushaltestellen ab Zoom 13.
+const HST_BAHN_FARBE='#00b4d8'; // Bahnhöfe türkis wie die Street-View-Linien
 let hstOn=false, hstFc=null, hstBusy=false; const hstR=L.canvas({padding:0.3}); const hstLayer=L.layerGroup(); let hstRendered='';
 // in vier Teilen laden (kleinere Abfragen, Overpass ist oft ausgelastet); fertige Teile bleiben gespeichert, fehlende lädt der nächste Versuch
 const name0=t=>t.name||t['name:de']||'';
@@ -2416,7 +2417,7 @@ function hstRender(force=false){ if(!hstOn||!hstFc) return; const z=map.getZoom(
   const key=z+'|'+b.toBBoxString().split(',').map(x=>(+x).toFixed(3)).join(','); if(!force&&key===hstRendered) return; hstRendered=key; hstLayer.clearLayers();
   const nBahn=sicht.filter(p=>p.a==='bahn'&&p.n).length, nAlle=sicht.filter(p=>p.n).length;
   sicht.forEach(p=>{ const bahn=p.a==='bahn';
-    const m=L.circleMarker([p.lat,p.lon],{renderer:hstR,radius:bahn?(z>=13?8:6):(z>=16?6:4),color:bahn?'#ffffff':'#001a4d',weight:bahn?3:1.5,fillColor:bahn?'#ec0016':p.a==='tram'?'#1a73e8':'#f2d11a',fillOpacity:1,interactive:true});
+    const m=L.circleMarker([p.lat,p.lon],{renderer:hstR,radius:bahn?(z>=13?8:6):(z>=16?6:4),color:bahn?'#ffffff':'#001a4d',weight:bahn?3:1.5,fillColor:bahn?HST_BAHN_FARBE:p.a==='tram'?'#1a73e8':'#f2d11a',fillOpacity:1,interactive:true});
     const fest=!!p.n&&((bahn&&z>=14&&nBahn<=25)||(z>=17&&nAlle<=40));
     m.bindTooltip(esc(p.n||(bahn?'Bahnhof':'Haltestelle')),{className:'ttip',direction:'top',permanent:fest}); hstLayer.addLayer(m); }); }
 map.on('moveend',()=>{ clearTimeout(hstTimer); hstTimer=setTimeout(()=>hstRender(),120); });
@@ -2424,7 +2425,7 @@ $('#b-hst').onclick=()=>{ hstOn=!hstOn; $('#b-hst').classList.toggle('on',hstOn)
 if($('#hst-reload')) $('#hst-reload').onclick=()=>{ hstFc=null; hstLoad(true); };
 idb.get('hst_v1_40km').then(fc=>{ if(fc){ hstFc=fc; hstInfo(); } let on=''; try{ on=localStorage.getItem('sle_lm_hst'); }catch(e){} if(on){ $('#b-hst').click(); } }).catch(()=>{});
 const _legendHtml2=legendHtml;
-legendHtml=function(){ let h=_legendHtml2(); if(hstOn) h+='<div class="s" style="margin-top:8px"><b>Haltestellen</b></div><div class="li"><span class="ci" style="background:#ec0016;border:2px solid #fff;border-radius:50%"></span><span>Bahnhof, Haltepunkt (Name ab Zoomstufe 14)</span></div><div class="li"><span class="ci" style="background:#f2d11a;border:2px solid #001a4d;border-radius:50%"></span><span>Bushaltestelle (ab Zoomstufe 13)</span></div>'; return h; };
+legendHtml=function(){ let h=_legendHtml2(); if(hstOn) h+='<div class="s" style="margin-top:8px"><b>Haltestellen</b></div><div class="li"><span class="ci" style="background:'+HST_BAHN_FARBE+';border:2px solid #fff;border-radius:50%"></span><span>Bahnhof, Haltepunkt (Name ab Zoomstufe 14)</span></div><div class="li"><span class="ci" style="background:#f2d11a;border:2px solid #001a4d;border-radius:50%"></span><span>Bushaltestelle (ab Zoomstufe 13)</span></div>'; return h; };
 
 /* ---------- ÖPNV-Route (Google Routes API, Verkehrsmittel TRANSIT) ----------
    Kachel an, auf die Karte tippen: Verbindungen vom aktuellen Standort bis zu diesem Punkt (bis zu drei Möglichkeiten).
