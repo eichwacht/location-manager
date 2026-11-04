@@ -1305,28 +1305,29 @@ const ortLayer=L.layerGroup();
 let namenOn=false, ortPts=null;
 $('#b-namen').onclick=()=>{ namenOn=!namenOn; $('#b-namen').classList.toggle('on',namenOn); if(namenOn){ ortLayer.addTo(map); ortRender(); } else map.removeLayer(ortLayer); };
 const ORT_STUFE={city:1,town:1,village:2,suburb:2,quarter:3,neighbourhood:3,hamlet:3};
-const ORT_MINZOOM={1:9,2:12,3:13};
+const ORT_MINZOOM={1:10,2:12,3:13}; const ORT_GROSS_EW=20000; // Zoom 9: nur Großstadt/Mittelstadt (city oder ab 20.000 Einwohner), Zoom 10: alle Städte
+const ortMinZoom=o=>o.s===1&&o.g?9:ORT_MINZOOM[o.s];
 const ortShown=new Map(); let ortTimer=null;
 function ortRender(){
   if(!namenOn||!ortPts) return;
   const z=map.getZoom(), b=map.getBounds().pad(0.2), keep=new Set();
-  ortPts.forEach((o,i)=>{ if(z<ORT_MINZOOM[o.s]||!b.contains([o.lat,o.lon])) return; keep.add(i);
+  ortPts.forEach((o,i)=>{ if(z<ortMinZoom(o)||!b.contains([o.lat,o.lon])) return; keep.add(i);
     if(!ortShown.has(i)){ const m=L.marker([o.lat,o.lon],{opacity:0,interactive:false,keyboard:false}).bindTooltip(o.n,{permanent:true,direction:'center',className:'ort-label ort-'+o.s}); ortShown.set(i,m); m.addTo(ortLayer); } });
   ortShown.forEach((m,i)=>{ if(!keep.has(i)){ ortLayer.removeLayer(m); ortShown.delete(i); } });
 }
 map.on('moveend',()=>{ clearTimeout(ortTimer); ortTimer=setTimeout(ortRender,80); });
 async function orteLoad(){
   try{
-    let pts=null; try{ pts=await idb.get('orte_v1_40km'); }catch(e){}
+    let pts=null; try{ pts=await idb.get('orte_v2_40km'); }catch(e){}
     if(!pts){
       const b=HOME.toBounds(RADIUS_M*2);
       const q=`[out:json][timeout:90];node["place"~"^(city|town|village|suburb|quarter|neighbourhood|hamlet)$"]["name"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()});out body;`;
       const j=await overpassQuery(q);
-      pts=j.elements.filter(e=>e.tags&&e.tags.name&&HOME.distanceTo(L.latLng(e.lat,e.lon))<=RADIUS_M).map(e=>({lat:e.lat,lon:e.lon,n:e.tags.name,s:ORT_STUFE[e.tags.place]||3}));
-      try{ await idb.set('orte_v1_40km',pts); }catch(e){}
+      pts=j.elements.filter(e=>e.tags&&e.tags.name&&HOME.distanceTo(L.latLng(e.lat,e.lon))<=RADIUS_M).map(e=>({lat:e.lat,lon:e.lon,n:e.tags.name,s:ORT_STUFE[e.tags.place]||3,g:e.tags.place==='city'||(parseInt(String(e.tags.population||'').replace(/\D/g,''))||0)>=ORT_GROSS_EW}));
+      try{ await idb.set('orte_v2_40km',pts); }catch(e){}
     }
     ortPts=pts; ortRender();
-  }catch(e){ if(namenOn) toast('Ortsnamen konnten nicht geladen werden'); }
+  }catch(e){ try{ const alt=await idb.get('orte_v1_40km'); if(alt){ ortPts=alt; ortRender(); return; } }catch(_){} if(namenOn) toast('Ortsnamen konnten nicht geladen werden'); }
 }
 orteLoad();
 
@@ -1959,7 +1960,7 @@ function legendHtml(){
   h+=`<div class="li"><span class="sw" style="border-color:var(--navy);background:transparent;outline:2px solid #001a4d"></span><span>PLZ-Gebiete mit Nummer${plzOn?'':' · aus'}</span></div>`;
   h+=`<div class="li"><span class="txt" style="font-style:italic;font-size:12px;width:22px">Str.</span><span>Straßennamen ab Zoom 15${adrOn?'':' · aus'}</span></div>`;
   h+=`<div class="li"><span class="txt" style="color:#9fd41f;font-size:11px;width:22px">12</span><span>Hausnummern ab Zoom 16${adrOn?'':' · aus'}</span></div>`;
-  h+=`<div class="li"><span class="txt" style="font-size:12px;width:22px">Ort</span><span>Ortsnamen: Stadt ab Zoom 9, Ortsteil ab 12, Quartier ab 13${namenOn?'':' · aus'}</span></div>`;
+  h+=`<div class="li"><span class="txt" style="font-size:12px;width:22px">Ort</span><span>Ortsnamen: größere Städte (ab 20.000 Einwohner) ab Zoom 9, alle Städte ab 10, Ortsteil ab 12, Quartier ab 13${namenOn?'':' · aus'}</span></div>`;
   h+='<h4>Punkte</h4>';
   h+=`<div class="li"><span class="ci" style="background:#9fd41f;border:2px solid #001a4d"></span><span>Suchtreffer</span></div>`;
   h+=`<div class="li"><span class="ci" style="background:#7a9a1a;border:2px solid #001a4d"></span><span>Mein Standort</span></div>`;
