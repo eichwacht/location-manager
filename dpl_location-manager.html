@@ -821,6 +821,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #b-sv{touch-action:none}
   #svghost{position:fixed;left:0;top:0;width:44px;height:44px;margin:-22px 0 0 -22px;pointer-events:none;z-index:3000;display:none;border-radius:50%;background:var(--gruen);border:2px solid var(--navy);box-shadow:0 4px 14px rgba(0,0,0,.4)}
   #svghost svg{width:26px;height:26px;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);fill:none;stroke:var(--navy);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  #svghost.sv-ok{background:#ffd400;border-color:#1a73e8;box-shadow:0 0 0 4px rgba(26,115,232,.55),0 4px 14px rgba(0,0,0,.4)}
+  #svghost.sv-no{opacity:.75;filter:grayscale(.6)}
   #svghost::after{content:'';position:absolute;left:50%;top:100%;width:2px;height:10px;background:var(--navy);transform:translateX(-50%)}
   body.svdrag,body.svdrag *{cursor:grabbing !important}
   #zoombadge{position:absolute;left:12px;bottom:calc(12px + var(--sa-b));z-index:900;background:var(--navy);border:2px solid var(--hell);border-radius:10px;color:var(--gruen);font-weight:700;font-size:13px;padding:0 10px;height:36px;display:flex;align-items:center;gap:6px}
@@ -1807,15 +1809,34 @@ function gmLoad(){ return new Promise(res=>{ if(GM.state==='bereit') return res(
   const sc=document.createElement('script'); sc.async=true; sc.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(GM.key)+'&v=weekly&loading=async&language=de&region=DE&callback=__gmReady';
   sc.onerror=()=>{ GM.state='fehler'; gmInfo(); GM.cb.splice(0).forEach(f=>f(false)); }; document.head.appendChild(sc); }); }
 function gmShow(on){ if(!GM.el) return; if(on){ const ce=map.getCenter(); GM.map.setOptions({center:{lat:ce.lat,lng:ce.lng},zoom:map.getZoom()}); GM.el.style.visibility='visible'; GM.el.style.opacity='1'; } else { GM.el.style.opacity='0'; setTimeout(()=>{ if(GM.el.style.opacity==='0') GM.el.style.visibility='hidden'; },200); } }
-// Street View: Figur aus der Kachel auf die Karte ziehen, loslassen öffnet den Ort; kurzes Tippen öffnet die Kartenmitte
+// Street View: Figur aus der Kachel auf die Karte ziehen. Mit Google-Schlüssel wie bei Google: über einer blauen Linie wird die Figur aktiv,
+// loslassen öffnet das Panorama; ohne Street View an der Stelle springt die Figur zurück und es öffnet sich nichts. Kurzes Tippen: Kartenmitte.
+function svPanoUrl(p){ return 'https://www.google.com/maps/@?api=1&map_action=pano&pano='+encodeURIComponent(p.pano)+'&viewpoint='+p.lat.toFixed(6)+','+p.lng.toFixed(6); }
+let svSvc=null;
+async function svCheck(lat,lng){ if(GM.state!=='bereit') return null; try{ if(!google.maps.StreetViewService&&google.maps.importLibrary) await google.maps.importLibrary('streetView'); if(!svSvc) svSvc=new google.maps.StreetViewService();
+  const mpp=156543.03*Math.cos(lat*Math.PI/180)/2**map.getZoom(); const radius=Math.min(200,Math.max(15,Math.round(18*mpp)));
+  return await new Promise(res=>svSvc.getPanorama({location:{lat,lng},radius,preference:google.maps.StreetViewPreference?google.maps.StreetViewPreference.NEAREST:'nearest',sources:[google.maps.StreetViewSource?google.maps.StreetViewSource.OUTDOOR:'outdoor']},(d,st)=>{ if(st==='OK'&&d&&d.location&&d.location.latLng) res({ok:true,pano:d.location.pano,lat:d.location.latLng.lat(),lng:d.location.latLng.lng()}); else res({ok:false}); })); }catch(e){ return null; } }
+function svOpen(url,w){ if(w&&!w.closed&&w.location){ try{ w.opener=null; w.location.href=url; return true; }catch(e){} } const n=window.open(url,'_blank'); if(n){ try{ n.opener=null; }catch(e){} return true; } toast('Pop-up blockiert: bitte für diese Seite erlauben'); return false; }
 (function(){ const tile=$('#b-sv'), ghost=$('#svghost'); let drag=null;
-  tile.addEventListener('pointerdown',e=>{ if(e.button&&e.button!==0) return; drag={id:e.pointerId,x0:e.clientX,y0:e.clientY,moved:false}; tile.setPointerCapture(e.pointerId); e.preventDefault(); });
-  tile.addEventListener('pointermove',e=>{ if(!drag||e.pointerId!==drag.id) return; if(!drag.moved&&Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)<8) return; drag.moved=true; document.body.classList.add('svdrag'); if(GM.key) gmLoad().then(ok=>{ if(ok&&drag) gmShow(true); }); else if(!GM.hinweis){ GM.hinweis=1; toast('Blaue Street-View-Linien: Google-Maps-Schlüssel im Fenster Daten eintragen'); } ghost.style.display='block'; ghost.style.left=e.clientX+'px'; ghost.style.top=e.clientY+'px'; });
-  const end=e=>{ if(!drag||e.pointerId!==drag.id) return; const d=drag; drag=null; ghost.style.display='none'; document.body.classList.remove('svdrag'); gmShow(false); menuOpen(false);
-    if(!d.moved){ const c=map.getCenter(); window.open(svUrl(c.lat,c.lng),'_blank','noopener'); return; }
-    const r=$('#map').getBoundingClientRect(); const x=e.clientX-r.left, y=e.clientY-r.top; if(x<0||y<0||x>r.width||y>r.height){ toast('Auf die Karte ziehen'); return; }
-    const ll=map.containerPointToLatLng([x,y]); const w=window.open(svUrl(ll.lat,ll.lng),'_blank','noopener'); if(!w) toast('Pop-up blockiert: bitte für diese Seite erlauben'); };
-  tile.addEventListener('pointerup',end); tile.addEventListener('pointercancel',e=>{ if(drag&&e.pointerId===drag.id){ drag=null; ghost.style.display='none'; document.body.classList.remove('svdrag'); gmShow(false); } });
+  const pt=e=>{ const r=$('#map').getBoundingClientRect(); const x=e.clientX-r.left, y=e.clientY-r.top; return (x<0||y<0||x>r.width||y>r.height)?null:{x,y,ll:map.containerPointToLatLng([x,y])}; };
+  // während des Ziehens laufend prüfen (höchstens alle 150 ms), damit beim Loslassen das Ergebnis schon da ist
+  const probe=(d)=>{ if(GM.state!=='bereit'||d.busy||!d.last) return; const q=d.last; if(d.chk&&Math.hypot(d.chk.x-q.x,d.chk.y-q.y)<6){ if(d.wait){ const w=d.wait; d.wait=null; w(); } return; } d.busy=true;
+    svCheck(q.ll.lat,q.ll.lng).then(r=>{ d.busy=false; if(drag!==d&&!d.wait) return; d.chk={x:q.x,y:q.y,r}; ghost.classList.toggle('sv-ok',!!(r&&r.ok)); ghost.classList.toggle('sv-no',!!(r&&!r.ok)); if(d.wait){ if(Math.hypot(q.x-d.last.x,q.y-d.last.y)>=6){ probe(d); return; } const w=d.wait; d.wait=null; w(); } else setTimeout(()=>{ if(drag===d) probe(d); },150); }); };
+  tile.addEventListener('pointerdown',e=>{ if(e.button&&e.button!==0) return; drag={id:e.pointerId,x0:e.clientX,y0:e.clientY,moved:false,last:null,chk:null,busy:false}; tile.setPointerCapture(e.pointerId); e.preventDefault(); });
+  tile.addEventListener('pointermove',e=>{ if(!drag||e.pointerId!==drag.id) return; if(!drag.moved&&Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)<8) return;
+    if(!drag.moved){ drag.moved=true; document.body.classList.add('svdrag'); const d=drag; if(GM.key) gmLoad().then(ok=>{ if(ok&&drag===d){ gmShow(true); probe(d); } }); else if(!GM.hinweis){ GM.hinweis=1; toast('Blaue Street-View-Linien: Google-Maps-Schlüssel im Fenster Daten eintragen'); } }
+    ghost.style.display='block'; ghost.style.left=e.clientX+'px'; ghost.style.top=e.clientY+'px'; drag.last=pt(e); if(!drag.last){ ghost.classList.remove('sv-ok','sv-no'); } else probe(drag); });
+  const reset=()=>{ ghost.style.display='none'; ghost.classList.remove('sv-ok','sv-no'); document.body.classList.remove('svdrag'); gmShow(false); };
+  const end=e=>{ if(!drag||e.pointerId!==drag.id) return; const d=drag; drag=null; menuOpen(false);
+    if(!d.moved){ reset(); const c=map.getCenter(); if(GM.state==='bereit'){ const w=window.open('about:blank','_blank'); svCheck(c.lat,c.lng).then(r=>{ if(r&&!r.ok){ if(w) w.close(); toast('An der Kartenmitte gibt es kein Street View'); } else svOpen(r&&r.ok?svPanoUrl(r):svUrl(c.lat,c.lng),w); }); } else svOpen(svUrl(c.lat,c.lng)); return; }
+    const p=pt(e); if(!p){ reset(); toast('Auf die Karte ziehen'); return; }
+    if(GM.state!=='bereit'){ reset(); svOpen(svUrl(p.ll.lat,p.ll.lng)); return; }
+    const near=d.chk&&Math.hypot(d.chk.x-p.x,d.chk.y-p.y)<10&&d.chk.r;
+    if(near){ reset(); if(near.ok) svOpen(svPanoUrl(near)); return; }
+    // Ergebnis für die Loslass-Stelle noch offen: Fenster gleich öffnen (sonst blockiert der Browser) und danach füllen oder schließen
+    const w=window.open('about:blank','_blank'); d.last=p; d.chk=null; const fertig=()=>{ reset(); const r=d.chk?d.chk.r:null; if(r&&r.ok) svOpen(svPanoUrl(r),w); else if(!r) svOpen(svUrl(p.ll.lat,p.ll.lng),w); else { if(w) w.close(); } }; // Prüfung fehlgeschlagen: wie früher öffnen
+    if(d.busy) d.wait=fertig; else { d.wait=fertig; probe(d); } };
+  tile.addEventListener('pointerup',end); tile.addEventListener('pointercancel',e=>{ if(drag&&e.pointerId===drag.id){ drag=null; reset(); } });
   tile.onclick=e=>e.preventDefault();
 })();
 
@@ -1895,7 +1916,7 @@ function legendHtml(){
   h+='<h4>Punkte</h4>';
   h+=`<div class="li"><span class="ci" style="background:#9fd41f;border:2px solid #001a4d"></span><span>Suchtreffer</span></div>`;
   h+=`<div class="li"><span class="ci" style="background:#7a9a1a;border:2px solid #001a4d"></span><span>Mein Standort</span></div>`;
-  h+=`<div class="li"><span class="ci" style="background:#7a9a1a;border:2px solid #001a4d;border-radius:50%"></span><span>Street View: Figur auf die Karte ziehen; beim Ziehen zeigen blaue Linien, wo Street View verfügbar ist (Google)</span></div>`;
+  h+=`<div class="li"><span class="ci" style="background:#7a9a1a;border:2px solid #001a4d;border-radius:50%"></span><span>Street View: Figur auf eine blaue Linie ziehen und loslassen; ohne Street View springt sie zurück</span></div>`;
   if(wpbOn){ h+='<h4>Wärmeplanung</h4>'+Object.values(WP_KLASSEN).filter(x=>!x.alias).map(x=>`<div class="li">${klSwatch(x.farbe)}<span>${esc(x.text)}</span></div>`).join('');
     const kom=WP_VEKTOR.map(v=>v.titel.split(':')[0]+' (live)').concat(wpbPaket?wpbPaket.bilder.map(b=>b.titel.split(':')[0]):[]);
     h+='<div class="s" style="opacity:.8">Grundregel im ganzen 40-km-Kreis: Hausnummern ohne Planfläche gelten als dezentral (Wärmenetz unwirtschaftlich), im Umkreis von 800 m um Biogasanlagen als unklar. Kommunen mit Plan: '+esc(kom.join(', '))+'. Quellen und Stand je Kommune im Fenster Daten. Strategische Planung ohne Rechtswirkung.</div>'; }
