@@ -844,9 +844,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #svghost.sv-no{opacity:.75;filter:grayscale(.6)}
   #svghost::after{content:'';position:absolute;left:50%;top:100%;width:2px;height:10px;background:var(--navy);transform:translateX(-50%)}
   body.svdrag,body.svdrag *{cursor:grabbing !important}
-  #zoombadge{position:absolute;left:12px;bottom:calc(12px + var(--sa-b));z-index:900;background:var(--navy);border:2px solid var(--hell);border-radius:10px;color:var(--gruen);font-weight:700;font-size:13px;padding:0 10px;height:36px;display:flex;align-items:center;gap:6px}
+  #brbar{position:absolute;right:12px;bottom:calc(12px + var(--sa-b));z-index:900;display:flex;align-items:center;gap:8px}
+  #zoombadge{background:var(--navy);border:2px solid var(--hell);border-radius:10px;color:var(--gruen);font-weight:700;font-size:13px;padding:0 10px;height:36px;display:flex;align-items:center;gap:6px}
   #zoombadge small{color:var(--hell);font-weight:600;font-size:11px}
-  #legbtn{position:absolute;right:12px;bottom:calc(12px + var(--sa-b));z-index:900;background:var(--navy);border:2px solid var(--hell);border-radius:10px;color:var(--gruen);font-weight:700;font-size:13px;padding:0 10px;height:36px;display:flex;align-items:center;gap:6px}
+  #legbtn{background:var(--navy);border:2px solid var(--hell);border-radius:10px;color:var(--gruen);font-weight:700;font-size:13px;padding:0 10px;height:36px;display:flex;align-items:center;gap:6px}
   #legbtn svg{width:16px;height:16px;stroke:var(--gruen);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
   #legbtn.on{background:var(--gruen);color:var(--navy)} #legbtn.on svg{stroke:var(--navy)}
   #legend{display:none;position:absolute;right:12px;bottom:calc(56px + var(--sa-b));z-index:905;width:min(340px,calc(100% - 24px));max-height:calc(100% - 80px);overflow:auto;background:var(--navy);border:2px solid var(--hell);border-radius:12px;padding:12px 14px;color:var(--hell);font-size:13px}
@@ -858,7 +859,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #legend .ci{width:14px;height:14px;border-radius:50%;flex:none}
   #legend img{max-width:100%;background:#fff;border-radius:8px;padding:4px;margin-top:4px}
   #legend .txt{font-weight:700;color:var(--hell);text-shadow:0 0 3px var(--navy),0 0 3px var(--navy)}
-  @media (max-width:700px){ #legbtn{bottom:auto;top:12px;height:32px;font-size:12px} #legend{bottom:auto;top:52px;max-height:calc(100% - 140px)} }
+  @media (max-width:700px){ #legbtn{height:32px;font-size:12px} #legend{bottom:auto;top:52px;max-height:calc(100% - 140px)} }
   #search{display:none;position:absolute;left:50%;top:12px;transform:translateX(-50%);width:min(560px,calc(100% - 24px));z-index:960}
   #search.open{display:block}
   #search .box{display:flex;gap:6px;background:var(--navy);border:2px solid var(--hell);border-radius:12px;padding:6px}
@@ -871,7 +872,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #sug .it .n b{display:block;font-size:15px}
   #sug .it .n span{font-size:12px;opacity:.85}
   #sug .it button{flex:none}
-  @media (max-width:700px){ #zoombadge{bottom:auto;top:12px;height:32px;font-size:12px} #search{top:8px} }
+  @media (max-width:700px){ #brbar{bottom:auto;top:12px} #zoombadge{height:32px;font-size:12px} #search{top:8px} }
   @media (max-width:700px){
     .win{left:0;top:0;transform:none;width:100%;height:calc(100% - 72px - var(--sa-b));border-radius:0 0 12px 12px;border-width:0 0 2px 0}
     .win .body{padding:12px 12px 24px}
@@ -895,8 +896,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <!-- Karte, immer offen -->
     <section id="v-map">
       <div id="map"></div>
-      <div id="zoombadge" aria-label="Zoomstufe: ab 15 Straßennamen, ab 16 Hausnummern">Z <span id="zoomval">12</span><small id="zoomhint"></small></div>
-      <button id="legbtn" aria-label="Legende"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="6" height="6" rx="1"/><rect x="3" y="14" width="6" height="6" rx="1"/><path d="M12 7h9M12 17h9"/></svg>Legende</button>
+      <div id="brbar"><div id="zoombadge" aria-label="Zoomstufe: ab 15 Straßennamen, ab 16 Hausnummern">Z <span id="zoomval">12</span><small id="zoomhint"></small></div>
+      <button id="legbtn" aria-label="Legende"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="6" height="6" rx="1"/><rect x="3" y="14" width="6" height="6" rx="1"/><path d="M12 7h9M12 17h9"/></svg>Legende</button></div>
       <div id="legend"></div>
       <div id="rtpanel"><div class="row sb" style="margin:0 0 6px"><strong>ÖPNV-Verbindungen</strong><button class="w-close" id="rt-close" aria-label="Schließen">✕</button></div><div id="rt-body"></div><div class="s" style="margin-top:6px;opacity:.75">Fahrplandaten: Google. Tippen auf die Karte wählt ein neues Ziel.</div></div>
       <div id="search"><div class="box"><input id="q" placeholder="Adresse oder Ort, z. B. Hafenstraße 12 Bremerhaven" autocomplete="off"><button class="w-close" id="q-close" aria-label="Schließen">✕</button></div><div id="sug"></div></div>
