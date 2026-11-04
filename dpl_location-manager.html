@@ -2418,7 +2418,8 @@ async function rtSearch(){ if(!RT.dest) return; if(!GM.key){ rtPanel('<div class
   const body={origin:{location:{latLng:{latitude:o.lat,longitude:o.lng}}},destination:{location:{latLng:{latitude:RT.dest.lat,longitude:RT.dest.lng}}},travelMode:'TRANSIT',computeAlternativeRoutes:true,languageCode:'de',units:'METRIC'};
   if(RT.zeit) body.departureTime=new Date(RT.zeit).toISOString();
   const mask='routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.viewport,routes.legs.steps.travelMode,routes.legs.steps.distanceMeters,routes.legs.steps.staticDuration,routes.legs.steps.polyline.encodedPolyline,routes.legs.steps.transitDetails';
-  try{ const r=await fetch('https://routes.googleapis.com/directions/v2:computeRoutes',{method:'POST',headers:{'Content-Type':'application/json','X-Goog-Api-Key':GM.key,'X-Goog-FieldMask':mask},body:JSON.stringify(body)});
+  try{ // volle Seitenadresse als Referer mitschicken (der Schlüssel ist auf …/location-manager/* beschränkt; der Browser schickt sonst nur die Domain)
+    const r=await fetch('https://routes.googleapis.com/directions/v2:computeRoutes',{method:'POST',referrerPolicy:'no-referrer-when-downgrade',headers:{'Content-Type':'application/json','X-Goog-Api-Key':GM.key,'X-Goog-FieldMask':mask},body:JSON.stringify(body)});
     const j=await r.json().catch(()=>({}));
     if(!r.ok){ const m=(j.error&&j.error.message)||('HTTP '+r.status); const tip=/not been used|disabled|SERVICE_DISABLED/i.test(m)?'Die Routes API ist für das Projekt noch nicht eingeschaltet.':/referer|API_KEY|blocked|not authorized/i.test(m)?'Der Schlüssel ist für die Routes API nicht freigegeben.':''; rtPanel(`<div class="s warn">Google hat die Suche abgelehnt. ${tip}</div><div class="s">${esc(m.slice(0,240))}</div>`+rtGmLink()); return; }
     RT.routes=(j.routes||[]).filter(x=>x.legs&&x.legs.length); RT.sel=0;
