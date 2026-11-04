@@ -732,6 +732,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #layerbox,#ovbox,#kbox{position:relative}
   #rtpanel{display:none;position:absolute;left:50%;top:12px;transform:translateX(-50%);width:min(560px,calc(100% - 24px));max-height:46%;overflow:auto;background:var(--navy);border:2px solid var(--hell);border-radius:12px;z-index:945;padding:10px 12px;color:var(--hell);-webkit-overflow-scrolling:touch}
   #rtpanel input{background:var(--hell);color:var(--navy)}
+  #gpanel{display:none;position:absolute;right:12px;top:12px;bottom:calc(64px + var(--sa-b));width:min(460px,calc(100% - 24px));background:var(--navy);border:2px solid var(--hell);border-radius:12px;z-index:946;padding:10px 12px;color:var(--hell);flex-direction:column}
+  #gpanel.open{display:flex} #gp-frame{flex:1;width:100%;border:0;border-radius:8px;background:#e8eaed;min-height:200px}
+  @media (max-width:700px){ #gpanel{left:8px;right:8px;width:auto;top:auto;bottom:calc(64px + var(--sa-b));height:62%} }
   .rt-opt{border:1px solid rgba(242,242,242,.35);border-radius:10px;padding:8px 10px;margin:8px 0;cursor:pointer}
   .rt-opt.on{border:2px solid var(--gruen)}
   .rt-lines{margin-top:4px;display:flex;gap:4px;flex-wrap:wrap}
@@ -900,6 +903,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
       <div id="brbar"><div id="zoombadge" aria-label="Zoomstufe">Z <span id="zoomval">12</span></div>
       <button id="legbtn" aria-label="Legende"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="6" height="6" rx="1"/><rect x="3" y="14" width="6" height="6" rx="1"/><path d="M12 7h9M12 17h9"/></svg>Legende</button></div>
       <div id="legend"></div>
+      <div id="gpanel" role="dialog" aria-label="Adresse in Google Maps"><div class="row sb" style="margin:0 0 8px;gap:8px"><strong id="gp-title" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></strong><a id="gp-ext" class="w-close" target="_blank" rel="noopener" aria-label="In Google Maps öffnen" style="text-decoration:none;width:auto;padding:0 10px;font-size:13px">Google Maps</a><button class="w-close" id="gp-close" aria-label="Schließen">✕</button></div><iframe id="gp-frame" referrerpolicy="no-referrer-when-downgrade" loading="lazy" allowfullscreen></iframe></div>
       <div id="rtpanel"><div class="row sb" style="margin:0 0 6px"><strong>ÖPNV-Verbindungen</strong><button class="w-close" id="rt-close" aria-label="Schließen">✕</button></div><div id="rt-body"></div><div class="s" style="margin-top:6px;opacity:.75">Fahrplandaten: Google. Tippen auf die Karte wählt ein neues Ziel.</div></div>
       <div id="search"><div class="box"><input id="q" placeholder="Adresse oder Ort, z. B. Hafenstraße 12 Bremerhaven" autocomplete="off"><button class="w-close" id="q-close" aria-label="Schließen">✕</button></div><div id="sug"></div></div>
       <div class="bottombar">
@@ -1348,7 +1352,7 @@ function parseAdr(j){ // Overpass-Antwort -> {streets,hn}
   j.elements.forEach(e=>{
     if(e.type==='way'&&e.tags&&e.tags.highway&&e.tags.name&&e.geometry){ streets.push({n:e.tags.name,id:e.id,g:e.geometry.map(p=>[+p.lat.toFixed(6),+p.lon.toFixed(6)])}); return; }
     const c=e.center||(e.lat!=null?{lat:e.lat,lon:e.lon}:null);
-    if(c&&e.tags&&e.tags['addr:housenumber']) hn.push({lat:+c.lat.toFixed(6),lon:+c.lon.toFixed(6),n:e.tags['addr:housenumber'],id:e.type[0]+e.id,p:e.tags['addr:postcode']||'',c:e.tags['addr:city']||'',s:e.tags['addr:suburb']||''}); });
+    if(c&&e.tags&&e.tags['addr:housenumber']) hn.push({lat:+c.lat.toFixed(6),lon:+c.lon.toFixed(6),n:e.tags['addr:housenumber'],id:e.type[0]+e.id,st:e.tags['addr:street']||e.tags['addr:place']||'',p:e.tags['addr:postcode']||'',c:e.tags['addr:city']||'',s:e.tags['addr:suburb']||''}); });
   return {streets,hn};
 }
 function splitTo14(d){ // Daten einer großen Kachel -> Map(key14 -> {streets,hn}); ein Weg landet in jeder Kachel, in der er Punkte hat
@@ -1376,7 +1380,7 @@ const AdrCanvas=L.Layer.extend({
     const m=this._map, size=m.getSize(), dpr=window.devicePixelRatio||1, c=this._c, ctx=this._ctx;
     const tl=m.containerPointToLayerPoint([0,0]); L.DomUtil.setPosition(c,tl);
     if(c.width!==size.x*dpr||c.height!==size.y*dpr){ c.width=size.x*dpr; c.height=size.y*dpr; c.style.width=size.x+'px'; c.style.height=size.y+'px'; }
-    ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,size.x,size.y);
+    ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,size.x,size.y); this._hits=[];
     const z=m.getZoom(); if(z<ADR_MINZOOM) return;
     const b=m.getBounds(), tiles=tilesIn(b,14), data=tiles.map(t=>adrCache.get(adrKey(t))).filter(Boolean);
     if(!data.length) return;
@@ -1387,7 +1391,7 @@ const AdrCanvas=L.Layer.extend({
     if(z>=HN_MINZOOM){
       ctx.font='700 11px system-ui,sans-serif'; ctx.lineWidth=3; ctx.strokeStyle='#001a4d'; ctx.fillStyle='#9fd41f';
       const pad=b.pad(0.05); const seen=new Set();
-      data.forEach(d=>d.hn.forEach(h=>{ if(seen.has(h.id)||!pad.contains([h.lat,h.lon])) return; seen.add(h.id); const p=P([h.lat,h.lon]); const w=ctx.measureText(h.n).width+4; if(!free(p.x-w/2,p.y-7,w,14)) return; ctx.strokeText(h.n,p.x,p.y); ctx.fillText(h.n,p.x,p.y); }));
+      data.forEach(d=>d.hn.forEach(h=>{ if(seen.has(h.id)||!pad.contains([h.lat,h.lon])) return; seen.add(h.id); const p=P([h.lat,h.lon]); const w=ctx.measureText(h.n).width+4; if(!free(p.x-w/2,p.y-7,w,14)) return; ctx.strokeText(h.n,p.x,p.y); ctx.fillText(h.n,p.x,p.y); this._hits.push({x:p.x,y:p.y,w,h,d}); }));
     }
     // Straßennamen: je Name ein Label am Weg mit den meisten sichtbaren Punkten, entlang der Straße gedreht; ab Zoom 18 alle 400 px wiederholen
     const best=new Map();
@@ -1418,6 +1422,28 @@ async function adrRender(){ // fehlende Kacheln laden (erst Speicher, dann Netz)
   if(adrAgain){ adrAgain=false; adrRender(); }
 }
 map.on('moveend',()=>{ clearTimeout(adrTimer); adrTimer=setTimeout(adrRender,150); });
+
+/* Hausnummer anklicken: Google-Adresse im Location Manager (Maps Embed API, kostenlos) */
+function adrText(hit){ const h=hit.h, d=hit.d; let st=h.st||'';
+  if(!st&&d&&d.streets){ let best=1e9; d.streets.forEach(w=>w.g.forEach(q=>{ const dd=(q[0]-h.lat)**2+((q[1]-h.lon)*0.6)**2; if(dd<best){ best=dd; st=w.n; } })); }
+  let ort=h.c||''; if(!ort&&typeof ortPts!=='undefined'&&ortPts){ let best=1e12; ortPts.forEach(o=>{ if(o.s!==1) return; const dd=L.latLng(o.lat,o.lon).distanceTo([h.lat,h.lon]); if(dd<best){ best=dd; ort=o.n; } }); }
+  return [(st+' '+h.n).trim(), [h.p,ort].filter(Boolean).join(' ')].filter(Boolean).join(', '); }
+function gpOpen(hit){ const t=adrText(hit), h=hit.h; $('#gp-title').textContent=t;
+  $('#gp-ext').href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(t);
+  if(!GM.key){ toast('Kein Google-Schlüssel eingetragen (Fenster Daten)'); return; }
+  $('#gp-frame').src='https://www.google.com/maps/embed/v1/place?key='+encodeURIComponent(GM.key)+'&q='+encodeURIComponent(t)+'&center='+h.lat+','+h.lon+'&zoom=18&maptype=satellite&language=de&region=DE';
+  $('#gpanel').classList.add('open'); }
+function gpClose(){ $('#gpanel').classList.remove('open'); $('#gp-frame').src='about:blank'; }
+$('#gp-close').onclick=gpClose;
+(function(){ const box=$('#map'); let down=null;
+  box.addEventListener('pointerdown',e=>{ down={x:e.clientX,y:e.clientY}; },true);
+  box.addEventListener('click',e=>{ if(!adrOn||map.getZoom()<HN_MINZOOM||!adrCanvas._hits||!adrCanvas._hits.length) return;
+    if(down&&Math.hypot(e.clientX-down.x,e.clientY-down.y)>6) return; if(window.RT&&RT.on) return; if(map.pm&&(map.pm.globalDrawModeEnabled()||(map.pm.globalEditModeEnabled&&map.pm.globalEditModeEnabled()))) return;
+    const r=box.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top; let hit=null, bd=1e9;
+    adrCanvas._hits.forEach(q=>{ if(Math.abs(x-q.x)<=q.w/2+4&&Math.abs(y-q.y)<=11){ const dd=Math.hypot(x-q.x,y-q.y); if(dd<bd){ bd=dd; hit=q; } } });
+    if(!hit) return; e.stopPropagation(); e.preventDefault(); gpOpen(hit); },true);
+  box.addEventListener('mousemove',e=>{ if(!adrOn||map.getZoom()<HN_MINZOOM||!adrCanvas._hits){ if(box.style.cursor) box.style.cursor=''; return; } const r=box.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
+    const on=adrCanvas._hits.some(q=>Math.abs(x-q.x)<=q.w/2+4&&Math.abs(y-q.y)<=11); const c=on?'pointer':''; if(box.style.cursor!==c) box.style.cursor=c; }); })();
 
 // Gesamtlauf über das Leadgebiet
 const bulk={running:false,ctrl:null,meta:null};
@@ -1999,7 +2025,7 @@ let openWin=null;
 function show(v){ if(v===openWin) v=null; openWin=v; if(v){ closePanel(); menuOpen(false); legendOpen(false); if($('#search').classList.contains('open')) searchOpen(false); } $$('.bottombar [data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v)); $$('.win[id^="v-"]').forEach(x=>x.classList.toggle('active',x.id==='v-'+v)); if(v==='dash') renderDash(); if(v==='plan') renderPlan(); if(v==='set') renderData(); }
 $$('.bottombar [data-view]').forEach(b=>b.onclick=()=>show(b.dataset.view));
 $$('.win [data-close]').forEach(b=>b.onclick=()=>show(null));
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if($('#legend').classList.contains('open')) legendOpen(false); else if($('#search').classList.contains('open')) searchOpen(false); else if(map.pm.globalDrawModeEnabled()) map.pm.disableDraw(); else if(layerMenu.classList.contains('open')||ovMenu.classList.contains('open')||kMenu.classList.contains('open')) menuOpen(false); else if($('#panel').classList.contains('active')) closePanel(); else show(null); } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if($('#gpanel').classList.contains('open')) gpClose(); else if($('#legend').classList.contains('open')) legendOpen(false); else if($('#search').classList.contains('open')) searchOpen(false); else if(map.pm.globalDrawModeEnabled()) map.pm.disableDraw(); else if(layerMenu.classList.contains('open')||ovMenu.classList.contains('open')||kMenu.classList.contains('open')) menuOpen(false); else if($('#panel').classList.contains('active')) closePanel(); else show(null); } });
 // Wischen nach unten auf der Kopfzeile schließt das Fenster
 $$('.win header').forEach(h=>{ let y0=null; h.addEventListener('touchstart',e=>{ y0=e.touches[0].clientY; },{passive:true}); h.addEventListener('touchend',e=>{ if(y0!=null&&e.changedTouches[0].clientY-y0>70){ if(h.closest('#panel')) closePanel(); else show(null); } y0=null; },{passive:true}); });
 /* ===================== v36 · Kunden, Termine, Kennzahlen (Verkaufsprozess Fassung 5, 04.11.2026) =====================
