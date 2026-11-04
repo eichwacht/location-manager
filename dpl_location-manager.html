@@ -685,6 +685,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   main{position:absolute;inset:0;overflow:hidden}
   #v-map{position:absolute;inset:0;display:block}
   #map{position:absolute;inset:0;background:var(--navy)}
+  #gmov{position:absolute;inset:0;z-index:650;pointer-events:none;visibility:hidden;opacity:0;transition:opacity .15s}
   .leaflet-container{font:inherit}
   .leaflet-container,.leaflet-grab,.leaflet-dragging .leaflet-grab,.leaflet-dragging .leaflet-container,.leaflet-interactive,.leaflet-pm-draggable,.leaflet-container.geoman-draw-cursor,.leaflet-container.geoman-draw-cursor *{cursor:default !important}
   *,*::before,*::after{cursor:default !important}
@@ -980,6 +981,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
           <div class="s" id="g-log"></div>
         </div>
         <div class="card">
+          <strong>Google Street View (blaue Linien)</strong>
+          <div class="s" id="gm-info"></div>
+          <label for="gm-key">Google-Maps-Schlüssel (Cloud Console, Projekt SLE Location Manager, Anmeldedaten, „Maps Platform API Key“, einmalig je Gerät)</label><input id="gm-key" class="mono" placeholder="AIza…" autocomplete="off">
+          <div class="s">Der Schlüssel bleibt nur in diesem Browser. Er ist auf diese Seite und die Maps JavaScript API beschränkt. Beim Ziehen der Street-View-Figur zeigt die Seite kurz Googles Satellitenkarte mit den blauen Linien; je Seitenaufruf zählt Google eine Kartenladung (10.000 im Monat frei, Stand 02.11.2026).</div>
+        </div>
+        <div class="card">
           <strong>Gebietsfarben</strong>
           <div class="s"><span class="dot" style="background:#9fd41f"></span> hellgrün: noch nie ein Einsatz &nbsp; <span class="dot" style="background:#4f6e0c"></span> dunkelgrün: frei, mindestens ein Einsatz gewesen &nbsp; <span class="dot" style="background:#f28c28"></span> orange: heute eingeplant &nbsp; <span class="dot" style="background:#f2d11a"></span> gelb: für einen künftigen Tag geplant &nbsp; <span class="dot" style="background:#d42a2a"></span> rot: Sperrfrist 60 Tage nach dem letzten Einsatz</div>
         </div>
@@ -1006,7 +1013,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
           <strong>Gebäude (für die Wärmeplanflächen)</strong>
           <div class="s" id="g-info">Noch nicht geladen.</div>
           <div class="bar" id="g-bar" style="display:none"><i></i></div>
-          <div class="s" id="g-status"></div>
+          <div class="s" id="geb-status"></div>
           <div class="row"><button class="btn primary" id="g-load">Gebäude laden</button><button class="btn" id="g-stop" style="display:none">Anhalten</button></div>
           <div class="s">OSM-Gebäudeumrisse (Mittelpunkte) für den 40-km-Kreis, ergänzt die Hausnummern, damit auch Häuser ohne Hausnummer eingefärbt werden. Einmal laden, etwa 20 bis 40 Minuten, am besten im WLAN; die Seite kann offen bleiben, beim Schließen geht es später an derselben Stelle weiter.</div>
         </div>
@@ -1527,13 +1534,13 @@ async function gebInfo(){ const m=await gebMeta(), all=bulkTiles(), n=Object.key
   $('#g-load').textContent=n>=all.length?'Vollständig geladen':(n?'Weiter laden':'Gebäude laden'); $('#g-load').style.display=geb.running?'none':''; $('#g-load').disabled=n>=all.length; $('#g-stop').style.display=geb.running?'':'none'; $('#g-bar').style.display=geb.running?'':'none'; }
 async function gebRun(){
   if(geb.running) return; geb.running=true; geb.ctrl=new AbortController(); const m=await gebMeta(); const all=bulkTiles(); const todo=all.filter(t=>!m.done[gebKey(t)]); let i=0; await gebInfo();
-  try{ for(const t of todo){ if(geb.ctrl.signal.aborted) break; const tk=Date.now(); const tick=setInterval(()=>{ $('#g-status').textContent=`Kachel ${i+1} von ${todo.length} wird geladen … ${Math.round((Date.now()-tk)/1000)} s`; },1000); $('#g-bar i').style.width=(100*i/todo.length).toFixed(1)+'%';
-      const [s_,w_,n_,e_]=tileBounds(t); const bb=`(${s_},${w_},${n_},${e_})`; let j; try{ j=await overpassQuery(`[out:json][timeout:180];way["building"]${bb};out center;`,geb.ctrl.signal); }catch(err){ clearInterval(tick); if(geb.ctrl.signal.aborted) throw err; $('#g-status').textContent='Kachel übersprungen ('+(err.message||err)+'), weiter …'; await new Promise(r=>setTimeout(r,3000)); i++; continue; } clearInterval(tick);
+  try{ for(const t of todo){ if(geb.ctrl.signal.aborted) break; const tk=Date.now(); const tick=setInterval(()=>{ $('#geb-status').textContent=`Kachel ${i+1} von ${todo.length} wird geladen … ${Math.round((Date.now()-tk)/1000)} s`; },1000); $('#g-bar i').style.width=(100*i/todo.length).toFixed(1)+'%';
+      const [s_,w_,n_,e_]=tileBounds(t); const bb=`(${s_},${w_},${n_},${e_})`; let j; try{ j=await overpassQuery(`[out:json][timeout:180];way["building"]${bb};out center;`,geb.ctrl.signal); }catch(err){ clearInterval(tick); if(geb.ctrl.signal.aborted) throw err; $('#geb-status').textContent='Kachel übersprungen ('+(err.message||err)+'), weiter …'; await new Promise(r=>setTimeout(r,3000)); i++; continue; } clearInterval(tick);
       const parts=new Map(); let cnt=0; j.elements.forEach(e=>{ const ce=e.center; if(!ce) return; const k=gebKey({z:14,x:tx(ce.lon,14),y:ty(ce.lat,14)}); if(!parts.has(k)) parts.set(k,[]); parts.get(k).push(+ce.lat.toFixed(6),+ce.lon.toFixed(6)); cnt++; });
       const [S,W,N,E]=tileBounds(t); tilesIn(L.latLngBounds([S,W],[N,E]).pad(-0.001),14).forEach(st=>{ const k=gebKey(st); if(!parts.has(k)) parts.set(k,[]); });
       const pairs=[...parts.entries()]; pairs.forEach(([k,v])=>gebCache.set(k,v)); m.n=(m.n||0)+cnt; m.done[gebKey(t)]=new Date().toISOString(); if(Object.keys(m.done).length>=all.length) m.finished=new Date().toISOString(); await idb.setMany([...pairs,['geb_bulk_v1',m]]); i++; await gebInfo(); }
-    $('#g-status').textContent=i>=todo.length?'Fertig.':'Angehalten.'; if(i>0&&(wpbPaket||wpbOn)) wpbBuild();
-  }catch(e){ $('#g-status').textContent=geb.ctrl.signal.aborted?'Angehalten.':'Fehler: '+(e.message||e); }
+    $('#geb-status').textContent=i>=todo.length?'Fertig.':'Angehalten.'; if(i>0&&(wpbPaket||wpbOn)) wpbBuild();
+  }catch(e){ $('#geb-status').textContent=geb.ctrl.signal.aborted?'Angehalten.':'Fehler: '+(e.message||e); }
   finally{ geb.running=false; await gebInfo(); }
 }
 $('#g-load').onclick=()=>gebRun(); $('#g-stop').onclick=()=>{ if(geb.ctrl) geb.ctrl.abort(); }; gebInfo();
@@ -1740,15 +1747,28 @@ async function qSearch(){
 function goTo(h){ if(qMarker) map.removeLayer(qMarker); qMarker=L.circleMarker([h.lat,h.lng],{radius:9,color:'#001a4d',weight:2,fillColor:'#7a9a1a',fillOpacity:1}).addTo(map).bindTooltip(h.t+(h.sub?', '+h.sub:''),{className:'ttip'}); map.setView([h.lat,h.lng],18); $('#sug').innerHTML=''; $('#q').value=h.t+(h.sub?', '+h.sub:''); $('#q').blur(); }
 $('#q').addEventListener('input',()=>{ clearTimeout(qTimer); qTimer=setTimeout(qSearch,250); });
 $('#q').addEventListener('keydown',e=>{ if(e.key==='Enter'){ const f=$('#sug .it[data-i]'); if(f) f.click(); } if(e.key==='Escape') searchOpen(false); });
+/* Street-View-Abdeckung: beim Ziehen der Figur blendet die Seite Googles Satellitenkarte mit den blauen Street-View-Linien ein
+   (Google Maps JavaScript API, StreetViewCoverageLayer; Google verlangt die eigene Karte unter den Linien). Eine Karte je Seitenaufruf. */
+const GM={key:localStorage.getItem('sle_lm_gmkey')||'',state:'aus',map:null,el:null,cb:[]};
+function gmInfo(){ const el=$('#gm-info'); if(!el) return; el.textContent=!GM.key?'Kein Schlüssel eingetragen. Ohne Schlüssel funktioniert die Figur weiter, nur ohne blaue Linien.':GM.state==='fehler'?'Google hat den Schlüssel abgelehnt (falscher Schlüssel, Seite nicht freigegeben oder Testzeitraum abgelaufen).':GM.state==='bereit'?'Schlüssel aktiv. Die blauen Linien erscheinen beim Ziehen der Figur.':'Schlüssel eingetragen. Die Karte wird beim ersten Ziehen der Figur geladen.'; }
+$('#gm-key').value=GM.key; $('#gm-key').onchange=()=>{ GM.key=$('#gm-key').value.trim(); try{ localStorage.setItem('sle_lm_gmkey',GM.key); }catch(e){} GM.state=GM.map?'bereit':'aus'; gmInfo(); }; gmInfo();
+window.gm_authFailure=()=>{ GM.state='fehler'; gmInfo(); if(GM.el) GM.el.style.visibility='hidden'; toast('Google-Maps-Schlüssel abgelehnt (Fenster Daten)'); };
+function gmLoad(){ return new Promise(res=>{ if(GM.state==='bereit') return res(true); if(GM.state==='fehler'||!GM.key) return res(false); GM.cb.push(res); if(GM.state==='laedt') return; GM.state='laedt';
+  window.__gmReady=()=>{ try{ GM.el=document.createElement('div'); GM.el.id='gmov'; $('#map').appendChild(GM.el);
+      GM.map=new google.maps.Map(GM.el,{center:{lat:map.getCenter().lat,lng:map.getCenter().lng},zoom:map.getZoom(),mapTypeId:'satellite',tilt:0,disableDefaultUI:true,gestureHandling:'none',keyboardShortcuts:false,clickableIcons:false,isFractionalZoomEnabled:true});
+      new google.maps.StreetViewCoverageLayer().setMap(GM.map); GM.state='bereit'; }catch(e){ GM.state='fehler'; } gmInfo(); GM.cb.splice(0).forEach(f=>f(GM.state==='bereit')); };
+  const sc=document.createElement('script'); sc.async=true; sc.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(GM.key)+'&v=weekly&loading=async&language=de&region=DE&callback=__gmReady';
+  sc.onerror=()=>{ GM.state='fehler'; gmInfo(); GM.cb.splice(0).forEach(f=>f(false)); }; document.head.appendChild(sc); }); }
+function gmShow(on){ if(!GM.el) return; if(on){ const ce=map.getCenter(); GM.map.setOptions({center:{lat:ce.lat,lng:ce.lng},zoom:map.getZoom()}); GM.el.style.visibility='visible'; GM.el.style.opacity='1'; } else { GM.el.style.opacity='0'; setTimeout(()=>{ if(GM.el.style.opacity==='0') GM.el.style.visibility='hidden'; },200); } }
 // Street View: Figur aus der Kachel auf die Karte ziehen, loslassen öffnet den Ort; kurzes Tippen öffnet die Kartenmitte
 (function(){ const tile=$('#b-sv'), ghost=$('#svghost'); let drag=null;
   tile.addEventListener('pointerdown',e=>{ if(e.button&&e.button!==0) return; drag={id:e.pointerId,x0:e.clientX,y0:e.clientY,moved:false}; tile.setPointerCapture(e.pointerId); e.preventDefault(); });
-  tile.addEventListener('pointermove',e=>{ if(!drag||e.pointerId!==drag.id) return; if(!drag.moved&&Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)<8) return; drag.moved=true; document.body.classList.add('svdrag'); ghost.style.display='block'; ghost.style.left=e.clientX+'px'; ghost.style.top=e.clientY+'px'; });
-  const end=e=>{ if(!drag||e.pointerId!==drag.id) return; const d=drag; drag=null; ghost.style.display='none'; document.body.classList.remove('svdrag'); menuOpen(false);
+  tile.addEventListener('pointermove',e=>{ if(!drag||e.pointerId!==drag.id) return; if(!drag.moved&&Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)<8) return; drag.moved=true; document.body.classList.add('svdrag'); if(GM.key) gmLoad().then(ok=>{ if(ok&&drag) gmShow(true); }); else if(!GM.hinweis){ GM.hinweis=1; toast('Blaue Street-View-Linien: Google-Maps-Schlüssel im Fenster Daten eintragen'); } ghost.style.display='block'; ghost.style.left=e.clientX+'px'; ghost.style.top=e.clientY+'px'; });
+  const end=e=>{ if(!drag||e.pointerId!==drag.id) return; const d=drag; drag=null; ghost.style.display='none'; document.body.classList.remove('svdrag'); gmShow(false); menuOpen(false);
     if(!d.moved){ const c=map.getCenter(); window.open(svUrl(c.lat,c.lng),'_blank','noopener'); return; }
     const r=$('#map').getBoundingClientRect(); const x=e.clientX-r.left, y=e.clientY-r.top; if(x<0||y<0||x>r.width||y>r.height){ toast('Auf die Karte ziehen'); return; }
     const ll=map.containerPointToLatLng([x,y]); const w=window.open(svUrl(ll.lat,ll.lng),'_blank','noopener'); if(!w) toast('Pop-up blockiert: bitte für diese Seite erlauben'); };
-  tile.addEventListener('pointerup',end); tile.addEventListener('pointercancel',e=>{ if(drag&&e.pointerId===drag.id){ drag=null; ghost.style.display='none'; document.body.classList.remove('svdrag'); } });
+  tile.addEventListener('pointerup',end); tile.addEventListener('pointercancel',e=>{ if(drag&&e.pointerId===drag.id){ drag=null; ghost.style.display='none'; document.body.classList.remove('svdrag'); gmShow(false); } });
   tile.onclick=e=>e.preventDefault();
 })();
 
@@ -1828,7 +1848,7 @@ function legendHtml(){
   h+='<h4>Punkte</h4>';
   h+=`<div class="li"><span class="ci" style="background:#9fd41f;border:2px solid #001a4d"></span><span>Suchtreffer</span></div>`;
   h+=`<div class="li"><span class="ci" style="background:#7a9a1a;border:2px solid #001a4d"></span><span>Mein Standort</span></div>`;
-  h+=`<div class="li"><span class="ci" style="background:#7a9a1a;border:2px solid #001a4d;border-radius:50%"></span><span>Street View: Figur auf die Karte ziehen</span></div>`;
+  h+=`<div class="li"><span class="ci" style="background:#7a9a1a;border:2px solid #001a4d;border-radius:50%"></span><span>Street View: Figur auf die Karte ziehen; beim Ziehen zeigen blaue Linien, wo Street View verfügbar ist (Google)</span></div>`;
   if(wpbOn){ h+='<h4>Wärmeplanung</h4>'+Object.values(WP_KLASSEN).filter(x=>!x.alias).map(x=>`<div class="li">${klSwatch(x.farbe)}<span>${esc(x.text)}</span></div>`).join('');
     const kom=WP_VEKTOR.map(v=>v.titel.split(':')[0]+' (live)').concat(wpbPaket?wpbPaket.bilder.map(b=>b.titel.split(':')[0]):[]);
     h+='<div class="s" style="opacity:.8">Grundregel im ganzen 40-km-Kreis: Hausnummern ohne Planfläche gelten als dezentral (Wärmenetz unwirtschaftlich), im Umkreis von 800 m um Biogasanlagen als unklar. Kommunen mit Plan: '+esc(kom.join(', '))+'. Quellen und Stand je Kommune im Fenster Daten. Strategische Planung ohne Rechtswirkung.</div>'; }
