@@ -2374,6 +2374,7 @@ dlfImport(); klRender(); kDatenInfo(); geoQueue(); if(gReady()) setTimeout(()=>c
 // Einmal laden (Overpass), danach aus dem Speicher (IndexedDB hst_v1_40km). Bahnhöfe und Haltepunkte immer, Bushaltestellen ab Zoom 13.
 let hstOn=false, hstFc=null, hstBusy=false; const hstR=L.canvas({padding:0.3}); const hstLayer=L.layerGroup(); let hstRendered='';
 // in vier Teilen laden (kleinere Abfragen, Overpass ist oft ausgelastet); fertige Teile bleiben gespeichert, fehlende lädt der nächste Versuch
+const name0=t=>t.name||t['name:de']||'';
 async function hstLoad(force=false){ if(hstBusy) return; hstBusy=true; $('#b-hst').classList.add('busy');
   try{ let fc=null; try{ fc=await idb.get('hst_v1_40km'); }catch(e){} if(force||!fc) fc={loaded:'',pts:[],teile:{}}; if(!fc.teile) fc.teile={0:1,1:1,2:1,3:1};
     const bd=HOME.toBounds(RADIUS_M*2), S=bd.getSouth(), W=bd.getWest(), N=bd.getNorth(), E=bd.getEast(), mla=(S+N)/2, mlo=(W+E)/2;
@@ -2383,7 +2384,7 @@ async function hstLoad(force=false){ if(hstBusy) return; hstBusy=true; $('#b-hst
       try{ const j=await overpassQuery(`[out:json][timeout:120];(node["highway"="bus_stop"]${bb};node["public_transport"="platform"]["bus"="yes"]${bb};nwr["railway"~"^(station|halt|tram_stop)$"]${bb};);out center tags;`);
         const seen=new Set(fc.pts.map(p=>p.a+'|'+p.n+'|'+p.lat.toFixed(4)+','+p.lon.toFixed(4)));
         j.elements.forEach(e=>{ const ce=e.center||(e.lat!=null?{lat:e.lat,lon:e.lon}:null); if(!ce||HOME.distanceTo([ce.lat,ce.lon])>RADIUS_M) return; const t=e.tags||{};
-          const art=/^(station|halt)$/.test(t.railway||'')?'bahn':t.railway==='tram_stop'?'tram':'bus'; if(art==='bahn'&&/^(disused|abandoned|tourism)$/.test(t.usage||'')) return;
+          const art=/^(station|halt)$/.test(t.railway||'')?'bahn':t.railway==='tram_stop'?'tram':'bus'; if(art==='bahn'&&(!name0(t)||/^(disused|abandoned|tourism|industrial|military|test)$/.test(t.usage||'')||t['railway:preserved']==='yes'||/narrow_gauge|light_rail|miniature/.test(t.station||'')||t.tourism)) return;
           const name=t.name||t['name:de']||''; const k=art+'|'+name+'|'+ce.lat.toFixed(4)+','+ce.lon.toFixed(4); if(seen.has(k)) return; seen.add(k);
           fc.pts.push({a:art,n:name,lat:+ce.lat.toFixed(6),lon:+ce.lon.toFixed(6),o:t.operator||t.network||''}); });
         fc.teile[i]=1; fc.loaded=new Date().toISOString(); try{ await idb.set('hst_v1_40km',fc); }catch(e){} hstFc=fc; hstRender(true); }
@@ -2396,7 +2397,7 @@ function hstInfo(){ const el=$('#hst-info'); if(!el) return; if(!hstFc){ el.text
 // nur Haltestellen im sichtbaren Ausschnitt zeichnen; feste Namensschilder nur, wenn wenige im Bild sind (sonst bremst die Karte)
 let hstTimer=null;
 function hstRender(force=false){ if(!hstOn||!hstFc) return; const z=map.getZoom(), b=map.getBounds().pad(0.25);
-  const sicht=hstFc.pts.filter(p=>(p.a!=='bus'||z>=13)&&b.contains([p.lat,p.lon]));
+  const sicht=hstFc.pts.filter(p=>(p.a!=='bus'||z>=13)&&(p.a!=='bahn'||!!p.n)&&b.contains([p.lat,p.lon]));
   const key=z+'|'+b.toBBoxString().split(',').map(x=>(+x).toFixed(3)).join(','); if(!force&&key===hstRendered) return; hstRendered=key; hstLayer.clearLayers();
   const nBahn=sicht.filter(p=>p.a==='bahn'&&p.n).length, nAlle=sicht.filter(p=>p.n).length;
   sicht.forEach(p=>{ const bahn=p.a==='bahn';
