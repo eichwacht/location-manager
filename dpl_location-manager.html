@@ -895,7 +895,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <!-- Karte, immer offen -->
     <section id="v-map">
       <div id="map"></div>
-      <div id="zoombadge" aria-label="Zoomstufe: ab 16 Straßennamen, ab 17 Hausnummern">Z <span id="zoomval">12</span><small id="zoomhint"></small></div>
+      <div id="zoombadge" aria-label="Zoomstufe: ab 15 Straßennamen, ab 16 Hausnummern">Z <span id="zoomval">12</span><small id="zoomhint"></small></div>
       <button id="legbtn" aria-label="Legende"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="6" height="6" rx="1"/><rect x="3" y="14" width="6" height="6" rx="1"/><path d="M12 7h9M12 17h9"/></svg>Legende</button>
       <div id="legend"></div>
       <div id="rtpanel"><div class="row sb" style="margin:0 0 6px"><strong>ÖPNV-Verbindungen</strong><button class="w-close" id="rt-close" aria-label="Schließen">✕</button></div><div id="rt-body"></div><div class="s" style="margin-top:6px;opacity:.75">Fahrplandaten: Google. Tippen auf die Karte wählt ein neues Ziel.</div></div>
@@ -1334,7 +1334,7 @@ orteLoad();
    Quelle 1: einmaliger Gesamtlauf über das Leadgebiet (Fenster Daten), Kacheln der Zoomstufe 11, aufgeteilt in Kacheln der Zoomstufe 14.
    Quelle 2: Nachladen je Ausschnitt, wenn eine Kachel fehlt (außerhalb des Gebiets).
    Zeichnen auf einer Canvas-Ebene: eine Zeichenfläche statt tausend Elemente. */
-const ADR_MINZOOM=16, HN_MINZOOM=17;
+const ADR_MINZOOM=15, HN_MINZOOM=16;
 let adrOn=false, adrTimer=null, adrBusy=false, adrAgain=false; const adrCache=new Map();
 const tx=(lon,z)=>Math.floor((lon+180)/360*2**z), ty=(lat,z)=>Math.floor((1-Math.log(Math.tan(lat*Math.PI/180)+1/Math.cos(lat*Math.PI/180))/Math.PI)/2*2**z);
 function tileBounds(t){ const n=2**t.z; const lon=x=>x/n*360-180; const lat=y=>Math.atan(Math.sinh(Math.PI*(1-2*y/n)))*180/Math.PI; return [lat(t.y+1),lon(t.x),lat(t.y),lon(t.x+1)]; }
@@ -1400,7 +1400,7 @@ const AdrCanvas=L.Layer.extend({
   }
 });
 const adrCanvas=new AdrCanvas();
-$('#b-adr').onclick=()=>{ adrOn=!adrOn; $('#b-adr').classList.toggle('on',adrOn); if(adrOn){ adrCanvas.addTo(map); if(map.getZoom()<ADR_MINZOOM) toast('Näher heranzoomen: Straßennamen ab Zoom 16, Hausnummern ab 17'); adrRender(); } else { map.removeLayer(adrCanvas); } };
+$('#b-adr').onclick=()=>{ adrOn=!adrOn; $('#b-adr').classList.toggle('on',adrOn); if(adrOn){ adrCanvas.addTo(map); if(map.getZoom()<ADR_MINZOOM) toast('Näher heranzoomen: Straßennamen ab Zoom 15, Hausnummern ab 16'); adrRender(); } else { map.removeLayer(adrCanvas); } };
 async function adrRender(){ // fehlende Kacheln laden (erst Speicher, dann Netz), danach zeichnen
   if(!adrOn||map.getZoom()<ADR_MINZOOM) return;
   if(adrBusy){ adrAgain=true; return; } adrBusy=true; $('#b-adr').classList.add('busy');
@@ -1956,8 +1956,8 @@ function legendHtml(){
   h+='<h4>Einblendungen</h4>';
   h+=`<div class="li"><span class="sw" style="border-color:#d42a2a;background:#8b0000;border-color:#8b0000"></span><span>Sperrzonen: Industrie, Gewerbe, Hafen, Flughafen, Militär, Bahn (OSM)${sperrOn?'':' · aus'}</span></div>`;
   h+=`<div class="li"><span class="sw" style="border-color:var(--navy);background:transparent;outline:2px solid #001a4d"></span><span>PLZ-Gebiete mit Nummer${plzOn?'':' · aus'}</span></div>`;
-  h+=`<div class="li"><span class="txt" style="font-style:italic;font-size:12px;width:22px">Str.</span><span>Straßennamen ab Zoom 16${adrOn?'':' · aus'}</span></div>`;
-  h+=`<div class="li"><span class="txt" style="color:#9fd41f;font-size:11px;width:22px">12</span><span>Hausnummern ab Zoom 17${adrOn?'':' · aus'}</span></div>`;
+  h+=`<div class="li"><span class="txt" style="font-style:italic;font-size:12px;width:22px">Str.</span><span>Straßennamen ab Zoom 15${adrOn?'':' · aus'}</span></div>`;
+  h+=`<div class="li"><span class="txt" style="color:#9fd41f;font-size:11px;width:22px">12</span><span>Hausnummern ab Zoom 16${adrOn?'':' · aus'}</span></div>`;
   h+=`<div class="li"><span class="txt" style="font-size:12px;width:22px">Ort</span><span>Ortsnamen: Stadt ab Zoom 9, Ortsteil ab 12, Quartier ab 13${namenOn?'':' · aus'}</span></div>`;
   h+='<h4>Punkte</h4>';
   h+=`<div class="li"><span class="ci" style="background:#9fd41f;border:2px solid #001a4d"></span><span>Suchtreffer</span></div>`;
