@@ -685,6 +685,21 @@ svg.leaflet-image-layer.leaflet-interactive path {
   main{position:absolute;inset:0;overflow:hidden}
   #v-map{position:absolute;inset:0;display:block}
   #map{position:absolute;inset:0;background:var(--navy)}
+  .seg.tabs{display:flex;flex-wrap:wrap;margin:0 0 12px}
+  .slot{border-left:4px solid var(--hell);padding:7px 9px;margin:6px 0;border-radius:6px;background:rgba(242,242,242,.07);line-height:1.45}
+  .slot.frei{border-left-color:#33B679}.slot.chc{border-left-color:#E87373}.slot.csc{border-left-color:#E24C4C}.slot.d2d{border-left-color:#F6744B}.slot.anders{border-left-color:#616161}
+  .slot[data-lead]{cursor:pointer}.slot .btn{margin-left:6px}
+  .s.warn{color:#f2d11a}
+  .krow{display:flex;gap:10px;align-items:flex-start;padding:10px 6px;border-bottom:1px solid rgba(242,242,242,.25);cursor:pointer}
+  .krow .dot{margin-top:5px}.krow .kt{flex:1;min-width:0}
+  .late{color:#ff8a80;font-weight:700}.due{color:#f2d11a;font-weight:700}
+  .tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  tr.grau td{opacity:.6}
+  #v-lead .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  label.chk{display:flex;gap:8px;align-items:center;margin-top:8px;font-weight:500}
+  label.chk input{width:auto;flex:none}
+  details summary{cursor:pointer;margin:8px 0}
+  table.kw td,table.kw th{padding:5px 6px;white-space:nowrap}
   #gmov{position:absolute;inset:0;z-index:650;pointer-events:none;visibility:hidden;opacity:0;transition:opacity .15s}
   .leaflet-container{font:inherit}
   .leaflet-container,.leaflet-grab,.leaflet-dragging .leaflet-grab,.leaflet-dragging .leaflet-container,.leaflet-interactive,.leaflet-pm-draggable,.leaflet-container.geoman-draw-cursor,.leaflet-container.geoman-draw-cursor *{cursor:default !important}
@@ -877,6 +892,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
               <button class="lt" id="b-wp"><svg viewBox="0 0 24 24"><path d="M12 3c2 3 5 5 5 9a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3 1-6 1-8z"/></svg><span id="wp-txt">Wärmeplan Bremen</span></button>
               <button class="lt" id="b-wpb"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/><circle cx="16" cy="9" r="1.5"/></svg><span id="wpb-txt">Wärmeplan Bilder</span></button>
               <button class="lt rot" id="b-sperr"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9l6-6M3 15L15 3M3 21L21 3M9 21l12-12M15 21l6-6"/></svg>Sperrzonen</button>
+              <button class="lt kunde" id="b-klead"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Leads</button>
+              <button class="lt kunde" id="b-kchc"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M8 12h8M12 8v8"/></svg>Potenzialanalysen</button>
+              <button class="lt kunde" id="b-kcsc"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>Festpreisgespräche</button>
+              <button class="lt kunde" id="b-kccw"><svg viewBox="0 0 24 24"><path d="M5 12l4 4 10-10"/></svg>Abschlüsse</button>
             </div>
           </div>
         </div>
@@ -937,6 +956,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
             <div><label for="s-doors">Türen</label><div class="num"><button type="button" data-step="-10" data-for="s-doors">−</button><input type="number" min="0" id="s-doors" value="0" inputmode="numeric"><button type="button" data-step="10" data-for="s-doors">+</button></div></div>
             <div><label for="s-hours">Stunden</label><div class="num"><button type="button" data-step="-0.5" data-for="s-hours">−</button><input type="number" min="0" step="0.5" id="s-hours" value="0" inputmode="decimal"><button type="button" data-step="0.5" data-for="s-hours">+</button></div></div>
           </div>
+          <div class="grid3">
+            <div style="grid-column:span 2"><label>Bewertung der Location</label><div class="chips" id="s-rating"><button type="button" class="chip" data-r="1">1</button><button type="button" class="chip" data-r="2">2</button><button type="button" class="chip" data-r="3">3</button><button type="button" class="chip" data-r="4">4</button><button type="button" class="chip" data-r="5">5</button></div></div>
+            <div><label for="s-back">Wiederkommen</label><select id="s-back"><option value="">offen</option><option value="ja">ja</option><option value="nein">nein</option></select></div>
+          </div>
           <label>Personen</label><div class="chips" id="s-persons"></div>
           <label for="s-note">Notiz (keine Personendaten)</label><textarea id="s-note" placeholder="z. B. Neubaugebiet, viele Ölheizungen, abends besser"></textarea>
           <div class="row" style="margin-top:10px"><button class="btn primary" id="s-save">Speichern</button><button class="btn" id="s-cancel">Abbrechen</button></div>
@@ -949,17 +972,28 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <section class="win" id="v-dash">
       <header><h2><span class="t">Dashboard</span><span class="sub">abgeschlossene Einsätze</span></h2><div class="seg" id="d-range"><button data-r="woche">Woche</button><button data-r="monat" class="on">Monat</button><button data-r="jahr">Jahr</button><button data-r="gesamt">Gesamt</button></div><button class="w-close" data-close title="Schließen">✕</button></header>
       <div class="body">
+        <div class="seg tabs" id="d-tabs"><button data-t="einsatz" class="on">Einsätze</button><button data-t="woche">Woche</button><button data-t="rank">Ranking</button></div>
+        <div id="d-einsatz">
         <div class="cards" id="d-cards"></div>
         <div class="card" id="d-vergleich" style="display:none"></div>
         <div class="card"><strong>Kalenderwochen</strong><div id="d-weeks"></div></div>
         <div class="card"><strong>Top Gebiete</strong><div id="d-top"></div></div>
+        </div>
+        <div id="d-woche" style="display:none"></div>
+        <div id="d-rank" style="display:none"></div>
       </div>
     </section>
 
     <!-- Planung -->
     <section class="win" id="v-plan">
-      <header><h2><span class="t">Planung</span><span class="sub">heute, aktiv, geplant</span></h2><button class="w-close" data-close title="Schließen">✕</button></header>
-      <div class="body" id="pl-list"></div>
+      <header><h2><span class="t">Planung</span><span class="sub">Tag, Einsätze, Kunden</span></h2><button class="w-close" data-close title="Schließen">✕</button></header>
+      <div class="body"><div class="seg tabs" id="pl-tabs"><button data-t="heute">Heute</button><button data-t="einsatz">Einsätze</button><button data-t="kunden">Kunden</button><button data-t="nach">Nachfassen</button></div><div id="pl-heute"></div><div id="pl-list"></div><div id="pl-kunden"></div><div id="pl-nach"></div></div>
+    </section>
+
+    <!-- Lead -->
+    <section class="win" id="v-lead">
+      <header><h2><span class="dot" id="ld-dot"></span><span class="t" id="ld-t"></span><span class="sub" id="ld-sub"></span></h2><button class="w-close" id="ld-close" title="Schließen">✕</button></header>
+      <div class="body" id="ld-body"></div>
     </section>
 
     <!-- Daten -->
@@ -985,6 +1019,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
           <div class="s" id="gm-info"></div>
           <label for="gm-key">Google-Maps-Schlüssel (Cloud Console, Projekt SLE Location Manager, Anmeldedaten, „Maps Platform API Key“, einmalig je Gerät)</label><input id="gm-key" class="mono" placeholder="AIza…" autocomplete="off">
           <div class="s">Der Schlüssel bleibt nur in diesem Browser. Er ist auf diese Seite und die Maps JavaScript API beschränkt. Beim Ziehen der Street-View-Figur zeigt die Seite kurz Googles Satellitenkarte mit den blauen Linien; je Seitenaufruf zählt Google eine Kartenladung (10.000 im Monat frei, Stand 02.11.2026).</div>
+        </div>
+        <div class="card">
+          <strong>Kunden und KPI-Wochenblatt</strong>
+          <div class="s" id="kd-info"></div>
+          <div class="row"><a class="btn primary" href="lead-formular.html" target="_blank" rel="noopener">Lead-Formular öffnen</a><button class="btn" id="kd-kpi">Wochenzahlen jetzt übergeben</button></div>
+          <div class="s">Jeder im Lead-Formular gespeicherte Erstkontakt wird hier automatisch Lead (gleiche Seite, gleicher Browser). Die Seite schreibt je Tag nur Zahlen und Location in die Datei „location-manager-wochenzahlen.json“ in deinem Google Drive; das KPI-Wochenblatt liest sie beim Öffnen. Kundendaten bleiben in diesem Browser und im verborgenen App-Speicher des Abgleichs.</div>
         </div>
         <div class="card">
           <strong>Gebietsfarben</strong>
@@ -1062,8 +1102,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
 /* ---------- Speicherschicht (später austauschbar) ---------- */
 const Store = {
   key: 'sle_lm_v1',
-  data: { locations: [], shifts: [], favorites: [], deleted: [], cal: {}, view: null },
-  load(){ try{ const d = JSON.parse(localStorage.getItem(this.key)); if(d) this.data = Object.assign(this.data, d);}catch(e){} ['locations','shifts','favorites','deleted'].forEach(k=>{ if(!Array.isArray(this.data[k])) this.data[k]=[]; }); if(!this.data.cal||typeof this.data.cal!=='object') this.data.cal={}; return this.data; },
+  data: { locations: [], shifts: [], favorites: [], deleted: [], cal: {}, view: null, leads: [] },
+  load(){ try{ const d = JSON.parse(localStorage.getItem(this.key)); if(d) this.data = Object.assign(this.data, d);}catch(e){} ['locations','shifts','favorites','deleted','leads'].forEach(k=>{ if(!Array.isArray(this.data[k])) this.data[k]=[]; }); if(!this.data.cal||typeof this.data.cal!=='object') this.data.cal={}; return this.data; },
   save(){ localStorage.setItem(this.key, JSON.stringify(this.data)); if(typeof gQueueSave==='function') gQueueSave(); },
   touch(r){ r.updatedAt=new Date().toISOString(); return r; },
   tomb(id){ this.data.deleted.push({id,at:new Date().toISOString()}); if(this.data.deleted.length>2000) this.data.deleted=this.data.deleted.slice(-2000); },
@@ -1436,7 +1476,7 @@ function shiftAction(b,after){
   const s=D.shifts.find(x=>x.id===b.closest('.shift').dataset.id); if(!s) return; const loc=D.locations.find(l=>l.id===s.locationId); const a=b.dataset.act;
   if(a==='del'){ if(!confirm('Einsatz löschen?')) return; Store.tomb(s.id); D.shifts=D.shifts.filter(x=>x!==s); }
   else if(a==='start'){ s.status='aktiv'; if(!s.date) s.date=today(); toast('Einsatz läuft'); }
-  else if(a==='done'){ s.status='abgeschlossen'; toast('Einsatz abgeschlossen'); }
+  else if(a==='done'){ s.status='abgeschlossen'; toast('Einsatz abgeschlossen: Türen, Stunden und Bewertung eintragen'); setTimeout(()=>{ show(null); openPanel(s.locationId); editShift=s; fillShift(s); },60); }
   else if(a==='plus'){ s.leads=(+s.leads||0)+1; }
   else if(a==='minus'){ s.leads=Math.max(0,(+s.leads||0)-1); }
   else if(a==='open'){ show(null); openPanel(s.locationId); return; }
@@ -1483,7 +1523,7 @@ function renderPlan(){
 
 /* ---------- Daten ---------- */
 $('#x-export').onclick=()=>{ const blob=new Blob([JSON.stringify(D,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${today()}_location-manager.json`; a.click(); toast('Export erstellt: '+a.download); };
-$('#x-import').onchange=e=>{ const f=e.target.files[0]; if(!f) return; f.text().then(t=>{ const d=JSON.parse(t); if(!d.locations||!d.shifts) throw 0; if(!confirm(`${d.locations.length} Gebiete und ${d.shifts.length} Einsätze importieren?\nErsetzt den aktuellen Stand (${D.locations.length} Gebiete, ${D.shifts.length} Einsätze).`)) return; Object.assign(D,{locations:d.locations,shifts:d.shifts,deleted:d.deleted||[],cal:d.cal||{}}); Store.save(); location.reload(); }).catch(()=>toast('Datei nicht lesbar')); e.target.value=''; };
+$('#x-import').onchange=e=>{ const f=e.target.files[0]; if(!f) return; f.text().then(t=>{ const d=JSON.parse(t); if(!d.locations||!d.shifts) throw 0; if(!confirm(`${d.locations.length} Gebiete und ${d.shifts.length} Einsätze importieren?\nErsetzt den aktuellen Stand (${D.locations.length} Gebiete, ${D.shifts.length} Einsätze).`)) return; Object.assign(D,{locations:d.locations,shifts:d.shifts,leads:d.leads||D.leads||[],deleted:d.deleted||[],cal:d.cal||{}}); Store.save(); location.reload(); }).catch(()=>toast('Datei nicht lesbar')); e.target.value=''; };
 $('#x-demo').onclick=()=>{ const c=map.getCenter(); const d=0.004; const loc=Store.touch({id:Store.id(),name:'Demo Lehe Nord',group:'Bremerhaven',plz:'27576',addr:null,color:COLORS.gruen,coords:[[c.lat+d,c.lng-d],[c.lat+d,c.lng+d],[c.lat-d,c.lng+d],[c.lat-d,c.lng-d]],createdAt:new Date().toISOString()}); D.locations.push(loc); D.shifts.push(Store.touch({id:Store.id(),locationId:loc.id,date:today(),status:'abgeschlossen',leads:3,doors:80,hours:4,note:'Demo',persons:[ME]})); Store.save(); render(loc); openPanel(loc.id); };
 function renderData(){ $('#x-info').textContent=`${D.locations.length} Gebiete · ${D.shifts.length} Einsätze · ${(JSON.stringify(D).length/1024).toFixed(1)} kB`; $('#x-table').innerHTML=D.locations.map(l=>{const s=stats(l.id);return `<tr><td><span class="dot" style="background:${l.color}"></span> ${esc(l.name)}</td><td>${esc(l.group||'')}</td><td>${esc(l.plz||'')}</td><td class="r">${l.addr==null?'–':l.addr}</td><td class="r">${s.n}</td><td class="r">${s.leads}</td></tr>`;}).join('')||'<tr><td colspan="6" class="empty">Noch keine Gebiete</td></tr>'; bulkInfo(); gRenderStatus(); spInfo(); }
 
@@ -1613,7 +1653,7 @@ async function autoFill(loc,showInfo){
 /* ---------- Google: Anmeldung, Drive-Datenabgleich, Kalender-Sync ---------- */
 const G={clientId:localStorage.getItem('sle_lm_gclient')||'',token:null,exp:0,busy:false,fileId:null,lastSync:localStorage.getItem('sle_lm_glast')||''};
 try{ const t=JSON.parse(localStorage.getItem('sle_lm_gtoken')||'null'); if(t&&t.exp>Date.now()+60000){ G.token=t.token; G.exp=t.exp; } }catch(e){}
-const GSCOPES='https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/drive.appdata';
+const GSCOPES='https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file';
 $('#g-client').value=G.clientId;
 $('#g-client').onchange=()=>{ G.clientId=$('#g-client').value.trim(); localStorage.setItem('sle_lm_gclient',G.clientId); gRenderStatus(); };
 function gLog(m){ const el=$('#g-log'); if(el) el.textContent=m; }
@@ -1655,7 +1695,7 @@ async function gDriveFile(){
 function mergeData(remote){
   const del=new Map(); [...(D.deleted||[]),...(remote.deleted||[])].forEach(t=>{ if(!del.has(t.id)||del.get(t.id)<t.at) del.set(t.id,t.at); });
   const mergeList=(a,b)=>{ const m=new Map(); [...a,...b].forEach(r=>{ if(!r||!r.id) return; const d=del.get(r.id); if(d&&(!r.updatedAt||r.updatedAt<=d)) return; const cur=m.get(r.id); if(!cur||(r.updatedAt||'')>(cur.updatedAt||'')) m.set(r.id,r); }); return [...m.values()]; };
-  D.locations=mergeList(D.locations,remote.locations||[]); D.shifts=mergeList(D.shifts,remote.shifts||[]);
+  D.locations=mergeList(D.locations,remote.locations||[]); D.shifts=mergeList(D.shifts,remote.shifts||[]); D.leads=mergeList(D.leads||[],remote.leads||[]);
   const ids=new Set(D.locations.map(l=>l.id)); D.shifts=D.shifts.filter(s=>ids.has(s.locationId));
   D.deleted=[...del.entries()].map(([id,at])=>({id,at})).slice(-2000);
   const cal=Object.assign({},remote.cal||{}); Object.entries(D.cal||{}).forEach(([k,v])=>{ if(!cal[k]||(v.at||'')>(cal[k].at||'')) cal[k]=v; }); D.cal=cal;
@@ -1667,31 +1707,33 @@ async function gSync(full=true){
   try{
     const id=await gDriveFile();
     const remote=await gFetch('https://www.googleapis.com/drive/v3/files/'+id+'?alt=media');
-    const before=JSON.stringify({l:D.locations,s:D.shifts});
+    const before=JSON.stringify({l:D.locations,s:D.shifts,k:D.leads});
     mergeData(remote||{});
     localStorage.setItem(Store.key,JSON.stringify(D));
-    const payload={locations:D.locations,shifts:D.shifts,deleted:D.deleted,cal:D.cal,savedAt:new Date().toISOString()};
+    const payload={locations:D.locations,shifts:D.shifts,leads:D.leads||[],deleted:D.deleted,cal:D.cal,savedAt:new Date().toISOString()};
     await gFetch('https://www.googleapis.com/upload/drive/v3/files/'+id+'?uploadType=media',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     gDirty=false; G.lastSync=new Date().toISOString(); localStorage.setItem('sle_lm_glast',G.lastSync);
-    if(JSON.stringify({l:D.locations,s:D.shifts})!==before){ Object.values(layers).forEach(l=>map.removeLayer(l)); D.locations.forEach(render); if(cur){ const c=D.locations.find(l=>l.id===cur.id); if(c) openPanel(c.id); else closePanel(); } if(openWin){ const w=openWin; show(w); show(w); } }
+    if(typeof kAfterChange==='function') kAfterChange(); if(JSON.stringify({l:D.locations,s:D.shifts,k:D.leads})!==before){ Object.values(layers).forEach(l=>map.removeLayer(l)); D.locations.forEach(render); if(cur){ const c=D.locations.find(l=>l.id===cur.id); if(c) openPanel(c.id); else closePanel(); } if(openWin){ const w=openWin; show(w); show(w); } }
     if(full) await calSyncAll(true);
+    if(typeof kpiFileSync==='function'){ await kpiFileSync(); if(full) await calRead(); }
     gLog('Abgleich fertig '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
   }catch(e){ gLog('Abgleich: '+(e.message||e)); }
   G.busy=false; $('#g-sync')&&($('#g-sync').disabled=false); gRenderStatus();
 }
 // Kalender: je Datum mit Einsatz (Fabian, nicht abgeschlossen) Ort in die D2D-Blöcke; sonst Ort wieder leer
 const CAL_MARK='Location Manager: ';
-function calText(date){ const sh=D.shifts.filter(s=>s.date===date&&s.status!=='abgeschlossen'&&(s.persons||[]).includes(ME)); const parts=[]; sh.forEach(s=>{ const l=D.locations.find(x=>x.id===s.locationId); if(!l) return; const t=[l.name,[l.plz,l.group].filter(Boolean).join(' ')].filter(Boolean).join(', '); if(!parts.includes(t)) parts.push(t); }); return parts.join(' · '); }
+function calTitle(date){ const n=[]; D.shifts.filter(s=>s.date===date&&(s.persons||[]).includes(ME)).forEach(s=>{ const l=D.locations.find(x=>x.id===s.locationId); if(l&&!n.includes(l.name)) n.push(l.name); }); return n.length?'DSH · '+n.join(' + '):'D2D'; }
+function calText(date){ const sh=D.shifts.filter(s=>s.date===date&&(s.persons||[]).includes(ME)); const parts=[]; sh.forEach(s=>{ const l=D.locations.find(x=>x.id===s.locationId); if(!l) return; const t=[l.name,[l.plz,l.group].filter(Boolean).join(' ')].filter(Boolean).join(', '); if(!parts.includes(t)) parts.push(t); }); return parts.join(' · '); }
 async function calDayEvents(date){
-  const url='https://www.googleapis.com/calendar/v3/calendars/primary/events?singleEvents=true&orderBy=startTime&q=D2D&timeMin='+encodeURIComponent(new Date(date+'T00:00:00').toISOString())+'&timeMax='+encodeURIComponent(new Date(date+'T23:59:59').toISOString())+'&fields=items(id,summary,location,description,start)';
-  const j=await gFetch(url); return (j.items||[]).filter(e=>/^D2D/i.test(e.summary||'')&&e.start&&e.start.dateTime&&e.start.dateTime.slice(0,10)===date);
+  const url='https://www.googleapis.com/calendar/v3/calendars/primary/events?singleEvents=true&orderBy=startTime&timeMin='+encodeURIComponent(new Date(date+'T00:00:00').toISOString())+'&timeMax='+encodeURIComponent(new Date(date+'T23:59:59').toISOString())+'&fields=items(id,summary,location,description,start)';
+  const j=await gFetch(url); return (j.items||[]).filter(e=>/^(D2D|DSH)\b/i.test(e.summary||'')&&e.start&&e.start.dateTime&&e.start.dateTime.slice(0,10)===date);
 }
 async function calApply(date,text){
   const evs=await calDayEvents(date); if(!evs.length) return {ok:false,n:0};
   for(const e of evs){
     const desc=(e.description||'').split('\n').filter(l=>!l.startsWith(CAL_MARK)).join('\n').trim();
-    const body={location:text,description:text?(desc?desc+'\n':'')+CAL_MARK+text:desc};
-    if((e.location||'')===text&&(e.description||'')===body.description) continue;
+    const body={summary:calTitle(date),location:text,description:text?(desc?desc+'\n':'')+CAL_MARK+text:desc};
+    if((e.summary||'')===body.summary&&(e.location||'')===text&&(e.description||'')===body.description) continue;
     await gFetch('https://www.googleapis.com/calendar/v3/calendars/primary/events/'+encodeURIComponent(e.id),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   }
   return {ok:true,n:evs.length};
@@ -1705,10 +1747,10 @@ async function calSyncAll(quiet=false){
     for(const date of [...dates].sort()){
       if(date<today()&&!(D.cal[date]&&D.cal[date].text)) continue; // Vergangenheit ohne Eintrag nicht anfassen
       const text=calText(date); const cur=D.cal[date];
-      if(cur&&cur.text===text&&cur.ok) continue;
+      if(cur&&cur.text===text&&cur.ok&&cur.title===calTitle(date)) continue;
       if(!text&&(!cur||!cur.text)) continue;
       const r=await calApply(date,text);
-      D.cal[date]={text,ok:r.ok,n:r.n,at:new Date().toISOString()};
+      D.cal[date]={text,title:calTitle(date),ok:r.ok,n:r.n,at:new Date().toISOString()};
       changed++;
     }
     Object.keys(D.cal).forEach(k=>{ if(!D.cal[k].text&&Date.now()-new Date(D.cal[k].at||0).getTime()>30*864e5) delete D.cal[k]; });
@@ -1868,6 +1910,402 @@ $$('.win [data-close]').forEach(b=>b.onclick=()=>show(null));
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if($('#legend').classList.contains('open')) legendOpen(false); else if($('#search').classList.contains('open')) searchOpen(false); else if(map.pm.globalDrawModeEnabled()) map.pm.disableDraw(); else if(layerMenu.classList.contains('open')||ovMenu.classList.contains('open')) menuOpen(false); else if($('#panel').classList.contains('active')) closePanel(); else show(null); } });
 // Wischen nach unten auf der Kopfzeile schließt das Fenster
 $$('.win header').forEach(h=>{ let y0=null; h.addEventListener('touchstart',e=>{ y0=e.touches[0].clientY; },{passive:true}); h.addEventListener('touchend',e=>{ if(y0!=null&&e.changedTouches[0].clientY-y0>70){ if(h.closest('#panel')) closePanel(); else show(null); } y0=null; },{passive:true}); });
+/* ===================== v36 · Kunden, Termine, Kennzahlen (Verkaufsprozess Fassung 5, 04.11.2026) =====================
+   Leads mit Verlauf: jeder Schritt mit Datum, daraus Status, nächster Schritt und die dreizehn Kennzahlen je Tag.
+   Lead-Formular V3 liegt auf derselben Seite (gleicher Browser-Speicher): jeder gespeicherte Erstkontakt wird Lead.
+   Kalender 01-unternehmen: lesen (freie Fenster, CHC/CSC, D2D) und buchen. Wochenzahlen als Datei in Google Drive
+   für das KPI-Wochenblatt (nur Zahlen und Location, keine Kundendaten). Bestehende Karte und Ebenen bleiben unberührt. */
+if(!Array.isArray(D.leads)) D.leads=[];
+const KCODES=['DSH','DOR','DDA','CLD','CLI','CAS','CHC','CSA','COF','CSC','CCW','CCR','CRF'];
+const KDE={DSH:'D2D-Schichten',DOR:'Türen',DDA:'Direktterminierungen',CLD:'Leads D2D',CLI:'Leads von SL',CAS:'Potenzialanalysen vereinbart',CHC:'Potenzialanalysen gehalten',CSA:'Festpreisgespräche vereinbart',COF:'Angebote erstellt',CSC:'Festpreisgespräche gehalten',CCW:'Abschlüsse',CCR:'davon widerrufen',CRF:'Empfehlungen'};
+const KZIEL={DSH:6,DOR:1800,DDA:6,CLD:36,CLI:10,CAS:14,CHC:7,CSA:6,COF:6,CSC:5,CCW:2,CCR:0,CRF:2};
+// Farben aus dem Register 7.2 (B2C-Stufen); verloren und widerrufen grau
+const KFARBE={offen:'#F4BFBF',cas:'#E87373',chc:'#E87373',csa:'#E24C4C',cof:'#E24C4C',ccl:'#DB2626',ccw:'#D50000',ccr:'#616161',ruhend:'#9e9e9e',verloren:'#616161'};
+const KTXT={offen:'Lead, Termin offen',cas:'Potenzialanalyse vereinbart',chc:'Potenzialanalyse gehalten',csa:'Festpreisgespräch vereinbart',cof:'Angebot erstellt',ccl:'Nachfassen',ccw:'Abschluss',ccr:'widerrufen',ruhend:'ruhend',verloren:'verloren'};
+const WTAGE=['mo','di','mi','do','fr','sa'];
+const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const isoDay=iso=>ymd(new Date(iso));
+const hm=iso=>new Date(iso).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+const tagKurz=ds=>new Date(ds+'T00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'});
+const addDays=(ds,n)=>{ const d=new Date(ds+'T00:00'); d.setDate(d.getDate()+n); return ymd(d); };
+function isoWeekOf(ds){ const d=new Date(ds+'T00:00'); const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); const day=t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-day); const y=t.getUTCFullYear(); return {year:y,week:Math.ceil((((t-Date.UTC(y,0,1))/864e5)+1)/7)}; }
+function weekMonday(y,w){ const s=new Date(Date.UTC(y,0,4)); const dd=s.getUTCDay()||7; s.setUTCDate(s.getUTCDate()-dd+1+(w-1)*7); return `${s.getUTCFullYear()}-${String(s.getUTCMonth()+1).padStart(2,'0')}-${String(s.getUTCDate()).padStart(2,'0')}`; }
+const weekId=(y,w)=>y+'-kw'+String(w).padStart(2,'0');
+const nowIso=()=>new Date().toISOString();
+
+/* ---------- Lead-Grundlagen ---------- */
+const ev=(l,c)=>(l.verlauf||[]).filter(e=>e.c===c);
+const hasEv=(l,c)=>(l.verlauf||[]).some(e=>e.c===c);
+const nachweisKurz=n=>'N-'+String(n||'').split('-').slice(-2).join('');
+function calKeyOf(l){ return l.leadNr||(l.nachweisNr?nachweisKurz(l.nachweisNr):'L-'+l.id.slice(-5)); }
+function leadKey(l){ return l.leadNr||l.calKey||calKeyOf(l); }
+function leadByKey(k){ return D.leads.find(l=>(l.leadNr&&l.leadNr===k)||(l.calKey&&l.calKey===k)); }
+function ortOf(l){ return String(l.plzort||'').replace(/^\s*\d{5}\s*/,'').trim(); }
+function locOf(l){ return D.locations.find(x=>x.id===l.locationId)||null; }
+function locName(l){ const x=locOf(l); return x?x.name:('ohne Gebiet'+(ortOf(l)?': '+ortOf(l):'')); }
+function leadStatus(l){ let s='offen'; for(const e of (l.verlauf||[])){ switch(e.c){
+  case 'CLD': case 'CLI': case 'CRF': s='offen'; break; case 'CAS': s='cas'; break; case 'CHC': s='chc'; break; case 'CHX': s='offen'; break;
+  case 'CSA': s=hasEv(l,'COF')?'cof':'csa'; break; case 'COF': if(s==='csa') s='cof'; break; case 'CSC': s='ccl'; break; case 'CSX': s='chc'; break;
+  case 'CCL': s='ccl'; break; case 'CCW': s='ccw'; break; case 'CCR': s='ccr'; break; case 'RUH': s='ruhend'; break; case 'VER': s='verloren'; break;
+  case 'REO': s=hasEv(l,'CSC')?'ccl':(hasEv(l,'CHC')?'chc':'offen'); break; case 'ABS': s=e.art==='csc'?'chc':'offen'; break; } } return s; }
+function nextStep(l){ const s=leadStatus(l), td=today(), now=new Date(), T=l.termine||{}, v=l.verlauf||[];
+  if(s==='offen'){ const st=[...v].reverse().find(e=>['CLD','CLI','CRF','CHX','ABS','REO'].includes(e.c)); const since=st?st.at:(l.createdAt||nowIso()); const n=v.filter(e=>e.c==='CLC'&&e.at>=since).length; const neu=!st||['CLD','CLI','CRF'].includes(st.c);
+    const ew=l.herkunft==='D2D'&&l.einw&&!l.einw.tel?' (keine Telefon-Einwilligung, nur '+([l.einw.mail&&'E-Mail',l.einw.sms&&'SMS',l.einw.msg&&'Messenger'].filter(Boolean).join(', ')||'kein Kanal')+')':'';
+    if(n>=6) return {t:'6 Versuche ohne Termin: SMS mit Rückrufbitte, Wiedervorlage in 4 Wochen',due:addDays(isoDay(since),28)};
+    return {t:(neu?'CLC Rückruf':'Neuen Termin für die Potenzialanalyse vereinbaren')+', Versuch '+(n+1)+' von 6'+ew,due:n?td:addDays(isoDay(since),1)}; }
+  if(s==='cas'&&T.chc){ const d=isoDay(T.chc.start); if(new Date(T.chc.start)>now) return {t:'Potenzialanalyse '+tagKurz(d)+' '+hm(T.chc.start)+', CAR Erinnerung 1 bis 2 h vorher',due:d}; return {t:'Potenzialanalyse gehalten? Ergebnis eintragen',due:d}; }
+  if(s==='chc'){ const h=ev(l,'CHC').pop(); return {t:'CSA Festpreisgespräch vereinbaren (binnen 7 Tagen)',due:h?isoDay(h.at):td}; }
+  if((s==='csa'||s==='cof')&&T.csc){ const d=isoDay(T.csc.start); if(new Date(T.csc.start)<=now) return {t:'Festpreisgespräch gehalten? Ergebnis eintragen',due:d}; if(!hasEv(l,'COF')) return {t:'COF Angebot in REONIC fertig und freigeben (Vortag)',due:addDays(d,-1)}; return {t:'Festpreisgespräch '+tagKurz(d)+' '+hm(T.csc.start)+', CAR Erinnerung 1 bis 2 h vorher',due:d}; }
+  if(s==='ccl'){ const c=ev(l,'CSC').pop(); const base=c?isoDay(c.at):td; const k=ev(l,'CCL').filter(e=>!c||e.at>=c.at).length; const TG=[2,5,9,14], AN=['offene Fragen','Förderung konkret (Stand KfW vorher prüfen)','Einwand aus der Notiz','Entscheidung'];
+    if(k>=4) return {t:'Vier Kontakte ohne Entscheidung: ruhend setzen, Wiedervorlage vor dem nächsten Förderstichtag',due:td}; return {t:'CCL Kontakt '+(k+1)+' von 4, Tag '+TG[k]+': '+AN[k],due:addDays(base,TG[k]),k}; }
+  if(s==='ccw'){ const w=ev(l,'CCW').pop(); const bis=addDays(isoDay(w.at),14); return td<=bis?{t:'Widerrufsfrist bis '+tagKurz(bis),due:null}:{t:'CRT Abschlussgespräch nach der Montage, Empfehlung erfragen',due:null}; }
+  if(s==='ruhend'){ const r=ev(l,'RUH').pop(); return {t:'ruhend'+(r&&r.wv?', Wiedervorlage '+tagKurz(r.wv):''),due:r&&r.wv||null}; }
+  return {t:'',due:null}; }
+function leadSave(l){ Store.touch(l); Store.save(); kAfterChange(); }
+
+/* ---------- Adresse → Koordinaten (Photon, OSM) → Gebiet ---------- */
+function locFor(lat,lon){ const hit=D.locations.find(x=>x.coords&&x.coords.length>2&&inPoly([lat,lon],x.coords)); return hit?hit.id:''; }
+let geoBusy=false;
+async function geoQueue(){ if(geoBusy||!navigator.onLine) return; geoBusy=true;
+  try{ for(const l of D.leads.filter(x=>x.lat==null&&!x.geoFail&&(x.strasse||x.plzort))){
+      const q=[l.strasse,l.plzort].filter(Boolean).join(', ');
+      try{ const r=await fetch('https://photon.komoot.io/api/?lang=de&limit=1&lat=53.55&lon=8.58&q='+encodeURIComponent(q)); const j=await r.json(); const f=j.features&&j.features[0];
+        if(f){ l.lon=+f.geometry.coordinates[0].toFixed(6); l.lat=+f.geometry.coordinates[1].toFixed(6); const id=locFor(l.lat,l.lon); if(id) l.locationId=id; } else l.geoFail=true; Store.touch(l); }
+      catch(e){ break; } await new Promise(r=>setTimeout(r,1100)); }
+    Store.save(); kAfterChange(); }
+  finally{ geoBusy=false; } }
+
+/* ---------- Übernahme aus dem Lead-Formular V3 (localStorage sl_leads_v3_<Vertriebspartner>) ---------- */
+function dlfSeen(){ try{ return new Set(JSON.parse(localStorage.getItem('sle_lm_dlfseen')||'[]')); }catch(e){ return new Set(); } }
+function dlfImport(){ const seen=dlfSeen(); let n=0;
+  for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(!k||!k.startsWith('sl_leads_v3_')) continue; let arr=[]; try{ arr=JSON.parse(localStorage.getItem(k)||'[]'); }catch(e){}
+    arr.forEach(f=>{ if(!f||!f.nachweis_nr||seen.has(f.nachweis_nr)||D.leads.some(l=>l.nachweisNr===f.nachweis_nr)) return;
+      const at=f.zeit_iso||nowIso(), date=isoDay(at); const sh=D.shifts.find(s=>s.date===date&&(s.persons||[]).includes(ME));
+      const l=Store.touch({id:Store.id(),herkunft:'D2D',leadNr:'',calKey:'',nachweisNr:f.nachweis_nr,name:f.name||'',tel:f.telefon||'',mail:f.email||'',strasse:f.strasse||'',plzort:f.plzort||'',notiz:f.notiz||'',
+        einw:{tel:!!f.ew_telefon,mail:!!f.ew_email,sms:!!f.ew_sms,msg:!!f.ew_messenger,dienst:f.messenger_dienst||''},rueckruf:f.rueckruf||[],
+        haus:{baujahr:f.baujahr||'',heizjahr:f.heizjahr||'',heizung:[...(f.heizung||[]),f.heizung_sonstige].filter(Boolean),interesse:f.interesse||[]},
+        einsatzId:sh?sh.id:'',locationId:sh?sh.locationId:'',termine:{},verlauf:[{c:'CLD',at,src:'formular'}],createdAt:nowIso()});
+      D.leads.push(l); seen.add(f.nachweis_nr); n++; }); }
+  if(n){ try{ localStorage.setItem('sle_lm_dlfseen',JSON.stringify([...seen].slice(-3000))); }catch(e){} shiftLeadsSync(); Store.save(); kAfterChange(); geoQueue(); toast(n===1?'1 Lead aus dem Lead-Formular übernommen':n+' Leads aus dem Lead-Formular übernommen'); }
+  return n; }
+// Leads je Einsatz zählt der Location Manager selbst (höchstens nach oben, falls von Hand mehr eingetragen)
+function shiftLeadsSync(){ D.shifts.forEach(s=>{ const n=D.leads.filter(l=>l.einsatzId===s.id&&l.herkunft==='D2D').length; if(n>(+s.leads||0)){ s.leads=n; Store.touch(s); } }); }
+
+/* ---------- Kalender 01-unternehmen (primär): lesen, zuordnen, buchen ---------- */
+const CAL={events:[],at:'',from:'',to:''}; try{ const c=JSON.parse(localStorage.getItem('sle_lm_calcache')||'null'); if(c&&Array.isArray(c.events)) Object.assign(CAL,c); }catch(e){}
+const TITEL_RE=/^(CHC|CSC)\s*[·:\-]?\s*([^\s(]+)(?:\s*\((abgesagt|nicht erschienen|nicht gehalten)\))?/i;
+const calUrl='https://www.googleapis.com/calendar/v3/calendars/primary/events';
+let calReadBusy=false;
+async function calRead(quiet=true){ if(!gReady()||calReadBusy) return false; calReadBusy=true;
+  try{ const a=new Date(); a.setDate(a.getDate()-7); a.setHours(0,0,0,0); const b=new Date(); b.setDate(b.getDate()+15); b.setHours(0,0,0,0);
+    const j=await gFetch(calUrl+'?singleEvents=true&orderBy=startTime&maxResults=500&timeMin='+encodeURIComponent(a.toISOString())+'&timeMax='+encodeURIComponent(b.toISOString())+'&fields=items(id,summary,start,end,colorId,description,status)');
+    CAL.events=(j.items||[]).filter(e=>e.start&&e.start.dateTime&&e.status!=='cancelled').map(e=>({id:e.id,t:(e.summary||'').trim(),s:e.start.dateTime,e:e.end.dateTime,color:e.colorId||'',desc:e.description||''}));
+    CAL.at=nowIso(); CAL.from=a.toISOString(); CAL.to=b.toISOString(); try{ localStorage.setItem('sle_lm_calcache',JSON.stringify(CAL)); }catch(e){}
+    if(calMatch()) Store.save(); kAfterChange(); calPlanWrite().catch(()=>{}); return true; }
+  catch(e){ if(!quiet) toast('Kalender: '+(e.message||e)); return false; }
+  finally{ calReadBusy=false; } }
+function calMatch(){ let ch=false; const byId=new Map(CAL.events.map(e=>[e.id,e]));
+  CAL.events.forEach(e=>{ const m=e.t.match(TITEL_RE); if(!m) return; const art=m[1].toLowerCase(), l=leadByKey(m[2]); if(!l) return; l.termine=l.termine||{}; const t=l.termine[art];
+    if(m[3]){ if(t&&t.calId===e.id){ if(/nicht/i.test(m[3])) l.verlauf.push({c:art==='chc'?'CHX':'CSX',at:e.s,calId:e.id,grund:m[3],src:'kalender'}); else l.verlauf.push({c:'ABS',art,at:nowIso(),calId:e.id,src:'kalender'}); delete l.termine[art]; Store.touch(l); ch=true; } return; }
+    if(!t){ const gehalten=art==='chc'?hasEv(l,'CHC'):hasEv(l,'CSC'); const schon=(l.verlauf||[]).some(x=>(x.c==='CAS'||x.c==='CSA')&&x.calId===e.id); if(!gehalten&&!schon){ l.termine[art]={start:e.s,end:e.e,calId:e.id,prev:''}; l.verlauf.push({c:art==='chc'?'CAS':'CSA',at:nowIso(),termin:e.s,calId:e.id,ok:true,src:'kalender'}); Store.touch(l); ch=true; } }
+    else if(t.calId!==e.id||t.start!==e.s){ if(t.calId!==e.id&&byId.has(t.calId)&&TITEL_RE.test(byId.get(t.calId).t)) return; t.calId=e.id; t.start=e.s; t.end=e.e; Store.touch(l); ch=true; } });
+  D.leads.forEach(l=>['chc','csc'].forEach(art=>{ const t=l.termine&&l.termine[art]; if(!t||!t.calId) return; const e=byId.get(t.calId); if(e&&/^Freier Termin/i.test(e.t)&&!(art==='chc'?hasEv(l,'CHC'):hasEv(l,'CSC'))){ l.verlauf.push({c:'ABS',art,at:nowIso(),calId:t.calId,src:'kalender'}); delete l.termine[art]; Store.touch(l); ch=true; } }));
+  return ch; }
+async function calPatch(id,body){ return gFetch(calUrl+'/'+encodeURIComponent(id),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); }
+// Farben: eigene RGB-Farben kann die Schnittstelle nicht setzen; nächste Standardfarbe: CHC Flamingo (4), CSC Tomate (11), grau Graphit (8)
+const CAL_FARBE={chc:'4',csc:'11',grau:'8'};
+async function calBook(l,art,e,o={}){ if(!gReady()) throw new Error('Für das Buchen bei Google anmelden (Fenster Daten)');
+  const key=calKeyOf(l); const curE=await gFetch(calUrl+'/'+encodeURIComponent(e.id)); if(!/^Freier Termin/i.test((curE.summary||'').trim())) throw new Error('Das Fenster ist inzwischen belegt');
+  await calPatch(e.id,{summary:art.toUpperCase()+' · '+key,colorId:CAL_FARBE[art]});
+  if(!l.leadNr) l.calKey=key; l.termine=l.termine||{}; l.termine[art]={start:e.s,end:e.e,calId:e.id,prev:curE.colorId||''};
+  l.verlauf.push({c:art==='chc'?'CAS':'CSA',at:nowIso(),termin:e.s,calId:e.id,ok:o.ok!==false,dda:art==='chc'&&!!o.dda}); leadSave(l); await calRead(); }
+async function calBookNew(l,art,startIso,o={}){ if(!gReady()) throw new Error('Für das Buchen bei Google anmelden (Fenster Daten)');
+  const key=calKeyOf(l); const s=new Date(startIso), en=new Date(s.getTime()+75*6e4);
+  const c=await gFetch(calUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({summary:art.toUpperCase()+' · '+key,colorId:CAL_FARBE[art],start:{dateTime:s.toISOString(),timeZone:'Europe/Berlin'},end:{dateTime:en.toISOString(),timeZone:'Europe/Berlin'}})});
+  if(!l.leadNr) l.calKey=key; l.termine=l.termine||{}; l.termine[art]={start:c.start.dateTime,end:c.end.dateTime,calId:c.id,prev:'',extra:true};
+  l.verlauf.push({c:art==='chc'?'CAS':'CSA',at:nowIso(),termin:c.start.dateTime,calId:c.id,ok:o.ok!==false,dda:art==='chc'&&!!o.dda}); leadSave(l); await calRead(); }
+async function calUnbook(l,art,grund){ const t=l.termine&&l.termine[art]; if(!t) return; const key=calKeyOf(l);
+  if(gReady()&&t.calId){ if(t.extra) await calPatch(t.calId,{summary:art.toUpperCase()+' · '+key+' (abgesagt)',colorId:CAL_FARBE.grau}); else { const b={summary:'Freier Termin'}; if(t.prev) b.colorId=t.prev; await calPatch(t.calId,b); } }
+  l.verlauf.push({c:'ABS',art,at:nowIso(),calId:t.calId,grund:grund||''}); delete l.termine[art]; leadSave(l); calRead(); }
+async function calMark(l,art,suffix){ const t=l.termine&&l.termine[art]; if(gReady()&&t&&t.calId) await calPatch(t.calId,{summary:art.toUpperCase()+' · '+calKeyOf(l)+' ('+suffix+')',colorId:CAL_FARBE.grau}); }
+// Nach dem Nachtragen der Lead-Nr: Kalendertitel von N-… auf die Lead-Nr umstellen
+async function calRekey(l,alt){ if(!gReady()) return; for(const art of ['chc','csc']){ const t=l.termine&&l.termine[art]; if(!t||!t.calId) continue; try{ const e=await gFetch(calUrl+'/'+encodeURIComponent(t.calId)); const s=(e.summary||''); if(alt&&s.includes(alt)) await calPatch(t.calId,{summary:s.replace(alt,l.leadNr)}); }catch(x){} } }
+
+/* ---------- Ranking, Tagesplanung ---------- */
+function rankRows(){ const rows=D.locations.map(loc=>({loc,name:loc.name})); rows.push({loc:null,name:'ohne Gebiet'});
+  rows.forEach(r=>{ const id=r.loc?r.loc.id:''; const sh=D.shifts.filter(s=>(s.locationId||'')===id&&s.status==='abgeschlossen'); r.DOR=sh.reduce((a,s)=>a+(+s.doors||0),0); r.DSH=sh.length;
+    const ls=D.leads.filter(l=>(l.locationId||'')===id); r.CLD=ls.filter(l=>l.herkunft==='D2D').length; r.CLI=ls.filter(l=>l.herkunft==='SL').length; r.CHC=ls.filter(l=>hasEv(l,'CHC')).length; r.CSA=ls.filter(l=>ev(l,'CSA').some(e=>e.ok!==false)).length;
+    const won=ls.filter(l=>hasEv(l,'CCW')&&!hasEv(l,'CCR')); r.CCW=won.length; r.CCWd=won.filter(l=>l.herkunft==='D2D').length;
+    r.ccw100=r.DOR?r.CCWd/r.DOR*100:null; r.csaQ=r.CHC?r.CSA/r.CHC:null; r.l100=r.DOR?r.CLD/r.DOR*100:null; r.dist=r.loc&&r.loc.coords?HOME.distanceTo(L.polygon(r.loc.coords).getBounds().getCenter()):1e9; });
+  const k=x=>x==null?-1:x; return rows.filter(r=>r.loc||r.CLD+r.CLI>0).sort((a,b)=>(k(b.ccw100)-k(a.ccw100))||(k(b.csaQ)-k(a.csaQ))||(k(b.l100)-k(a.l100))||(a.dist-b.dist)); }
+function centerOf(loc){ return L.polygon(loc.coords).getBounds().getCenter(); }
+function nearestFree(loc){ const c=centerOf(loc); let best=null,bd=1e12; D.locations.forEach(x=>{ if(x.id===loc.id||!['neu','frei'].includes(locStatus(x).k)) return; const d=c.distanceTo(centerOf(x)); if(d<bd){ bd=d; best=x; } }); return best; }
+const istSlot=e=>/^Freier Termin/i.test(e.t)||TITEL_RE.test(e.t);
+const istD2D=e=>/^(D2D|DSH)\b/i.test(e.t);
+function dayPlan(date){ const evs=CAL.events.filter(e=>isoDay(e.s)===date).sort((a,b)=>a.s.localeCompare(b.s));
+  const d2d=evs.find(istD2D); const slots=evs.filter(istSlot);
+  const kt=slots.filter(e=>TITEL_RE.test(e.t)&&!/\((abgesagt|nicht)/i.test(e.t)).map(e=>({e,l:leadByKey(e.t.match(TITEL_RE)[2])}));
+  const other=evs.filter(e=>e!==d2d&&!istSlot(e)&&!istD2D(e));
+  let minutes=0; const blockers=[]; if(d2d){ const a=new Date(d2d.s), b=new Date(d2d.e); minutes=(b-a)/6e4; other.forEach(o=>{ const x=Math.max(a,new Date(o.s)), y=Math.min(b,new Date(o.e)); if(y>x){ minutes-=(y-x)/6e4; blockers.push(o); } }); }
+  const sh=D.shifts.filter(s=>s.date===date&&(s.persons||[]).includes(ME));
+  let rec=null, why=''; const mitLoc=kt.filter(k=>k.l&&locOf(k.l)); const late=mitLoc.filter(k=>new Date(k.e.s).getHours()>=15).pop(), early=mitLoc.find(k=>new Date(k.e.s).getHours()<15); const ref=late||early;
+  if(ref){ const loc=locOf(ref.l); const was=ref.e.t.split(' (')[0]+' um '+hm(ref.e.s); if(locStatus(loc).k==='sperre'){ rec=nearestFree(loc); why=loc.name+' ist in der Sperrfrist; nächstes freies Gebiet bei '+was; } else { rec=loc; why=was+' liegt dort'+(late?', du endest beim Kunden':''); } }
+  if(!rec){ const r=rankRows().find(x=>x.loc&&['neu','frei'].includes(locStatus(x.loc).k)); rec=r?r.loc:null; why=rec?'bestes freies Gebiet im Ranking':(D.locations.length?'alle Gebiete in der Sperrfrist oder schon eingeplant: neues Gebiet zeichnen':'noch kein Gebiet gezeichnet'); }
+  const frei=slots.filter(e=>/^Freier Termin/i.test(e.t)).length;
+  return {date,evs,d2d,slots,kt,blockers,minutes,sh,rec,why,frei,lang:!!d2d&&!kt.length&&!blockers.length&&frei>=2}; }
+function planText(p){ const t=[]; const sl=p.slots.map(e=>{ const m=e.t.match(TITEL_RE); if(!m) return hm(e.s)+' frei'; const l=leadByKey(m[2]); return hm(e.s)+' '+e.t.split(' (')[0]+(l?' ('+locName(l)+')':''); });
+  if(p.sh.length){ const n=p.sh.map(s=>(D.locations.find(x=>x.id===s.locationId)||{}).name).filter(Boolean).join(' + '); t.push('D2D '+n+' (geplant)'); } else if(p.d2d) t.push('D2D Empfehlung '+(p.rec?p.rec.name:'offen'));
+  if(sl.length) t.push(sl.join(' · ')); if(p.d2d&&p.minutes<180) t.push('Schicht nur '+Math.round(p.minutes)+' Minuten, zählt nicht als DSH'); return t.join(' · '); }
+// Tagesempfehlung in die Beschreibung des Blocks „Planung“ (nur Lead-Nr, Uhrzeit, Location)
+async function calPlanWrite(){ if(!gReady()) return; let mem={}; try{ mem=JSON.parse(localStorage.getItem('sle_lm_calplan')||'{}'); }catch(e){}
+  for(let i=0;i<7;i++){ const date=addDays(today(),i); const pe=CAL.events.find(e=>isoDay(e.s)===date&&/^Planung\b/i.test(e.t)); if(!pe) continue; const txt=planText(dayPlan(date)); if(mem[date]===txt) continue;
+    const desc=(pe.desc||'').split('\n').filter(x=>!x.startsWith(CAL_MARK)).join('\n').trim(); try{ await calPatch(pe.id,{description:(desc?desc+'\n':'')+CAL_MARK+txt}); mem[date]=txt; }catch(e){ break; } }
+  try{ localStorage.setItem('sle_lm_calplan',JSON.stringify(mem)); }catch(e){} }
+
+/* ---------- Kennzahlen je Woche, Quoten wie im Wochenblatt ---------- */
+function kpiWeek(y,w){ const mon=weekMonday(y,w); const days={}, by={}; WTAGE.forEach((k,i)=>{ const o={date:addDays(mon,i),loc:'',rating:0,back:false,note:''}; KCODES.forEach(c=>o[c]=0); days[k]=o; by[o.date]=o; });
+  D.shifts.forEach(s=>{ const o=by[s.date]; if(!o||s.status!=='abgeschlossen'||!(s.persons||[]).includes(ME)) return; o.DOR+=+s.doors||0; if((+s.hours||0)>=3) o.DSH=1;
+    const n=(D.locations.find(x=>x.id===s.locationId)||{}).name||''; if(n&&!o.loc.split(' + ').includes(n)) o.loc=o.loc?o.loc+' + '+n:n; if(s.rating&&!o.rating) o.rating=+s.rating; if(s.back==='ja') o.back=true; if(s.note&&!o.note) o.note=s.note; });
+  D.leads.forEach(l=>(l.verlauf||[]).forEach(e=>{ const o=by[isoDay(e.at)]; if(!o) return; switch(e.c){ case 'CLD': o.CLD++; break; case 'CLI': o.CLI++; break; case 'CRF': o.CRF++; break;
+    case 'CAS': if(e.ok!==false){ o.CAS++; if(e.dda) o.DDA++; } break; case 'CHC': o.CHC++; break; case 'CSA': if(e.ok!==false) o.CSA++; break; case 'COF': o.COF++; break; case 'CSC': o.CSC++; break; case 'CCW': o.CCW++; break; case 'CCR': o.CCR++; break; } }));
+  return days; }
+function kSum(days){ const S={}; KCODES.forEach(c=>S[c]=WTAGE.reduce((a,k)=>a+(days[k][c]||0),0)); return S; }
+// gleiche Rechnung wie quotas() im KPI-Wochenblatt
+function kQuoten(S){ const pct=(a,b)=>b>0?Math.round(a/b*100):null; const P=(a,b)=>{ const p=pct(a,b); return p===null?'':p+' %'; }; const LEADS=S.CLD+S.CLI;
+  return [['Leads je 100 Türen (D2D)',S.DOR?(S.CLD/S.DOR*100).toFixed(1):'','2,0'],['Direktterminierungen je 100 Türen',S.DOR?(S.DDA/S.DOR*100).toFixed(1):'','0,3'],
+    ['Termin-Quote (Potenzialanalysen je Lead, D2D und SL)',LEADS?P(S.CAS,LEADS):'','50 %'],['Show-up Potenzialanalyse (gehalten je vereinbart)',S.CAS?P(S.CHC,S.CAS):'','50 %'],
+    ['Folgetermin-Quote (Festpreisgespräch je Potenzialanalyse)',S.CHC?P(S.CSA,S.CHC):'','80 % (Vorschlag)'],['Angebotsquote (Angebote je Festpreisgespräch vereinbart)',S.CSA?P(S.COF,S.CSA):'','100 %'],
+    ['Show-up Festpreisgespräch (gehalten je vereinbart)',S.CSA?P(S.CSC,S.CSA):'','90 % (Vorschlag)'],['Abschlussquote im Festpreisgespräch',S.CSC?P(S.CCW,S.CSC):'','40 % (Vorschlag)'],
+    ['Abschlussquote gesamt (Abschlüsse je Potenzialanalyse)',S.CHC?P(S.CCW,S.CHC):'','30 %'],['Widerrufsquote',S.CCW?P(S.CCR,S.CCW):'','0 %'],['Empfehlungen je Abschluss',S.CCW?(S.CRF/S.CCW).toFixed(1):'','1,0']]; }
+
+/* ---------- Wochenzahlen als Datei in Google Drive (für das KPI-Wochenblatt) ---------- */
+const KF={name:'location-manager-wochenzahlen.json',id:localStorage.getItem('sle_lm_kpifile')||'',last:localStorage.getItem('sle_lm_kpilast')||'',at:localStorage.getItem('sle_lm_kpiat')||'',err:''};
+function kpiExport(){ const weeks={}, td=today(); for(let i=-10;i<=1;i++){ const {year,week}=isoWeekOf(addDays(td,i*7)); const id=weekId(year,week); if(weeks[id]) continue; const days=kpiWeek(year,week);
+    if(!WTAGE.some(k=>KCODES.some(c=>days[k][c])||days[k].loc)) continue; const out={}; WTAGE.forEach(k=>{ const o=days[k], r={}; KCODES.forEach(c=>r[c]=o[c]); r.loc=o.loc; if(o.rating) r.rating=o.rating; if(o.back) r.back=true; if(o.note) r.note=o.note; out[k]=r; }); weeks[id]={days:out}; }
+  return {app:'SLE Location Manager',version:36,hinweis:'Nur Zahlen und Location je Tag, keine Kundendaten',weeks}; }
+async function kpiFileSync(force=false){ if(!gReady()) return; const body=JSON.stringify(kpiExport()); if(!force&&body===KF.last&&KF.id) return;
+  try{ if(!KF.id){ const j=await gFetch('https://www.googleapis.com/drive/v3/files?fields=files(id,modifiedTime)&orderBy=modifiedTime%20desc&q='+encodeURIComponent(`name='${KF.name}' and trashed=false`));
+      if(j.files&&j.files.length) KF.id=j.files[0].id; else { const meta={name:KF.name,mimeType:'application/json',description:'Wochenzahlen aus dem SLE Location Manager für das KPI-Wochenblatt (ohne Kundendaten)'};
+        const bd='--b\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(meta)+'\r\n--b\r\nContent-Type: application/json\r\n\r\n'+body+'\r\n--b--';
+        const c=await gFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{'Content-Type':'multipart/related; boundary=b'},body:bd}); KF.id=c.id; }
+      localStorage.setItem('sle_lm_kpifile',KF.id); }
+    await gFetch('https://www.googleapis.com/upload/drive/v3/files/'+KF.id+'?uploadType=media',{method:'PATCH',headers:{'Content-Type':'application/json'},body});
+    KF.last=body; KF.at=nowIso(); KF.err=''; try{ localStorage.setItem('sle_lm_kpilast',body); localStorage.setItem('sle_lm_kpiat',KF.at); }catch(e){} }
+  catch(e){ const m=String(e.message||e); KF.err=/403|insufficient|scope/i.test(m)?'scope':m; if(/ 404/.test(m)){ KF.id=''; localStorage.removeItem('sle_lm_kpifile'); } }
+  kDatenInfo(); }
+
+/* ---------- Einblendungen „Leads“, „Potenzialanalysen“, „Festpreisgespräche“, „Abschlüsse“ ---------- */
+map.createPane('kundenPane'); map.getPane('kundenPane').style.zIndex=620;
+const kR=L.svg({pane:'kundenPane'});
+const KL={lead:{g:L.layerGroup(),t:'Leads'},chc:{g:L.layerGroup(),t:'Potenzialanalysen'},csc:{g:L.layerGroup(),t:'Festpreisgespräche'},ccw:{g:L.layerGroup(),t:'Abschlüsse'}};
+let klOn={}; try{ klOn=JSON.parse(localStorage.getItem('sle_lm_kl')||'{}'); }catch(e){}
+function klMarker(l,farbe,r,dick){ const m=L.circleMarker([l.lat,l.lon],{renderer:kR,pane:'kundenPane',radius:r,color:dick?farbe:'#001a4d',weight:dick?4:2,fillColor:dick?'#ffffff':farbe,fillOpacity:dick?0.15:0.95});
+  m.bindTooltip(`${esc(leadKey(l))} · ${esc(l.name||'')}<br>${esc(KTXT[leadStatus(l)])}`,{className:'ttip',direction:'top'}); m.on('click',()=>leadOpen(l.id)); return m; }
+function klRender(){ Object.values(KL).forEach(x=>x.g.clearLayers());
+  D.leads.forEach(l=>{ if(l.lat==null) return; const st=leadStatus(l); KL.lead.g.addLayer(klMarker(l,KFARBE[st],7,false));
+    if(hasEv(l,'CAS')||hasEv(l,'CHC')) KL.chc.g.addLayer(klMarker(l,'#E87373',11,true)); if(hasEv(l,'CSA')||hasEv(l,'CSC')) KL.csc.g.addLayer(klMarker(l,'#E24C4C',15,true));
+    if(hasEv(l,'CCW')&&!hasEv(l,'CCR')){ const m=L.circleMarker([l.lat,l.lon],{renderer:kR,pane:'kundenPane',radius:9,color:'#ffffff',weight:3,fillColor:'#D50000',fillOpacity:1}); m.bindTooltip(`${esc(leadKey(l))} · Abschluss`,{className:'ttip',direction:'top'}); m.on('click',()=>leadOpen(l.id)); KL.ccw.g.addLayer(m); } });
+  Object.entries(KL).forEach(([k,x])=>{ const b=$('#b-k'+k); if(b) b.classList.toggle('on',!!klOn[k]); if(klOn[k]) x.g.addTo(map); else map.removeLayer(x.g); }); }
+Object.keys(KL).forEach(k=>{ const b=$('#b-k'+k); if(b) b.onclick=()=>{ klOn[k]=!klOn[k]; try{ localStorage.setItem('sle_lm_kl',JSON.stringify(klOn)); }catch(e){} klRender(); if(klOn[k]&&!D.leads.some(l=>l.lat!=null)) toast('Noch keine Kunden mit Adresse auf der Karte'); }; });
+const _legendHtml=legendHtml;
+legendHtml=function(){ let h=_legendHtml(); if(Object.values(klOn).some(Boolean)){ h+='<div class="s" style="margin-top:8px"><b>Kunden</b></div>'+Object.entries(KTXT).filter(([k])=>['offen','cas','csa','ccl','ccw','verloren'].includes(k)).map(([k,t])=>`<div class="li"><span class="ci" style="background:${KFARBE[k]};border:2px solid #001a4d;border-radius:50%"></span><span>${t}</span></div>`).join('')+'<div class="li"><span class="ci" style="border:3px solid #E87373;border-radius:50%"></span><span>Ort einer Potenzialanalyse</span></div><div class="li"><span class="ci" style="border:3px solid #E24C4C;border-radius:50%"></span><span>Ort eines Festpreisgesprächs</span></div><div class="li"><span class="ci" style="background:#D50000;border:2px solid #fff;border-radius:50%"></span><span>Abschluss</span></div>'; } return h; };
+
+/* ---------- Fenster Planung: Reiter Heute, Einsätze, Kunden, Nachfassen ---------- */
+let plTab=localStorage.getItem('sle_lm_pltab')||'heute', kFilter={loc:'',st:'aktiv',q:''};
+$$('#pl-tabs button').forEach(b=>b.onclick=()=>{ plTab=b.dataset.t; try{ localStorage.setItem('sle_lm_pltab',plTab); }catch(e){} kPlanTab(); });
+const _renderPlan=renderPlan; renderPlan=function(){ _renderPlan(); kPlanTab(); };
+function kPlanTab(){ $$('#pl-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===plTab)); ['heute','list','kunden','nach'].forEach(t=>{ const el=$('#pl-'+t); if(el) el.style.display=((t==='list'?'einsatz':t)===plTab)?'':'none'; });
+  if(plTab==='heute') heuteRender(); else if(plTab==='kunden') kundenRender(); else if(plTab==='nach') nachRender(); }
+function slotHtml(e){ const m=e.t.match(TITEL_RE); if(!m) return `<div class="slot frei"><b>${hm(e.s)}</b> Freier Termin</div>`; const l=leadByKey(m[2]);
+  const nav=l&&l.lat!=null?` <a class="btn small" href="https://www.google.com/maps/dir/?api=1&destination=${l.lat},${l.lon}" target="_blank" rel="noopener">Route</a>`:'';
+  return `<div class="slot ${m[1].toLowerCase()}" ${l?`data-lead="${l.id}"`:''}><b>${hm(e.s)}</b> ${esc(e.t)}${l?` · ${esc(l.name||'')} · ${esc(locName(l))}`:' · Lead nicht im Location Manager'}${nav}</div>`; }
+function heuteRender(){ const el=$('#pl-heute'); if(!el) return; let h='';
+  h+=`<div class="row sb"><span class="s">${gReady()?'Kalender 01-unternehmen, Stand '+(CAL.at?fmtDT(CAL.at):'nicht gelesen'):'Nicht bei Google angemeldet: Termine aus dem letzten Stand'+(CAL.at?' ('+fmtDT(CAL.at)+')':'')}</span><button class="btn small" id="hz-reload">Kalender neu lesen</button></div>`;
+  for(let i=0;i<8&&h.split('class="card day"').length<8;i++){ const date=addDays(today(),i); if(new Date(date+'T00:00').getDay()===0) continue; const p=dayPlan(date);
+    h+=`<div class="card day"><strong>${i===0?'Heute, ':''}${tagKurz(date)}</strong>`;
+    const items=[...p.slots.map(e=>({s:e.s,html:slotHtml(e)}))];
+    if(p.d2d){ let dh=`<div class="slot d2d"><b>${hm(p.d2d.s)} bis ${hm(p.d2d.e)}</b> D2D`;
+      if(p.sh.length) dh+=` · Einsatz geplant: <b>${esc(p.sh.map(s=>(D.locations.find(x=>x.id===s.locationId)||{}).name||'?').join(' + '))}</b>`;
+      else if(p.rec) dh+=` · Empfehlung: <b>${esc(p.rec.name)}</b> <span class="s">(${esc(p.why)})</span> <button class="btn primary small" data-take="${date}|${p.rec.id}">Einsatz übernehmen</button>`; else dh+=` · ${esc(p.why)}`;
+      if(p.blockers.length) dh+=`<div class="s warn">Im Block: ${p.blockers.map(b=>esc(b.t)+' '+hm(b.s)+' bis '+hm(b.e)).join(', ')}. Schicht ${Math.round(p.minutes/6)/10} Stunden${p.minutes<180?', zählt nicht als DSH (unter 3 Stunden)':''}.</div>`;
+      if(p.lang) dh+='<div class="s">Beide Fenster frei: lange Schicht bis 6 Stunden möglich (zählt als eine Schicht).</div>';
+      items.push({s:p.d2d.s,html:dh+'</div>'}); }
+    p.evs.filter(e=>!istSlot(e)&&!istD2D(e)&&!/^(Calls|Planung|Nachbereitung|Office|KPI)/i.test(e.t)&&!p.blockers.includes(e)).forEach(e=>items.push({s:e.s,html:`<div class="slot anders"><b>${hm(e.s)}</b> ${esc(e.t)}</div>`}));
+    items.sort((a,b)=>a.s.localeCompare(b.s)); h+=items.length?items.map(x=>x.html).join(''):'<div class="empty">Keine Termine im Kalender.</div>'; h+='</div>'; }
+  el.innerHTML=h; $('#hz-reload').onclick=async()=>{ if(!gReady()){ toast('Erst bei Google anmelden (Fenster Daten)'); return; } await calRead(false); };
+  $$('#pl-heute [data-lead]').forEach(x=>x.onclick=e=>{ if(e.target.closest('a')) return; leadOpen(x.dataset.lead,'plan'); });
+  $$('#pl-heute [data-take]').forEach(b=>b.onclick=()=>{ const [date,lid]=b.dataset.take.split('|'); const loc=D.locations.find(x=>x.id===lid); if(!loc) return;
+    D.shifts.push(Store.touch({id:Store.id(),locationId:loc.id,date,status:'geplant',leads:0,doors:0,hours:3,note:'',persons:[ME],createdAt:nowIso()})); Store.save(); render(loc); toast('Einsatz '+loc.name+' am '+tagKurz(date)+' angelegt'); calSyncAll(); heuteRender(); }); }
+function kundenRender(){ const el=$('#pl-kunden'); if(!el) return; const locs=[...D.locations].sort((a,b)=>a.name.localeCompare(b.name));
+  let h=`<div class="row"><button class="btn primary small" id="k-neu">+ Lead</button><a class="btn small" href="lead-formular.html" target="_blank" rel="noopener">Lead-Formular</a><span class="s">${D.leads.length} Leads</span></div>
+  <div class="grid3"><div><label for="k-loc">Location</label><select id="k-loc"><option value="">alle</option>${locs.map(x=>`<option value="${x.id}" ${kFilter.loc===x.id?'selected':''}>${esc(x.name)}</option>`).join('')}<option value="-" ${kFilter.loc==='-'?'selected':''}>ohne Gebiet</option></select></div>
+  <div><label for="k-st">Status</label><select id="k-st">${[['aktiv','alle offenen'],['offen','Termin offen'],['termin','Termin steht'],['ccl','Nachfassen'],['ccw','Abschluss'],['zu','ruhend, verloren'],['alle','alle']].map(([v,t])=>`<option value="${v}" ${kFilter.st===v?'selected':''}>${t}</option>`).join('')}</select></div>
+  <div><label for="k-q">Suche</label><input id="k-q" value="${esc(kFilter.q)}" placeholder="Name, Nr, Ort" autocomplete="off"></div></div>`;
+  const q=kFilter.q.toLowerCase(); const gr={termin:['cas','chc','csa','cof'],zu:['ruhend','verloren','ccr']};
+  const list=D.leads.filter(l=>{ const s=leadStatus(l); if(kFilter.loc==='-'&&l.locationId) return false; if(kFilter.loc&&kFilter.loc!=='-'&&l.locationId!==kFilter.loc) return false;
+    if(kFilter.st==='aktiv'&&['verloren','ccr','ruhend'].includes(s)) return false; if(kFilter.st==='offen'&&s!=='offen') return false; if(gr[kFilter.st]&&!gr[kFilter.st].includes(s)) return false; if(['ccl','ccw'].includes(kFilter.st)&&s!==kFilter.st) return false;
+    if(q&&![l.name,l.leadNr,l.calKey,l.plzort,l.strasse,locName(l)].join(' ').toLowerCase().includes(q)) return false; return true; })
+    .map(l=>({l,n:nextStep(l)})).sort((a,b)=>(a.n.due||'9999').localeCompare(b.n.due||'9999'));
+  h+=list.length?list.map(({l,n})=>kRow(l,n)).join(''):'<div class="empty">Keine Leads für diesen Filter. Leads kommen aus dem Lead-Formular oder über „+ Lead“.</div>';
+  el.innerHTML=h; $('#k-neu').onclick=()=>leadNew(); $('#k-loc').onchange=e=>{ kFilter.loc=e.target.value; kundenRender(); }; $('#k-st').onchange=e=>{ kFilter.st=e.target.value; kundenRender(); };
+  $('#k-q').oninput=e=>{ kFilter.q=e.target.value; clearTimeout(kFilter.t); kFilter.t=setTimeout(()=>{ kundenRender(); const i=$('#k-q'); i.focus(); i.setSelectionRange(i.value.length,i.value.length); },300); };
+  $$('#pl-kunden .krow').forEach(r=>r.onclick=()=>leadOpen(r.dataset.id,'plan')); }
+function kRow(l,n){ const s=leadStatus(l), late=n.due&&n.due<today(), heute=n.due===today();
+  return `<div class="krow" data-id="${l.id}"><span class="dot" style="background:${KFARBE[s]}"></span><div class="kt"><b>${esc(leadKey(l))}</b> ${esc(l.name||'')} <span class="s">${esc(locName(l))} · ${l.herkunft==='SL'?'SL':l.herkunft==='Empfehlung'?'Empfehlung':'D2D'}</span><div class="s">${esc(KTXT[s])}${n.t?' · <span class="'+(late?'late':heute?'due':'')+'">'+esc(n.t)+(n.due?' · '+tagKurz(n.due):'')+'</span>':''}</div></div></div>`; }
+function nachRender(){ const el=$('#pl-nach'); if(!el) return; const td=today();
+  const all=D.leads.map(l=>({l,s:leadStatus(l),n:nextStep(l)})).filter(x=>x.n.due&&x.n.due<=addDays(td,2));
+  const sec=(t,arr,leer)=>`<h3 class="sec">${t}</h3>`+(arr.length?arr.sort((a,b)=>a.n.due.localeCompare(b.n.due)).map(x=>kRow(x.l,x.n)).join(''):`<div class="empty">${leer}</div>`);
+  el.innerHTML=sec('Ergebnis eintragen',all.filter(x=>/gehalten\?/.test(x.n.t)),'Keine Termine ohne Ergebnis.')+sec('Rückrufe CLC (Calls 09:00, 12:00, 18:00)',all.filter(x=>x.s==='offen'),'Keine Rückrufe fällig.')+sec('Festpreisgespräch vereinbaren, Angebote',all.filter(x=>['chc','csa','cof'].includes(x.s)&&!/gehalten\?/.test(x.n.t)),'Nichts fällig.')+sec('Angebotsnachfassung CCL (Tag 2, 5, 9, 14)',all.filter(x=>x.s==='ccl'),'Kein Nachfassen fällig.');
+  $$('#pl-nach .krow').forEach(r=>r.onclick=()=>leadOpen(r.dataset.id,'plan')); }
+
+/* ---------- Lead-Karte ---------- */
+let LD={id:null,back:null,mode:'',book:null};
+function leadOpen(id,back){ LD={id,back:back||openWin||null,mode:'',book:null}; if(openWin!=='lead'){ openWin=null; show('lead'); } leadRender(); }
+function leadClose(){ const b=LD.back; LD={id:null,back:null,mode:'',book:null}; show(null); if(b&&b!=='lead') show(b); }
+$('#ld-close').onclick=leadClose;
+function leadNew(pre){ const l=Object.assign({id:Store.id(),herkunft:'SL',leadNr:'',calKey:'',nachweisNr:'',name:'',tel:'',mail:'',strasse:'',plzort:'',notiz:'',termine:{},verlauf:[],createdAt:nowIso(),neu:true},pre||{}); LD={id:l.id,back:openWin||'plan',mode:'edit',book:null,draft:l}; if(openWin!=='lead'){ openWin=null; show('lead'); } leadRender(); }
+function leadCur(){ return LD.draft&&LD.draft.id===LD.id?LD.draft:D.leads.find(l=>l.id===LD.id); }
+function copyBtn(t,v){ return v?`<button class="btn small" data-copy="${esc(v)}">${t}</button>`:''; }
+function leadRender(){ const l=leadCur(), el=$('#ld-body'); if(!l){ el.innerHTML='<div class="empty">Lead nicht gefunden.</div>'; return; }
+  const s=leadStatus(l), n=nextStep(l), T=l.termine||{};
+  $('#ld-dot').style.background=KFARBE[s]; $('#ld-t').textContent=l.neu?'Neuer Lead':leadKey(l)+(l.name?' · '+l.name:''); $('#ld-sub').textContent=l.neu?'':KTXT[s];
+  let h='';
+  if(LD.mode==='edit'){ const H=['SL','D2D','Empfehlung'];
+    h+=`<div class="form"><div class="grid3"><div><label for="lf-h">Herkunft</label><select id="lf-h">${H.map(x=>`<option ${l.herkunft===x?'selected':''}>${x}</option>`).join('')}</select></div><div><label for="lf-nr">Lead-Nr (REONIC)</label><input id="lf-nr" value="${esc(l.leadNr)}" autocomplete="off"></div><div><label for="lf-d">${l.neu?'Datum (zugewiesen/aufgenommen)':'Nachweis-Nr'}</label>${l.neu?`<input type="date" id="lf-d" value="${today()}">`:`<input id="lf-d" value="${esc(l.nachweisNr)}" disabled>`}</div></div>
+      <label for="lf-name">Vor- und Nachname</label><input id="lf-name" value="${esc(l.name)}" autocomplete="off">
+      <div class="grid3"><div><label for="lf-tel">Telefon</label><input id="lf-tel" value="${esc(l.tel)}" inputmode="tel" autocomplete="off"></div><div style="grid-column:span 2"><label for="lf-mail">E-Mail</label><input id="lf-mail" value="${esc(l.mail)}" inputmode="email" autocomplete="off"></div></div>
+      <div class="grid3"><div style="grid-column:span 2"><label for="lf-str">Straße und Hausnummer</label><input id="lf-str" value="${esc(l.strasse)}" autocomplete="off"></div><div><label for="lf-plz">PLZ und Ort</label><input id="lf-plz" value="${esc(l.plzort)}" autocomplete="off"></div></div>
+      <label for="lf-notiz">Notiz</label><textarea id="lf-notiz">${esc(l.notiz)}</textarea>
+      <div class="row" style="margin-top:10px"><button class="btn primary" id="lf-save">Speichern</button><button class="btn" id="lf-cancel">Abbrechen</button>${l.neu?'':'<button class="btn danger" id="lf-del" style="margin-left:auto">Lead löschen</button>'}</div></div>`;
+    el.innerHTML=h; leadBindEdit(l); return; }
+  h+=`<div class="card"><div class="s">${esc(KTXT[s])} · ${esc(locName(l))} · Herkunft ${esc(l.herkunft)}${l.nachweisNr?' · Nachweis '+esc(l.nachweisNr):''}</div>${n.t?`<div style="margin-top:6px"><b>Nächster Schritt:</b> ${esc(n.t)}${n.due?' · '+tagKurz(n.due):''}</div>`:''}</div>`;
+  h+=`<div class="card"><strong>Termine</strong>`+(['chc','csc'].map(a=>{ const t=T[a]; if(!t) return ''; const gehalten=a==='chc'?hasEv(l,'CHC'):hasEv(l,'CSC'); return `<div class="slot ${a}"><b>${a==='chc'?'Potenzialanalyse':'Festpreisgespräch'}</b> ${tagKurz(isoDay(t.start))} ${hm(t.start)}${gehalten?' · gehalten':''}</div>`; }).join('')||'<div class="s">Noch kein Termin.</div>')+`</div>`;
+  h+=`<div class="card"><strong>Nächste Aktion</strong><div class="acts" id="ld-acts">${leadActs(l,s)}</div><div id="ld-form"></div></div>`;
+  const ew=l.einw?[l.einw.tel&&'Telefon',l.einw.mail&&'E-Mail',l.einw.sms&&'SMS',l.einw.msg&&('Messenger'+(l.einw.dienst?' ('+l.einw.dienst+')':''))].filter(Boolean).join(', '):'';
+  h+=`<div class="card"><strong>Kontakt</strong><div>${esc(l.name||'')}</div>${l.tel?`<div><a href="tel:${esc(l.tel)}">${esc(l.tel)}</a></div>`:''}${l.mail?`<div><a href="mailto:${esc(l.mail)}">${esc(l.mail)}</a></div>`:''}<div>${esc(l.strasse||'')}${l.plzort?', '+esc(l.plzort):''}</div>
+    ${l.herkunft==='D2D'&&l.einw?`<div class="s">Einwilligung: ${esc(ew||'keine')}${l.rueckruf&&l.rueckruf.length?' · Rückruf: '+esc(l.rueckruf.join(', ')):''}</div>`:''}
+    ${l.haus&&(l.haus.baujahr||l.haus.heizjahr||(l.haus.heizung||[]).length||(l.haus.interesse||[]).length)?`<div class="s">Haus ${esc(l.haus.baujahr||'?')}, Heizung ${esc(l.haus.heizjahr||'?')} ${esc((l.haus.heizung||[]).join(', '))}${(l.haus.interesse||[]).length?' · Interesse: '+esc(l.haus.interesse.join(', ')):''}</div>`:''}
+    ${l.notiz?`<div class="s">Notiz: ${esc(l.notiz)}</div>`:''}
+    <div class="row" style="margin-top:8px">${l.lat!=null?`<button class="btn small" id="ld-map">Auf der Karte</button><a class="btn small" href="https://www.google.com/maps/dir/?api=1&destination=${l.lat},${l.lon}" target="_blank" rel="noopener">Route</a>`:'<span class="s">Adresse noch nicht auf der Karte.</span>'}<button class="btn small" id="ld-here">Position = Kartenmitte</button><button class="btn small" id="ld-edit">Bearbeiten</button></div>
+    <div class="s" style="margin-top:8px">Für REONIC kopieren:</div><div class="row">${copyBtn('Name',l.name)}${copyBtn('Telefon',l.tel)}${copyBtn('E-Mail',l.mail)}${copyBtn('Straße',l.strasse)}${copyBtn('PLZ Ort',l.plzort)}${copyBtn('Notiz',l.notiz)}${copyBtn('Nachweis-Nr',l.nachweisNr)}</div></div>`;
+  h+=`<div class="card"><strong>Verlauf</strong>${(l.verlauf||[]).slice().reverse().map(e=>`<div class="s">${fmtDT(e.at)} · <b>${esc(e.c)}</b> ${esc(evText(e))}</div>`).join('')||'<div class="s">leer</div>'}</div>`;
+  el.innerHTML=h; leadBind(l); }
+function evText(e){ const t={CLD:'Lead D2D',CLI:'Lead von SL',CRF:'Empfehlung',CLC:'Anrufversuch',CAS:'Potenzialanalyse vereinbart',CHC:'Potenzialanalyse gehalten',CHX:'Potenzialanalyse nicht gehalten',CSA:'Festpreisgespräch vereinbart',COF:'Angebot freigegeben',CSC:'Festpreisgespräch gehalten',CSX:'Festpreisgespräch nicht gehalten',CCL:'Nachfassen',CCW:'Abschluss',CCR:'Widerruf',RUH:'ruhend',VER:'verloren',REO:'wieder aufgenommen',ABS:'Termin abgesagt'}[e.c]||'';
+  return t+(e.termin?' für '+tagKurz(isoDay(e.termin))+' '+hm(e.termin):'')+(e.dda?', an der Tür (DDA)':'')+(e.ok===false?', Bestätigung offen':'')+(e.n?', Kontakt '+e.n:'')+(e.ergebnis?', '+e.ergebnis:'')+(e.grund?', '+e.grund:'')+(e.wv?', Wiedervorlage '+tagKurz(e.wv):'')+(e.src==='kalender'?' (aus dem Kalender)':''); }
+function leadActs(l,s){ const T=l.termine||{}, now=new Date(); const B=(a,t,p)=>`<button class="btn ${p?'primary':''} small" data-a="${a}">${t}</button>`; const out=[];
+  const offen=(ev(l,'CAS').concat(ev(l,'CSA'))).find(e=>e.ok===false&&T[e.c==='CAS'?'chc':'csc']&&T[e.c==='CAS'?'chc':'csc'].calId===e.calId); if(offen) out.push(B('ok','Bestätigung gesendet',true));
+  if(s==='offen'){ out.push(B('book-chc','Potenzialanalyse buchen',true),B('clc','Anrufversuch: nicht erreicht'),B('ver','kein Interesse')); }
+  if(s==='cas'&&T.chc){ if(new Date(T.chc.start)<=now) out.push(B('chc-ok','Potenzialanalyse gehalten',true),B('chc-x','nicht gehalten')); else out.push(B('abs-chc','Termin absagen'),B('book-chc','verschieben')); }
+  if(s==='chc'){ out.push(B('book-csc','Festpreisgespräch buchen',true)); if(!hasEv(l,'COF')) out.push(B('cof','Angebot freigegeben (COF)')); out.push(B('ver','verloren')); }
+  if((s==='csa'||s==='cof')&&T.csc){ if(new Date(T.csc.start)<=now) out.push(B('csc-ok','Festpreisgespräch gehalten',true),B('csc-x','nicht gehalten')); else { if(!hasEv(l,'COF')) out.push(B('cof','Angebot freigegeben (COF)',true)); out.push(B('abs-csc','Termin absagen'),B('book-csc','verschieben')); } }
+  if(s==='ccl'){ const n=nextStep(l); if(n.k!=null) out.push(B('ccl','Kontakt '+(n.k+1)+' erledigt',true)); out.push(B('ccw','Abschluss'),B('ruh','ruhend'),B('ver','verloren')); }
+  if(s==='ccw'){ out.push(B('emp','Empfehlung anlegen',true),B('ccr','Widerruf')); }
+  if(s==='ruhend'||s==='verloren'||s==='ccr') out.push(B('reo','wieder aufnehmen'));
+  return out.join(''); }
+function leadBind(l){ const T=l.termine||{};
+  $$('#ld-body [data-copy]').forEach(b=>b.onclick=async()=>{ try{ await navigator.clipboard.writeText(b.dataset.copy); toast(b.textContent+' kopiert'); }catch(e){ toast('Kopieren nicht möglich'); } });
+  $('#ld-edit').onclick=()=>{ LD.mode='edit'; leadRender(); };
+  if($('#ld-map')) $('#ld-map').onclick=()=>{ LD.back=null; show(null); map.setView([l.lat,l.lon],Math.max(map.getZoom(),17)); if(!klOn.lead){ klOn.lead=true; klRender(); } };
+  $('#ld-here').onclick=()=>{ const c=map.getCenter(); l.lat=+c.lat.toFixed(6); l.lon=+c.lng.toFixed(6); l.geoFail=false; const id=locFor(l.lat,l.lon); if(id) l.locationId=id; leadSave(l); toast('Position gesetzt: '+locName(l)); leadRender(); };
+  const F=$('#ld-form'), push=(e)=>{ l.verlauf.push(Object.assign({at:nowIso()},e)); leadSave(l); leadRender(); };
+  const grundForm=(titel,opts,fn)=>{ F.innerHTML=`<div class="form"><label for="gr-s">${titel}</label><select id="gr-s">${opts.map(o=>`<option>${o}</option>`).join('')}</select><input id="gr-t" placeholder="Ergänzung (frei)" autocomplete="off" style="margin-top:6px"><div class="row" style="margin-top:8px"><button class="btn primary small" id="gr-ok">Speichern</button><button class="btn small" id="gr-no">Abbrechen</button></div></div>`; $('#gr-no').onclick=()=>F.innerHTML=''; $('#gr-ok').onclick=()=>fn([$('#gr-s').value,$('#gr-t').value.trim()].filter(Boolean).join(': ')); };
+  const run=async(fn)=>{ try{ await fn(); }catch(e){ toast(e.message||String(e)); } };
+  $$('#ld-acts [data-a]').forEach(b=>b.onclick=()=>run(async()=>{ const a=b.dataset.a;
+    if(a==='ok'){ (l.verlauf||[]).forEach(e=>{ if((e.c==='CAS'||e.c==='CSA')&&e.ok===false) e.ok=true; }); leadSave(l); leadRender(); }
+    else if(a==='clc') push({c:'CLC',ergebnis:'nicht erreicht'});
+    else if(a==='ver') grundForm('Grund',['kein Interesse','Preis','Finanzierung','Mieter, kein Eigentümer','keine Entscheidung nach 4 Kontakten','anderes'],g=>push({c:'VER',grund:g}));
+    else if(a==='book-chc'||a==='book-csc') bookOpen(l,a.slice(5));
+    else if(a==='abs-chc'||a==='abs-csc') grundForm('Absage, Grund',['Kunde hat abgesagt','Entscheider nicht da','verschoben','anderes'],g=>run(async()=>{ await calUnbook(l,a.slice(4),g); leadRender(); toast('Termin abgesagt, Fenster wieder frei'); }));
+    else if(a==='chc-ok'){ l.verlauf.push({c:'CHC',at:T.chc.start,calId:T.chc.calId}); leadSave(l); toast('Potenzialanalyse gehalten. Jetzt das Festpreisgespräch buchen.'); bookOpen(l,'csc'); }
+    else if(a==='chc-x'||a==='csc-x'){ const art=a.slice(0,3); grundForm('Nicht gehalten, Grund',['nicht erschienen','Entscheider fehlten','unter 45 Minuten','Mieter, kein Eigentümer','anderes'],g=>run(async()=>{ await calMark(l,art,/erschienen/.test(g)?'nicht erschienen':'nicht gehalten'); const t=l.termine[art]; l.verlauf.push({c:art==='chc'?'CHX':'CSX',at:t.start,calId:t.calId,grund:g}); delete l.termine[art]; leadSave(l); leadRender(); })); }
+    else if(a==='cof') push({c:'COF'});
+    else if(a==='csc-ok'){ F.innerHTML=`<div class="form"><label>Ergebnis des Festpreisgesprächs</label><div class="row"><button class="btn primary small" data-r="ccw">Abschluss (unterschrieben)</button><button class="btn small" data-r="ccl">keine Entscheidung, nachfassen</button><button class="btn danger small" data-r="ver">Nein</button></div></div>`;
+      $$('#ld-form [data-r]').forEach(x=>x.onclick=()=>{ l.verlauf.push({c:'CSC',at:T.csc.start,calId:T.csc.calId}); const r=x.dataset.r; if(r==='ccw'){ l.verlauf.push({c:'CCW',at:nowIso()}); leadSave(l); leadRender(); } else if(r==='ver'){ leadSave(l); grundForm('Grund',['Preis','Finanzierung','kein Interesse mehr','Wettbewerber','anderes'],g=>push({c:'VER',grund:g})); } else { leadSave(l); leadRender(); } }); }
+    else if(a==='ccl'){ const n=nextStep(l); F.innerHTML=`<div class="form"><label>Kontakt ${n.k+1}: ${esc(n.t)}</label><div class="row"><button class="btn primary small" data-r="ccw">Zusage: Abschluss</button><button class="btn small" data-r="weiter">weiter offen</button><button class="btn small" data-r="ne">nicht erreicht</button><button class="btn danger small" data-r="ver">klares Nein</button></div></div>`;
+      $$('#ld-form [data-r]').forEach(x=>x.onclick=()=>{ const r=x.dataset.r; if(r==='ne'){ push({c:'CLC',ergebnis:'Nachfassen nicht erreicht'}); return; } l.verlauf.push({c:'CCL',at:nowIso(),n:n.k+1,ergebnis:r==='ccw'?'Zusage':r==='ver'?'Nein':'offen'}); if(r==='ccw') l.verlauf.push({c:'CCW',at:nowIso()}); if(r==='ver'){ leadSave(l); grundForm('Grund',['Preis','Finanzierung','kein Interesse mehr','Wettbewerber','anderes'],g=>push({c:'VER',grund:g})); return; } leadSave(l); leadRender(); }); }
+    else if(a==='ccw') push({c:'CCW'});
+    else if(a==='ruh'){ F.innerHTML=`<div class="form"><label for="wv">Wiedervorlage (vor dem nächsten Förderstichtag)</label><input type="date" id="wv" value="${addDays(today(),60)}"><div class="row" style="margin-top:8px"><button class="btn primary small" id="wv-ok">Speichern</button></div></div>`; $('#wv-ok').onclick=()=>push({c:'RUH',wv:$('#wv').value}); }
+    else if(a==='ccr') push({c:'CCR'});
+    else if(a==='emp') leadNew({herkunft:'Empfehlung',notiz:'Empfehlung von '+leadKey(l),plzort:l.plzort,locationId:l.locationId});
+    else if(a==='reo') push({c:'REO'}); })); }
+function leadBindEdit(l){ $('#lf-cancel').onclick=()=>{ if(l.neu){ leadClose(); return; } LD.mode=''; leadRender(); };
+  if($('#lf-del')) $('#lf-del').onclick=()=>{ if(!confirm('Lead '+leadKey(l)+' löschen? Kalendertermine bleiben im Kalender.')) return; Store.tomb(l.id); D.leads=D.leads.filter(x=>x.id!==l.id); Store.save(); kAfterChange(); leadClose(); toast('Lead gelöscht'); };
+  $('#lf-save').onclick=async()=>{ const nr=$('#lf-nr').value.trim(), alt=l.calKey; const adr=[l.strasse,l.plzort].join('|');
+    Object.assign(l,{herkunft:$('#lf-h').value,leadNr:nr,name:$('#lf-name').value.trim(),tel:$('#lf-tel').value.trim(),mail:$('#lf-mail').value.trim(),strasse:$('#lf-str').value.trim(),plzort:$('#lf-plz').value.trim(),notiz:$('#lf-notiz').value.trim()});
+    if(!l.name&&!l.leadNr){ toast('Name oder Lead-Nr eintragen'); return; }
+    if(l.herkunft==='SL'&&!l.leadNr){ toast('SL-Leads brauchen die Lead-Nr aus REONIC'); return; }
+    if(D.leads.some(x=>x.id!==l.id&&x.leadNr&&x.leadNr===l.leadNr)){ toast('Lead-Nr '+l.leadNr+' gibt es schon'); return; }
+    if(adr!==[l.strasse,l.plzort].join('|')){ l.lat=null; l.lon=null; l.geoFail=false; }
+    if(l.neu){ const d=$('#lf-d').value||today(); const at=d===today()?nowIso():new Date(d+'T12:00').toISOString(); delete l.neu; l.verlauf=[{c:l.herkunft==='SL'?'CLI':l.herkunft==='Empfehlung'?'CRF':'CLD',at,src:'hand'}];
+      if(l.herkunft==='D2D'){ const sh=D.shifts.find(s=>s.date===d&&(s.persons||[]).includes(ME)); if(sh){ l.einsatzId=sh.id; if(!l.locationId) l.locationId=sh.locationId; } }
+      D.leads.push(l); LD.draft=null; }
+    if(nr&&alt&&alt!==nr){ l.calKey=''; await calRekey(l,alt); }
+    shiftLeadsSync(); leadSave(l); LD.mode=''; leadRender(); geoQueue(); toast('Lead gespeichert'); }; }
+
+/* ---------- Termin buchen: zwei Vorschläge nach der Terminierungsregel ---------- */
+async function bookOpen(l,art){ const F=$('#ld-form'); F.innerHTML='<div class="s">Kalender wird gelesen …</div>'; if(gReady()) await calRead(); LD.book={art,wunsch:'egal'}; bookRender(l); }
+function bookCands(l,art,wunsch){ const now=new Date(); let von=new Date(now.getTime()+30*6e4), bis=new Date(now.getTime()+7*864e5);
+  if(art==='csc'){ const h=ev(l,'CHC').pop(); const base=h?new Date(h.at):now; const v2=new Date(base); v2.setDate(v2.getDate()+2); v2.setHours(0,0,0,0); if(v2>von) von=v2; bis=new Date(base.getTime()+8*864e5); }
+  const frei=CAL.events.filter(e=>/^Freier Termin/i.test(e.t)&&new Date(e.s)>=von);
+  const imZeitraum=frei.filter(e=>new Date(e.s)<=bis), weiter=frei.filter(e=>new Date(e.s)>bis);
+  const gleich=e=>{ const d=isoDay(e.s); if(!l.locationId) return false; if(D.shifts.some(s=>s.date===d&&s.locationId===l.locationId)) return true; return CAL.events.some(x=>isoDay(x.s)===d&&TITEL_RE.test(x.t)&&(()=>{ const o=leadByKey(x.t.match(TITEL_RE)[2]); return o&&o.id!==l.id&&o.locationId===l.locationId; })()); };
+  const pass=e=>{ const hr=new Date(e.s).getHours(); return wunsch==='egal'||(wunsch==='mittags'?hr<14:hr>=14); };
+  const score=e=>(gleich(e)?0:10)+(pass(e)?0:5);
+  const list=imZeitraum.slice().sort((a,b)=>(score(a)-score(b))||a.s.localeCompare(b.s));
+  let warn=''; if(art==='chc'){ const freiWoche=CAL.events.filter(e=>/^Freier Termin/i.test(e.t)&&new Date(e.s)>=now&&new Date(e.s)<=new Date(now.getTime()+7*864e5)).length; const warten=D.leads.filter(x=>leadStatus(x)==='chc').length; if(freiWoche<=1&&warten) warn=`Nur noch ${freiWoche} freies Fenster in 7 Tagen und ${warten} Festpreisgespräch(e) offen: Festpreisgespräche gehen vor (Terminierungsregel Rang 4).`; }
+  return {list,weiter,gleich,warn}; }
+function bookRender(l){ const F=$('#ld-form'), B=LD.book, art=B.art; const {list,weiter,gleich,warn}=bookCands(l,art,B.wunsch);
+  const ddaDef=art==='chc'&&l.herkunft==='D2D'&&isoDay((ev(l,'CLD')[0]||{}).at||'2000-01-01')===today();
+  const btn=(e,p)=>`<button class="btn ${p?'primary':''} small" data-ev="${e.id}">${tagKurz(isoDay(e.s))} ${hm(e.s)}${gleich(e)?' · gleiche Location':''}</button>`;
+  F.innerHTML=`<div class="form"><h3>${art==='chc'?'Potenzialanalyse':'Festpreisgespräch'} buchen</h3>
+    <div class="seg" id="bk-w">${['egal','mittags','nachmittags'].map(w=>`<button data-w="${w}" class="${B.wunsch===w?'on':''}">${w==='egal'?'Kunde: egal':w==='mittags'?'12:30':'16:45'}</button>`).join('')}</div>
+    ${!gReady()?'<div class="s warn">Nicht bei Google angemeldet: Buchen geht erst nach der Anmeldung (Fenster Daten).</div>':''}${warn?`<div class="s warn">${warn}</div>`:''}
+    <div class="s" style="margin-top:6px">Immer zwei Termine zur Wahl anbieten:</div><div class="row">${list.slice(0,2).map(e=>btn(e,true)).join('')||'<span class="s">Kein freies Fenster im Zeitraum.</span>'}</div>
+    ${list.length>2||weiter.length?`<details><summary class="s">weitere Fenster</summary><div class="row">${list.slice(2).concat(weiter.slice(0,8)).map(e=>btn(e,false)).join('')}</div></details>`:''}
+    <details><summary class="s">anderer Zeitpunkt (Fenster verschieben)</summary><div class="grid3"><div><input type="date" id="bk-d" value="${today()}"></div><div><input type="time" id="bk-t" value="12:30"></div><div><button class="btn small" id="bk-new">Termin anlegen</button></div></div></details>
+    <label class="chk"><input type="checkbox" id="bk-ok" checked> Bestätigung per SMS oder Mail gesendet</label>
+    ${art==='chc'&&l.herkunft==='D2D'?`<label class="chk"><input type="checkbox" id="bk-dda" ${ddaDef?'checked':''}> an der Tür gebucht (DDA)</label>`:''}
+    <div class="row" style="margin-top:8px"><button class="btn small" id="bk-no">Abbrechen</button></div></div>`;
+  $$('#bk-w button').forEach(b=>b.onclick=()=>{ B.wunsch=b.dataset.w; bookRender(l); }); $('#bk-no').onclick=()=>{ F.innerHTML=''; LD.book=null; leadRender(); };
+  const opts=()=>({ok:$('#bk-ok').checked,dda:!!($('#bk-dda')&&$('#bk-dda').checked)});
+  const wechsel=async()=>{ if(l.termine&&l.termine[art]&&!(art==='chc'?hasEv(l,'CHC'):hasEv(l,'CSC'))) await calUnbook(l,art,'verschoben'); };
+  $$('#ld-form [data-ev]').forEach(b=>b.onclick=async()=>{ const e=CAL.events.find(x=>x.id===b.dataset.ev); try{ const o=opts(); await wechsel(); await calBook(l,art,e,o); LD.book=null; leadRender(); toast((art==='chc'?'Potenzialanalyse':'Festpreisgespräch')+' gebucht: '+tagKurz(isoDay(e.s))+' '+hm(e.s)); }catch(x){ toast(x.message||String(x)); } });
+  $('#bk-new').onclick=async()=>{ const d=$('#bk-d').value, t=$('#bk-t').value; if(!d||!t) return; try{ const o=opts(); await wechsel(); await calBookNew(l,art,new Date(d+'T'+t).toISOString(),o); LD.book=null; leadRender(); toast('Termin angelegt: '+tagKurz(d)+' '+t); }catch(x){ toast(x.message||String(x)); } }; }
+
+/* ---------- Dashboard: Reiter Woche und Ranking ---------- */
+let dTab='einsatz', wk=isoWeekOf(today());
+$$('#d-tabs button').forEach(b=>b.onclick=()=>{ dTab=b.dataset.t; kDashTab(); });
+const _renderDash=renderDash; renderDash=function(){ _renderDash(); kDashTab(); };
+function kDashTab(){ $$('#d-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===dTab)); ['einsatz','woche','rank'].forEach(t=>{ const el=$('#d-'+t); if(el) el.style.display=t===dTab?'':'none'; }); $('#d-range').style.display=dTab==='einsatz'?'':'none';
+  if(dTab==='woche') wocheRender(); if(dTab==='rank') rankRender(); }
+function wocheRender(){ const el=$('#d-woche'); if(!el) return; const days=kpiWeek(wk.year,wk.week), S=kSum(days), mon=weekMonday(wk.year,wk.week);
+  let h=`<div class="row sb"><button class="btn small" id="wk-prev">‹</button><strong>KW ${wk.week} · ${tagKurz(mon)} bis ${tagKurz(addDays(mon,5))}</strong><button class="btn small" id="wk-next">›</button></div>
+    <div class="s">${KF.at?'An das Wochenblatt übergeben: '+fmtDT(KF.at):'Noch nicht an das Wochenblatt übergeben (bei Google anmelden).'}${KF.err==='scope'?' · Für die Übergabe einmal neu bei Google anmelden.':''}</div>
+    <div class="tscroll"><table class="kw"><tr><th></th>${WTAGE.map(k=>`<th class="r">${k[0].toUpperCase()+k[1]}</th>`).join('')}<th class="r">Σ</th><th class="r">Ziel</th></tr>`;
+  KCODES.forEach(c=>{ h+=`<tr title="${KDE[c]}"><td><b>${c}</b></td>${WTAGE.map(k=>`<td class="r">${days[k][c]||''}</td>`).join('')}<td class="r"><b>${S[c]}</b></td><td class="r">${KZIEL[c]}</td></tr>`; });
+  h+=`</table></div><div class="s" style="margin-top:6px">${KCODES.map(c=>c+' '+KDE[c]).join(' · ')}</div><h3 class="sec">Location je Tag</h3>${WTAGE.map(k=>days[k].loc?`<div class="s">${tagKurz(days[k].date)}: ${esc(days[k].loc)}${days[k].rating?' · Bewertung '+days[k].rating:''}${days[k].back?' · wiederkommen':''}</div>`:'').join('')||'<div class="s">Keine Einsätze in dieser Woche.</div>'}<h3 class="sec">Quoten (Rechnung wie im Wochenblatt)</h3><table>${kQuoten(S).map(q=>`<tr><td>${q[0]}</td><td class="r"><b>${q[1]}</b></td><td class="r s">${q[2]}</td></tr>`).join('')}</table>`;
+  el.innerHTML=h; $('#wk-prev').onclick=()=>{ wk=isoWeekOf(addDays(mon,-7)); wocheRender(); }; $('#wk-next').onclick=()=>{ wk=isoWeekOf(addDays(mon,7)); wocheRender(); }; }
+function rankRender(){ const el=$('#d-rank'); if(!el) return; const rows=rankRows(); const f=(x,d=1)=>x==null?'':x.toFixed(d);
+  el.innerHTML=`<div class="s">Sortiert nach Abschlüssen je 100 Türen (nur D2D-Leads), dann Folgetermin-Quote (CSA je CHC), dann Leads je 100 Türen. Grau: weniger als 3 Abschlüsse, noch wenig Aussagekraft.</div>
+    <div class="tscroll"><table><tr><th>Location</th><th class="r">Türen</th><th class="r">Leads</th><th class="r">SL</th><th class="r">CHC</th><th class="r">CSA</th><th class="r">CCW</th><th class="r">CCW/100</th><th class="r">CSA-Q.</th><th class="r">Leads/100</th></tr>
+    ${rows.map(r=>`<tr class="${r.CCW<3?'grau':''}"><td>${r.loc?`<span class="dot" style="background:${STATUS_FARBE[locStatus(r.loc).k]}"></span> `:''}${esc(r.name)}</td><td class="r">${r.DOR}</td><td class="r">${r.CLD}</td><td class="r">${r.CLI}</td><td class="r">${r.CHC}</td><td class="r">${r.CSA}</td><td class="r">${r.CCW}</td><td class="r">${f(r.ccw100,2)}</td><td class="r">${r.csaQ==null?'':Math.round(r.csaQ*100)+' %'}</td><td class="r">${f(r.l100)}</td></tr>`).join('')}</table></div>`; }
+
+/* ---------- Fenster Daten, Einsatz-Felder, Aktualisierung ---------- */
+function kDatenInfo(){ const el=$('#kd-info'); if(!el) return; const n=D.leads.length, geo=D.leads.filter(l=>l.lat!=null).length;
+  el.innerHTML=`${n} Leads, ${geo} auf der Karte.${CAL.at?' Kalender gelesen '+fmtDT(CAL.at)+'.':''}<br>${KF.at?'Wochenzahlen an das Wochenblatt übergeben: '+fmtDT(KF.at)+'.':'Wochenzahlen noch nicht übergeben.'}${KF.err==='scope'?' <b>Einmal „Abmelden“ und neu „Bei Google anmelden“, damit die Seite die Datei für das Wochenblatt schreiben darf.</b>':KF.err?' Fehler: '+esc(KF.err):''}`; }
+if($('#kd-kpi')) $('#kd-kpi').onclick=async()=>{ if(!gReady()){ toast('Erst bei Google anmelden'); return; } await kpiFileSync(true); toast(KF.err?'Übergabe fehlgeschlagen':'Wochenzahlen übergeben'); };
+let kTimer=null;
+function kAfterChange(){ clearTimeout(kTimer); kTimer=setTimeout(()=>{ klRender(); kDatenInfo(); if(openWin==='plan') kPlanTab(); if(openWin==='dash') kDashTab(); if(openWin==='lead'&&!LD.mode&&!LD.book&&!($('#ld-form')&&$('#ld-form').innerHTML)) leadRender(); },80); }
+// Einsatz: Bewertung 1 bis 5 und „wiederkommen“ (für Seite 2 des Wochenblatts)
+function sRatingSet(v){ $$('#s-rating .chip').forEach(c=>c.classList.toggle('on',+c.dataset.r===+v)); }
+$$('#s-rating .chip').forEach(c=>c.onclick=()=>sRatingSet($$('#s-rating .chip.on')[0]===c?0:c.dataset.r));
+const _fillShift=fillShift; fillShift=function(s){ _fillShift(s); sRatingSet(s&&s.rating||0); $('#s-back').value=s&&s.back||''; };
+const _sSave=$('#s-save').onclick; $('#s-save').onclick=()=>{ const r=+(($$('#s-rating .chip.on')[0]||{}).dataset||{}).r||0, bk=$('#s-back').value, ed=editShift, n=D.shifts.length; _sSave(); const s=ed||(D.shifts.length>n?D.shifts[D.shifts.length-1]:null); if(s){ s.rating=r; s.back=bk; Store.touch(s); Store.save(); } };
+window.addEventListener('storage',e=>{ if(e.key&&e.key.startsWith('sl_leads_v3_')) dlfImport(); });
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ dlfImport(); if(gReady()) calRead(); } });
+setInterval(()=>{ if(gReady()&&!document.hidden) calRead(); },10*60*1000);
+window.addEventListener('online',()=>geoQueue());
+dlfImport(); klRender(); kDatenInfo(); geoQueue(); if(gReady()) setTimeout(()=>calRead(),1500);
 </script>
 <script>L.Icon.Default.mergeOptions({iconUrl:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAApCAYAAADAk4LOAAAWfmNhQlgAABZ+anVtYgAAAB5qdW1kYzJwYQARABCAAACqADibcQNjMnBhAAAAFlhqdW1iAAAAR2p1bWRjMm1hABEAEIAAAKoAOJtxA3VybjpjMnBhOmM1YTIzODM5LTQyNTgtNGZjZi1iYWFiLTZhNTY0ZDllMjc0OQAAAAOTanVtYgAAAClqdW1kYzJhcwARABCAAACqADibcQNjMnBhLmFzc2VydGlvbnMAAAAAuGp1bWIAAABEanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5pbmdyZWRpZW50LnYzAAAAABhjMnNolPMMhy2h+v3bwgG55pNDawAAAGxjYm9yo2lkYzpmb3JtYXRpaW1hZ2UvcG5namluc3RhbmNlSUR4LHhtcDppaWQ6ZTdjZmY0ZGQtYTI4YS00MjVjLTllZjgtMTk2MzU3Y2FiOWU3bHJlbGF0aW9uc2hpcGhwYXJlbnRPZgAAAeJqdW1iAAAAQWp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuYWN0aW9ucy52MgAAAAAYYzJzaA7Ys8viytvM8bl4jXbIxA0AAAGZY2JvcqJnYWN0aW9uc4KiZmFjdGlvbmtjMnBhLm9wZW5lZGpwYXJhbWV0ZXJzoWtpbmdyZWRpZW50c4GiY3VybHgtc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5pbmdyZWRpZW50LnYzZGhhc2hYIN153MT48BFni5ovYYe8P7Qxc7B9YsogFYWGZuxDdnrKpGZhY3Rpb254HWNvbS5hbnRocm9waWMuY2xhdWRlLnByb3ZpZGVkanBhcmFtZXRlcnOheB9jb20uYW50aHJvcGljLm9yaWdpbi1jb25maWRlbmNlZ3Vua25vd25rZGVzY3JpcHRpb254ZkNsYXVkZSBwcm92aWRlZCB0aGlzIGZpbGUgYXQgdGhlIHJlcXVlc3Qgb2YgYSB1c2VyIGFuZCBtYXkgaGF2ZSBjcmVhdGVkIG9yIG1vZGlmaWVkIHRoZSBmaWxlIGNvbnRlbnRzLm1zb2Z0d2FyZUFnZW50oWRuYW1lZkNsYXVkZXJhbGxBY3Rpb25zSW5jbHVkZWT1AAAAyGp1bWIAAABAanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5oYXNoLmRhdGEAAAAAGGMyc2gdKLzOdvkxyooxN2AUYh5SAAAAgGNib3KlY2FsZ2ZzaGEyNTZjcGFkTQAAAAAAAAAAAAAAAABkaGFzaFggV0w6XMqF9BFAhbaEFZbWLwDXyJLHsD8oy/owHesdxDdkbmFtZW5qdW1iZiBtYW5pZmVzdGpleGNsdXNpb25zgaJlc3RhcnQYIWZsZW5ndGgZFooAAAI+anVtYgAAACdqdW1kYzJjbAARABCAAACqADibcQNjMnBhLmNsYWltLnYyAAAAAg9jYm9ypWNhbGdmc2hhMjU2aXNpZ25hdHVyZXhNc2VsZiNqdW1iZj0vYzJwYS91cm46YzJwYTpjNWEyMzgzOS00MjU4LTRmY2YtYmFhYi02YTU2NGQ5ZTI3NDkvYzJwYS5zaWduYXR1cmVqaW5zdGFuY2VJRHgseG1wOmlpZDo1MTk4ZDQzOS04ZGI2LTRlZGQtYThlZS1iODI4ZGMxNTgyOGNyY3JlYXRlZF9hc3NlcnRpb25zg6JjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFgg3XncxPjwEWeLmi9hh7w/tDFzsH1iyiAVhYZm7EN2esqiY3VybHgqc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5hY3Rpb25zLnYyZGhhc2hYIE5l5NveQj+YNHYArg5Z1csHxM/QCwMqUAIt0li0GBsHomN1cmx4KXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaGFzaC5kYXRhZGhhc2hYIOOcHDMn0ulmpeuXNpFqNVpM+YTP9T24QB301exSKvZpdGNsYWltX2dlbmVyYXRvcl9pbmZvo2RuYW1lb0FudGhyb3BpYyBGaWxlc2d2ZXJzaW9uZTEuMC4wa3NwZWNWZXJzaW9uZTIuNC4wAAAQOGp1bWIAAAAoanVtZGMyY3MAEQAQgAAAqgA4m3EDYzJwYS5zaWduYXR1cmUAAAAQCGNib3LShFkCEqIBJhghWQIKMIICBjCCAY2gAwIBAgIUQOWgCu7COdC+uIP6BkIFPWdVEwAwCgYIKoZIzj0EAwMwSTEXMBUGA1UEChMOQW50aHJvcGljLCBQQkMxLjAsBgNVBAMTJUFudGhyb3BpYyBDb250ZW50IENyZWRlbnRpYWxzIFJvb3QgQ0EwHhcNMjYwODA3MTg0MzU2WhcNMjgwODA2MTk0MzU2WjBEMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEpMCcGA1UEAxMgQW50aHJvcGljIENsYXVkZSBDb250ZW50IFNpZ25pbmcwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASYegpry1AYBRTVNL1CpTlbROnY3dey+UrsF9C3phYrATN3ZHf93Mo8RQN0KOUuOn19P4oWNFWe5n2/She9N7eTo1gwVjAOBgNVHQ8BAf8EBAMCB4AwFQYDVR0lBA4wDAYKKwYBBAGD6F4CATAMBgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFM5R4gSBTmRbI/jjxM+aPpzB11zCMAoGCCqGSM49BAMDA2cAMGQCMDFzHRSeAXrSy1WOzkbhPZ6Km2wGTmZ/2gK18k8BQGXyqz88Rdrz6CTX9flAnYNVxgIwcF9c3fVhqmJKpi+UhasNUMko69cyX6STPfta3Q8EjyzDjzoyrol46FP6VFHhvUcJoWNwYWRZDZ4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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',iconRetinaUrl:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAABSCAMAAAAhFXfZAAAWfmNhQlgAABZ+anVtYgAAAB5qdW1kYzJwYQARABCAAACqADibcQNjMnBhAAAAFlhqdW1iAAAAR2p1bWRjMm1hABEAEIAAAKoAOJtxA3VybjpjMnBhOjAyNjkyYWVhLWVlNGEtNDAzMy1iM2NmLTJkNjI3M2EwNDZjMAAAAAOTanVtYgAAAClqdW1kYzJhcwARABCAAACqADibcQNjMnBhLmFzc2VydGlvbnMAAAAAuGp1bWIAAABEanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5pbmdyZWRpZW50LnYzAAAAABhjMnNonRA5Juuw0mMuhTN30VFICAAAAGxjYm9yo2lkYzpmb3JtYXRpaW1hZ2UvcG5namluc3RhbmNlSUR4LHhtcDppaWQ6ZjVhMDYyODAtODQyOC00ZjM0LWFhNzAtNTI2YjdhOTA2YWQ1bHJlbGF0aW9uc2hpcGhwYXJlbnRPZgAAAeJqdW1iAAAAQWp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuYWN0aW9ucy52MgAAAAAYYzJzaFLDqQA+r0bvxypJ/f/PfWEAAAGZY2JvcqJnYWN0aW9uc4KiZmFjdGlvbmtjMnBhLm9wZW5lZGpwYXJhbWV0ZXJzoWtpbmdyZWRpZW50c4GiY3VybHgtc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5pbmdyZWRpZW50LnYzZGhhc2hYICtqfGEsv7mwaIzJybAOUMI4IRVMKUTGj9mnIaE4XEj9pGZhY3Rpb254HWNvbS5hbnRocm9waWMuY2xhdWRlLnByb3ZpZGVkanBhcmFtZXRlcnOheB9jb20uYW50aHJvcGljLm9yaWdpbi1jb25maWRlbmNlZ3Vua25vd25rZGVzY3JpcHRpb254ZkNsYXVkZSBwcm92aWRlZCB0aGlzIGZpbGUgYXQgdGhlIHJlcXVlc3Qgb2YgYSB1c2VyIGFuZCBtYXkgaGF2ZSBjcmVhdGVkIG9yIG1vZGlmaWVkIHRoZSBmaWxlIGNvbnRlbnRzLm1zb2Z0d2FyZUFnZW50oWRuYW1lZkNsYXVkZXJhbGxBY3Rpb25zSW5jbHVkZWT1AAAAyGp1bWIAAABAanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5oYXNoLmRhdGEAAAAAGGMyc2jmGIpxwelTHBr4iulXd/1EAAAAgGNib3KlY2FsZ2ZzaGEyNTZjcGFkTQAAAAAAAAAAAAAAAABkaGFzaFggABecTB7oMNOhCEEq4NKU9Vd2z+sIXGASmjmqb8SuJShkbmFtZW5qdW1iZiBtYW5pZmVzdGpleGNsdXNpb25zgaJlc3RhcnQYIWZsZW5ndGgZFooAAAI+anVtYgAAACdqdW1kYzJjbAARABCAAACqADibcQNjMnBhLmNsYWltLnYyAAAAAg9jYm9ypWNhbGdmc2hhMjU2aXNpZ25hdHVyZXhNc2VsZiNqdW1iZj0vYzJwYS91cm46YzJwYTowMjY5MmFlYS1lZTRhLTQwMzMtYjNjZi0yZDYyNzNhMDQ2YzAvYzJwYS5zaWduYXR1cmVqaW5zdGFuY2VJRHgseG1wOmlpZDpjMzZlNTUzOS02MDdhLTRlZjktYWUwYi1kN2I2NDQ3NTliYWNyY3JlYXRlZF9hc3NlcnRpb25zg6JjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggK2p8YSy/ubBojMnJsA5QwjghFUwpRMaP2achoThcSP2iY3VybHgqc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5hY3Rpb25zLnYyZGhhc2hYIEQ18zE6fehAa+ACsWpfst2Fh2MiQgUVw9bNh0g7n9txomN1cmx4KXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaGFzaC5kYXRhZGhhc2hYILBPm5twVLalQGWVlaavvZGLm8/qk721NFokSFuUE3+CdGNsYWltX2dlbmVyYXRvcl9pbmZvo2RuYW1lb0FudGhyb3BpYyBGaWxlc2d2ZXJzaW9uZTEuMC4wa3NwZWNWZXJzaW9uZTIuNC4wAAAQOGp1bWIAAAAoanVtZGMyY3MAEQAQgAAAqgA4m3EDYzJwYS5zaWduYXR1cmUAAAAQCGNib3LShFkCEqIBJhghWQIKMIICBjCCAY2gAwIBAgIUQOWgCu7COdC+uIP6BkIFPWdVEwAwCgYIKoZIzj0EAwMwSTEXMBUGA1UEChMOQW50aHJvcGljLCBQQkMxLjAsBgNVBAMTJUFudGhyb3BpYyBDb250ZW50IENyZWRlbnRpYWxzIFJvb3QgQ0EwHhcNMjYwODA3MTg0MzU2WhcNMjgwODA2MTk0MzU2WjBEMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEpMCcGA1UEAxMgQW50aHJvcGljIENsYXVkZSBDb250ZW50IFNpZ25pbmcwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASYegpry1AYBRTVNL1CpTlbROnY3dey+UrsF9C3phYrATN3ZHf93Mo8RQN0KOUuOn19P4oWNFWe5n2/She9N7eTo1gwVjAOBgNVHQ8BAf8EBAMCB4AwFQYDVR0lBA4wDAYKKwYBBAGD6F4CATAMBgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFM5R4gSBTmRbI/jjxM+aPpzB11zCMAoGCCqGSM49BAMDA2cAMGQCMDFzHRSeAXrSy1WOzkbhPZ6Km2wGTmZ/2gK18k8BQGXyqz88Rdrz6CTX9flAnYNVxgIwcF9c3fVhqmJKpi+UhasNUMko69cyX6STPfta3Q8EjyzDjzoyrol46FP6VFHhvUcJoWNwYWRZDZ4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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',shadowUrl:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACkAAAApCAQAAAACach9AAAWfmNhQlgAABZ+anVtYgAAAB5qdW1kYzJwYQARABCAAACqADibcQNjMnBhAAAAFlhqdW1iAAAAR2p1bWRjMm1hABEAEIAAAKoAOJtxA3VybjpjMnBhOjQ4M2VhMTE4LWRiNzItNDFiMy1iMjgzLWZjODA5MmYxMzA3NAAAAAOTanVtYgAAAClqdW1kYzJhcwARABCAAACqADibcQNjMnBhLmFzc2VydGlvbnMAAAAAuGp1bWIAAABEanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5pbmdyZWRpZW50LnYzAAAAABhjMnNoqqSajFhO6VOtgnRvCWw0bAAAAGxjYm9yo2lkYzpmb3JtYXRpaW1hZ2UvcG5namluc3RhbmNlSUR4LHhtcDppaWQ6OGYyZDUxYWUtMjI4YS00YTE5LWFlMzUtNjRkYzI3NzViYjgybHJlbGF0aW9uc2hpcGhwYXJlbnRPZgAAAeJqdW1iAAAAQWp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuYWN0aW9ucy52MgAAAAAYYzJzaDgMvphQ7X9DAm0fY8X2+68AAAGZY2JvcqJnYWN0aW9uc4KiZmFjdGlvbmtjMnBhLm9wZW5lZGpwYXJhbWV0ZXJzoWtpbmdyZWRpZW50c4GiY3VybHgtc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5pbmdyZWRpZW50LnYzZGhhc2hYIHUXIjnw1A7kC//rT/SwrrEeA0c3sZlR9budd/T+7YespGZhY3Rpb254HWNvbS5hbnRocm9waWMuY2xhdWRlLnByb3ZpZGVkanBhcmFtZXRlcnOheB9jb20uYW50aHJvcGljLm9yaWdpbi1jb25maWRlbmNlZ3Vua25vd25rZGVzY3JpcHRpb254ZkNsYXVkZSBwcm92aWRlZCB0aGlzIGZpbGUgYXQgdGhlIHJlcXVlc3Qgb2YgYSB1c2VyIGFuZCBtYXkgaGF2ZSBjcmVhdGVkIG9yIG1vZGlmaWVkIHRoZSBmaWxlIGNvbnRlbnRzLm1zb2Z0d2FyZUFnZW50oWRuYW1lZkNsYXVkZXJhbGxBY3Rpb25zSW5jbHVkZWT1AAAAyGp1bWIAAABAanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5oYXNoLmRhdGEAAAAAGGMyc2jGQMJZdsGcxUNR1gT24e+SAAAAgGNib3KlY2FsZ2ZzaGEyNTZjcGFkTQAAAAAAAAAAAAAAAABkaGFzaFggJk9cZAM58ELdcpBiz8BMF/jqDymIK1OOOEjtjxDttNpkbmFtZW5qdW1iZiBtYW5pZmVzdGpleGNsdXNpb25zgaJlc3RhcnQYIWZsZW5ndGgZFooAAAI+anVtYgAAACdqdW1kYzJjbAARABCAAACqADibcQNjMnBhLmNsYWltLnYyAAAAAg9jYm9ypWNhbGdmc2hhMjU2aXNpZ25hdHVyZXhNc2VsZiNqdW1iZj0vYzJwYS91cm46YzJwYTo0ODNlYTExOC1kYjcyLTQxYjMtYjI4My1mYzgwOTJmMTMwNzQvYzJwYS5zaWduYXR1cmVqaW5zdGFuY2VJRHgseG1wOmlpZDo1YmEwNDEzNi0xZTVkLTQyNDEtYTFhMC1iZmEwMTFhMjRmN2VyY3JlYXRlZF9hc3NlcnRpb25zg6JjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggdRciOfDUDuQL/+tP9LCusR4DRzexmVH1u5139P7th6yiY3VybHgqc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5hY3Rpb25zLnYyZGhhc2hYINX4Pw18bqwozph9JfgrgCyl7Xi44TiUM6pn4MxttI2gomN1cmx4KXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaGFzaC5kYXRhZGhhc2hYIPtNedhyb7pFIO+WVMwblZ4Ty6F4MZWGeZkY4wVccTyhdGNsYWltX2dlbmVyYXRvcl9pbmZvo2RuYW1lb0FudGhyb3BpYyBGaWxlc2d2ZXJzaW9uZTEuMC4wa3NwZWNWZXJzaW9uZTIuNC4wAAAQOGp1bWIAAAAoanVtZGMyY3MAEQAQgAAAqgA4m3EDYzJwYS5zaWduYXR1cmUAAAAQCGNib3LShFkCEqIBJhghWQIKMIICBjCCAY2gAwIBAgIUQOWgCu7COdC+uIP6BkIFPWdVEwAwCgYIKoZIzj0EAwMwSTEXMBUGA1UEChMOQW50aHJvcGljLCBQQkMxLjAsBgNVBAMTJUFudGhyb3BpYyBDb250ZW50IENyZWRlbnRpYWxzIFJvb3QgQ0EwHhcNMjYwODA3MTg0MzU2WhcNMjgwODA2MTk0MzU2WjBEMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEpMCcGA1UEAxMgQW50aHJvcGljIENsYXVkZSBDb250ZW50IFNpZ25pbmcwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASYegpry1AYBRTVNL1CpTlbROnY3dey+UrsF9C3phYrATN3ZHf93Mo8RQN0KOUuOn19P4oWNFWe5n2/She9N7eTo1gwVjAOBgNVHQ8BAf8EBAMCB4AwFQYDVR0lBA4wDAYKKwYBBAGD6F4CATAMBgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFM5R4gSBTmRbI/jjxM+aPpzB11zCMAoGCCqGSM49BAMDA2cAMGQCMDFzHRSeAXrSy1WOzkbhPZ6Km2wGTmZ/2gK18k8BQGXyqz88Rdrz6CTX9flAnYNVxgIwcF9c3fVhqmJKpi+UhasNUMko69cyX6STPfta3Q8EjyzDjzoyrol46FP6VFHhvUcJoWNwYWRZDZ4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2WED10Cdd+b1M16rJlg9DA9Q3UtjNKWu3JoLgakLaExQ0hjsEonhJUooOBllLFC6Cxq4bVkuKb0FRIJ/+wj/wyiqDeisHxgAAAjFJREFUeAHt0oWO40AQBNAKM/3/fx0zM4YNc63SlKyW3cfindpw/FTbnX7C/04f//3ckDdkx+n98vwRqQt+/a1fkvqqnrQTsSJjUFy/CQgK9leIjEFxxjScXgn2V4UkQXEDH75DllHbX85S4ABDZmQ3JqNk1ZrfDkjNnl8Qadw4x0jBbraku0m5npswYkfsaSgjVCEZHZJGMYQJMhqAb8kBRCRHn8EpprwXybiemiqilpwJLxmTmmV01IBamFC1jUh1HJGbkdRyCIplBMbrUccMzi0TiBuLypgikLd+uJiJYUsswH9ZvZR2RyWa5QDjDM7UUYiopqf66XSQ3PQMK8ucU2QrXuxR7bkvMCYHmBq3sdvMTU3dPOg4pO71DLHEDmvMuA6BrQgkpACpTcKYDbaYY6wujCB1JEemFscbOknOcap9ttppgkRcyLfJRHSsfopArYPdaktlqcFXwXpSQokCcL84sXyPXMWUFoIkiXpSp8ARJSmLQzm9jBW4ZlIoG0XkAVdAoOPqjF0sV0shlJ+FGxfJfu6nUhp0wtFywpmoSIFBy4SzoaVQrcOAs2F7y0FkGyTZsaArDigMUoASZ6O+Wr6JZEcPIiABXLHXNNnvYsgnfLR8JnkkqCk6MCIL7HEhmVDgOz7gjeW9gV/ZkDO0tMGITDVO+M4LDwY9x1O8ILgH58cYxUBgROqcDfhozBPcx2O8xqfMFcTEoWF/TV7xFg9x28CX+IIjuAhSEMV0nB9f0zPtOJJAYgAAAABJRU5ErkJggg=='});</script>
 </body>
