@@ -1792,8 +1792,13 @@ $('#q').addEventListener('keydown',e=>{ if(e.key==='Enter'){ const f=$('#sug .it
 /* Street-View-Abdeckung: beim Ziehen der Figur blendet die Seite Googles Satellitenkarte mit den blauen Street-View-Linien ein
    (Google Maps JavaScript API, StreetViewCoverageLayer; Google verlangt die eigene Karte unter den Linien). Eine Karte je Seitenaufruf. */
 const GM={key:localStorage.getItem('sle_lm_gmkey')||'',state:'aus',map:null,el:null,cb:[]};
-function gmInfo(){ const el=$('#gm-info'); if(!el) return; el.textContent=!GM.key?'Kein Schlüssel eingetragen. Ohne Schlüssel funktioniert die Figur weiter, nur ohne blaue Linien.':GM.state==='fehler'?'Google hat den Schlüssel abgelehnt (falscher Schlüssel, Seite nicht freigegeben oder Testzeitraum abgelaufen).':GM.state==='bereit'?'Schlüssel aktiv. Die blauen Linien erscheinen beim Ziehen der Figur.':'Schlüssel eingetragen. Die Karte wird beim ersten Ziehen der Figur geladen.'; }
-$('#gm-key').value=GM.key; $('#gm-key').onchange=()=>{ GM.key=$('#gm-key').value.trim(); try{ localStorage.setItem('sle_lm_gmkey',GM.key); }catch(e){} GM.state=GM.map?'bereit':'aus'; gmInfo(); }; gmInfo();
+function gmInfo(){ const el=$('#gm-info'); if(!el) return; el.textContent=!GM.key?'Kein Schlüssel eingetragen. Ohne Schlüssel funktioniert die Figur weiter, nur ohne blaue Linien.':GM.state==='fehler'?'Google hat den Schlüssel abgelehnt (falscher Schlüssel, Seite nicht freigegeben oder Testzeitraum abgelaufen).':GM.state==='bereit'?'Schlüssel gespeichert und aktiv. Die blauen Linien erscheinen beim Ziehen der Figur.':GM.state==='laedt'?'Schlüssel wird bei Google geprüft …':'Schlüssel gespeichert. Die Karte wird beim ersten Ziehen der Figur geladen.'; }
+$('#gm-key').value=GM.key;
+// Schlüssel sofort beim Einfügen speichern (nicht erst beim Verlassen des Feldes) und gleich bei Google prüfen
+let gmTimer=null;
+function gmKeySet(){ const v=$('#gm-key').value.replace(/\s+/g,''); if(v===GM.key) return; GM.key=v; try{ localStorage.setItem('sle_lm_gmkey',GM.key); }catch(e){} if(GM.state==='fehler'&&!GM.map) GM.state='aus'; gmInfo();
+  clearTimeout(gmTimer); if(/^AIza[\w-]{30,}$/.test(GM.key)&&GM.state==='aus') gmTimer=setTimeout(()=>{ const el=$('#gm-info'); if(el) el.textContent='Schlüssel wird bei Google geprüft …'; gmLoad().then(ok=>{ gmInfo(); if(ok) setTimeout(()=>{ if(GM.state==='bereit') toast('Google-Maps-Schlüssel gespeichert und aktiv'); },2500); }); },600); }
+$('#gm-key').addEventListener('input',gmKeySet); $('#gm-key').addEventListener('change',gmKeySet); $('#gm-key').addEventListener('paste',()=>setTimeout(gmKeySet,0)); gmInfo();
 window.gm_authFailure=()=>{ GM.state='fehler'; gmInfo(); if(GM.el) GM.el.style.visibility='hidden'; toast('Google-Maps-Schlüssel abgelehnt (Fenster Daten)'); };
 function gmLoad(){ return new Promise(res=>{ if(GM.state==='bereit') return res(true); if(GM.state==='fehler'||!GM.key) return res(false); GM.cb.push(res); if(GM.state==='laedt') return; GM.state='laedt';
   window.__gmReady=()=>{ try{ GM.el=document.createElement('div'); GM.el.id='gmov'; $('#map').appendChild(GM.el);
