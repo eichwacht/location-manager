@@ -896,7 +896,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <!-- Karte, immer offen -->
     <section id="v-map">
       <div id="map"></div>
-      <div id="brbar"><div id="zoombadge" aria-label="Zoomstufe: ab 15 Straßennamen, ab 16 Hausnummern">Z <span id="zoomval">12</span><small id="zoomhint"></small></div>
+      <div id="brbar"><div id="zoombadge" aria-label="Zoomstufe">Z <span id="zoomval">12</span></div>
       <button id="legbtn" aria-label="Legende"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="6" height="6" rx="1"/><rect x="3" y="14" width="6" height="6" rx="1"/><path d="M12 7h9M12 17h9"/></svg>Legende</button></div>
       <div id="legend"></div>
       <div id="rtpanel"><div class="row sb" style="margin:0 0 6px"><strong>ÖPNV-Verbindungen</strong><button class="w-close" id="rt-close" aria-label="Schließen">✕</button></div><div id="rt-body"></div><div class="s" style="margin-top:6px;opacity:.75">Fahrplandaten: Google. Tippen auf die Karte wählt ein neues Ziel.</div></div>
@@ -1814,7 +1814,7 @@ if(gReady()) setTimeout(()=>gSync(true),800);
 
 
 /* ---------- Zoom-Anzeige, Adresssuche (Photon, OSM), Street View ---------- */
-function zoomBadge(){ const z=map.getZoom(); $('#zoomval').textContent=z; $('#zoomhint').textContent=z>=HN_MINZOOM?'Hausnummern':z>=ADR_MINZOOM?'Straßen':''; }
+function zoomBadge(){ const z=map.getZoom(); $('#zoomval').textContent=z; }
 map.on('zoomend',zoomBadge); zoomBadge();
 let qTimer=null, qMarker=null, qCtrl=null;
 function searchOpen(on){ $('#search').classList.toggle('open',on); $('#b-search').classList.toggle('on',on); if(on){ show(null); closePanel(); menuOpen(false); setTimeout(()=>$('#q').focus(),50); } else { $('#sug').innerHTML=''; } }
