@@ -1304,7 +1304,7 @@ const ortLayer=L.layerGroup();
 let namenOn=false, ortPts=null;
 $('#b-namen').onclick=()=>{ namenOn=!namenOn; $('#b-namen').classList.toggle('on',namenOn); if(namenOn){ ortLayer.addTo(map); ortRender(); } else map.removeLayer(ortLayer); };
 const ORT_STUFE={city:1,town:1,village:2,suburb:2,quarter:3,neighbourhood:3,hamlet:3};
-const ORT_MINZOOM={1:9,2:12,3:14};
+const ORT_MINZOOM={1:9,2:12,3:13};
 const ortShown=new Map(); let ortTimer=null;
 function ortRender(){
   if(!namenOn||!ortPts) return;
@@ -1958,7 +1958,7 @@ function legendHtml(){
   h+=`<div class="li"><span class="sw" style="border-color:var(--navy);background:transparent;outline:2px solid #001a4d"></span><span>PLZ-Gebiete mit Nummer${plzOn?'':' · aus'}</span></div>`;
   h+=`<div class="li"><span class="txt" style="font-style:italic;font-size:12px;width:22px">Str.</span><span>Straßennamen ab Zoom 16${adrOn?'':' · aus'}</span></div>`;
   h+=`<div class="li"><span class="txt" style="color:#9fd41f;font-size:11px;width:22px">12</span><span>Hausnummern ab Zoom 17${adrOn?'':' · aus'}</span></div>`;
-  h+=`<div class="li"><span class="txt" style="font-size:12px;width:22px">Ort</span><span>Ortsnamen: Stadt ab Zoom 9, Ortsteil ab 12, Quartier ab 14${namenOn?'':' · aus'}</span></div>`;
+  h+=`<div class="li"><span class="txt" style="font-size:12px;width:22px">Ort</span><span>Ortsnamen: Stadt ab Zoom 9, Ortsteil ab 12, Quartier ab 13${namenOn?'':' · aus'}</span></div>`;
   h+='<h4>Punkte</h4>';
   h+=`<div class="li"><span class="ci" style="background:#9fd41f;border:2px solid #001a4d"></span><span>Suchtreffer</span></div>`;
   h+=`<div class="li"><span class="ci" style="background:#7a9a1a;border:2px solid #001a4d"></span><span>Mein Standort</span></div>`;
