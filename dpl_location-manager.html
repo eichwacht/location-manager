@@ -2385,11 +2385,17 @@ async function hstLoad(force=false){ if(hstBusy) return; hstBusy=true; $('#b-hst
   finally{ hstBusy=false; $('#b-hst').classList.remove('busy'); } }
 function hstInfo(){ const el=$('#hst-info'); if(!el) return; if(!hstFc){ el.textContent='Noch nicht geladen.'; return; } const n=a=>hstFc.pts.filter(p=>p.a===a).length; const fehlt=hstFc.teile?4-Object.keys(hstFc.teile).length:0;
   el.textContent=(fehlt?`${fehlt} von 4 Teilen fehlen noch (Overpass ausgelastet). `:'')+`${n('bahn')} Bahnhöfe und Haltepunkte, ${n('bus')} Bushaltestellen${n('tram')?', '+n('tram')+' Straßenbahnhaltestellen':''}, Stand ${fmtDT(hstFc.loaded)}. Quelle OpenStreetMap.`; }
-function hstRender(force=false){ if(!hstOn||!hstFc) return; const z=map.getZoom(); const key=(z>=13?'alle':'bahn')+(z>=16?'+namen':''); if(!force&&key===hstRendered) return; hstRendered=key; hstLayer.clearLayers();
-  hstFc.pts.forEach(p=>{ if(p.a==='bus'&&z<13) return; const bahn=p.a==='bahn';
+// nur Haltestellen im sichtbaren Ausschnitt zeichnen; feste Namensschilder nur, wenn wenige im Bild sind (sonst bremst die Karte)
+let hstTimer=null;
+function hstRender(force=false){ if(!hstOn||!hstFc) return; const z=map.getZoom(), b=map.getBounds().pad(0.25);
+  const sicht=hstFc.pts.filter(p=>(p.a!=='bus'||z>=13)&&b.contains([p.lat,p.lon]));
+  const key=z+'|'+b.toBBoxString().split(',').map(x=>(+x).toFixed(3)).join(','); if(!force&&key===hstRendered) return; hstRendered=key; hstLayer.clearLayers();
+  const nBahn=sicht.filter(p=>p.a==='bahn'&&p.n).length, nAlle=sicht.filter(p=>p.n).length;
+  sicht.forEach(p=>{ const bahn=p.a==='bahn';
     const m=L.circleMarker([p.lat,p.lon],{renderer:hstR,radius:bahn?(z>=13?8:6):(z>=16?6:4),color:bahn?'#ffffff':'#001a4d',weight:bahn?3:1.5,fillColor:bahn?'#ec0016':p.a==='tram'?'#1a73e8':'#f2d11a',fillOpacity:1,interactive:true});
-    m.bindTooltip(`${bahn?'Bahnhof':p.a==='tram'?'Straßenbahn':'Bus'}: ${esc(p.n||'ohne Namen')}${p.o?' · '+esc(p.o):''}`,{className:'ttip',direction:'top',permanent:bahn&&z>=12&&!!p.n||(z>=17&&!!p.n)}); hstLayer.addLayer(m); }); }
-map.on('zoomend',()=>hstRender());
+    const fest=!!p.n&&((bahn&&z>=12&&nBahn<=25)||(z>=17&&nAlle<=40));
+    m.bindTooltip(`${bahn?'Bahnhof':p.a==='tram'?'Straßenbahn':'Bus'}: ${esc(p.n||'ohne Namen')}${p.o?' · '+esc(p.o):''}`,{className:'ttip',direction:'top',permanent:fest}); hstLayer.addLayer(m); }); }
+map.on('moveend',()=>{ clearTimeout(hstTimer); hstTimer=setTimeout(()=>hstRender(),120); });
 $('#b-hst').onclick=()=>{ hstOn=!hstOn; $('#b-hst').classList.toggle('on',hstOn); try{ localStorage.setItem('sle_lm_hst',hstOn?'1':''); }catch(e){} if(hstOn){ hstLayer.addTo(map); if(!hstFc||(hstFc.teile&&Object.keys(hstFc.teile).length<4)) hstLoad(); if(hstFc) hstRender(true); if(map.getZoom()<13) toast('Bahnhöfe sichtbar, Bushaltestellen ab Zoomstufe 13'); } else { map.removeLayer(hstLayer); hstRendered=''; } };
 if($('#hst-reload')) $('#hst-reload').onclick=()=>{ hstFc=null; hstLoad(true); };
 idb.get('hst_v1_40km').then(fc=>{ if(fc){ hstFc=fc; hstInfo(); } let on=''; try{ on=localStorage.getItem('sle_lm_hst'); }catch(e){} if(on){ $('#b-hst').click(); } }).catch(()=>{});
