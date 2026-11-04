@@ -1666,7 +1666,10 @@ async function grundEbene(){
   return {url:cv.toDataURL('image/png'),bb,n};
 }
 function spInfo(){ const el=$('#sp-info'); if(!el) return; if(sperrFc) el.textContent=`${sperrFc.features.length} Flächen geladen, Stand ${fmtDT(sperrFc.loaded)}. Quelle OpenStreetMap; kleine Gewerbehöfe fehlen dort oft.`; }
-$('#b-sperr').onclick=()=>{ sperrOn=!sperrOn; $('#b-sperr').classList.toggle('on',sperrOn); if(sperrOn){ sperrLayer.addTo(map); if(!sperrFc) sperrLoad(); } else map.removeLayer(sperrLayer); };
+const SP_ZOOM_AB=14, SP_ZOOM_BIS=17; const spSicht=()=>{ const z=map.getZoom(); return z>=SP_ZOOM_AB&&z<=SP_ZOOM_BIS; }; // Sperrzonen nur Zoom 14 bis 17 sichtbar, Schalter bleibt an
+function spZoom(){ if(sperrOn&&spSicht()) sperrLayer.addTo(map); else map.removeLayer(sperrLayer); }
+$('#b-sperr').onclick=()=>{ sperrOn=!sperrOn; $('#b-sperr').classList.toggle('on',sperrOn); if(sperrOn&&!sperrFc) sperrLoad(); spZoom(); };
+map.on('zoomend',spZoom);
 $('#sp-reload').onclick=()=>{ sperrFc=null; sperrLoad(true); };
 idb.get('sperr_v1_40km').then(fc=>{ if(fc){ sperrFc=fc; sperrLayer.addData(fc); spInfo(); if(wpbPaket||wpbOn) wpbBuild(); } }).catch(()=>{});
 
@@ -1956,7 +1959,7 @@ function legendHtml(){
   const sw=(c,t,op=.55)=>`<div class="li"><span class="sw" style="background:${c};opacity:1;border-color:${c};background:color-mix(in srgb, ${c} ${Math.round(op*100)}%, transparent)"></span><span>${t}</span></div>`;
   let h='<h4>Gebiete</h4>'+sw(STATUS_FARBE.neu,'hellgrün: noch kein Einsatz')+sw(STATUS_FARBE.frei,'dunkelgrün: frei, Einsatz länger als 60 Tage her')+sw(STATUS_FARBE.heute,'orange: heute eingeplant',.7)+sw(STATUS_FARBE.geplant,'gelb: für einen künftigen Tag geplant',.7)+sw(STATUS_FARBE.sperre,'rot: Sperrfrist, 60 Tage nach dem letzten Einsatz');
   h+='<h4>Einblendungen</h4>';
-  h+=`<div class="li"><span class="sw" style="border-color:#d42a2a;background:#8b0000;border-color:#8b0000"></span><span>Sperrzonen: Industrie, Gewerbe, Hafen, Flughafen, Militär, Bahn (OSM)${sperrOn?'':' · aus'}</span></div>`;
+  h+=`<div class="li"><span class="sw" style="border-color:#d42a2a;background:#8b0000;border-color:#8b0000"></span><span>Sperrzonen: Industrie, Gewerbe, Hafen, Flughafen, Militär, Bahn (OSM), sichtbar Zoom 14 bis 17${sperrOn?'':' · aus'}</span></div>`;
   h+=`<div class="li"><span class="sw" style="border-color:var(--navy);background:transparent;outline:2px solid #001a4d"></span><span>PLZ-Gebiete mit Nummer${plzOn?'':' · aus'}</span></div>`;
   h+=`<div class="li"><span class="txt" style="font-style:italic;font-size:12px;width:22px">Str.</span><span>Straßennamen ab Zoom 15${adrOn?'':' · aus'}</span></div>`;
   h+=`<div class="li"><span class="txt" style="color:#9fd41f;font-size:11px;width:22px">12</span><span>Hausnummern ab Zoom 16${adrOn?'':' · aus'}</span></div>`;
