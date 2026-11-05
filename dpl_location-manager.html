@@ -1296,7 +1296,7 @@ map.on('contextmenu',e=>{
 });
 
 const layers = {};
-var locSicht=true; try{ locSicht=localStorage.getItem('sle_lm_locsicht')!=='0'; }catch(e){} // Gebiete ein- oder ausgeblendet (Radialmenü)
+var locSicht=false; // Gebiete ein- oder ausgeblendet; beim Laden immer aus (seit v126)
 const STATUS_FARBE={neu:'#9fd41f',frei:'#4f6e0c',heute:'#f28c28',geplant:'#f2d11a',sperre:'#d42a2a'};
 const SPERRTAGE=60;
 function dayDiff(a,b){ return Math.round((new Date(a+'T00:00')-new Date(b+'T00:00'))/864e5); }
@@ -1663,7 +1663,7 @@ $('#a-stop').onclick=()=>{ if(bulk.ctrl) bulk.ctrl.abort(); };
 /* ---------- Gebietsfenster ---------- */
 let cur=null, curNew=false;
 function stats(id){ const s=D.shifts.filter(x=>x.locationId===id); const leads=s.reduce((a,b)=>a+(+b.leads||0),0); return {n:s.length,leads,avg:s.length?(leads/s.length).toFixed(1):'0'}; }
-function openPanel(id,edit=false,isNew=false){
+function openPanel(id,edit=false,isNew=false){ if(!locSicht) locSichtSetzen(true); // Location öffnen blendet die Locations ein (beim Laden sind sie aus)
   cur=D.locations.find(l=>l.id===id); if(!cur) return; curNew=isNew;
   $('#p-name').textContent=isNew?'Neue Location':cur.name; $('#panel').classList.toggle('neu',!!isNew); $('#p-dot').style.background=STATUS_FARBE[locStatus(cur).k]; $('#p-dot').title=locStatus(cur).t; $('#p-sub').textContent=[cur.plz,cur.group].filter(Boolean).join(' ');
   const st=stats(id); $('#p-shifts').textContent=st.n; $('#p-leads').textContent=st.leads; $('#p-avg').textContent=st.avg; $('#p-addr').textContent=cur.addr==null?'–':cur.addr; $('#p-stats').classList.toggle('nur-adr',isNew||st.n===0); $('#p-einsaetze').style.display=isNew?'none':''; // neues Gebiet: noch keine Einsätze
@@ -2424,7 +2424,7 @@ async function kpiFileSync(force=false){ if(!gReady()) return; const body=JSON.s
 map.createPane('kundenPane'); map.getPane('kundenPane').style.zIndex=620;
 const kR=L.svg({pane:'kundenPane'});
 const KL={lead:{g:L.layerGroup(),t:'Leads'},chc:{g:L.layerGroup(),t:'Potenzialanalysen'},csc:{g:L.layerGroup(),t:'Festpreisgespräche'},ccw:{g:L.layerGroup(),t:'Abschlüsse'}};
-let klOn={}; try{ klOn=JSON.parse(localStorage.getItem('sle_lm_kl')||'{}'); }catch(e){}
+let klOn={}; // B2C-Ebenen beim Laden immer aus (seit v126)
 function klMarker(l,farbe,r,dick){ const m=L.circleMarker([l.lat,l.lon],{renderer:kR,pane:'kundenPane',radius:r,color:dick?farbe:'#001a4d',weight:dick?4:2,fillColor:dick?'#ffffff':farbe,fillOpacity:dick?0.15:0.95});
   m.bindTooltip(`${esc(leadKey(l))} · ${esc(l.name||'')}<br>${esc(KTXT[leadStatus(l)])}`,{className:'ttip',direction:'top'}); m.on('click',()=>{ if(window.RT&&RT.on){ rtPick(L.latLng(l.lat,l.lon)); return; } leadOpen(l.id); }); return m; }
 function klRender(){ Object.values(KL).forEach(x=>x.g.clearLayers());
@@ -2879,8 +2879,8 @@ document.addEventListener('contextmenu',e=>{ if(e.target instanceof Element&&e.t
     if(p&&p.a!=='bahn'){ if(ttP!==p){ ttP=p; tt.setLatLng([p.lat,p.lon]).setContent(esc(p.n||'Haltestelle')); map.openTooltip(tt); } } else if(ttP){ ttP=null; map.closeTooltip(tt); } }); });
   map.on('zoomstart movestart',()=>{ if(ttP){ ttP=null; map.closeTooltip(tt); } }); })();
 
-/* Start: alle Kartenebenen im Ebenen-Menü sind beim Öffnen aktiv (Wärmeplan Bremen auf Versorgungsgebiete) */
-(function(){ window.__lmStill=true; try{ ['b-plz','b-adr','b-namen','b-wpb','b-sperr','b-hst'].forEach(id=>{ const b=$('#'+id); if(b&&!b.classList.contains('on')){ try{ b.click(); }catch(e){ console.error('Start',id,e); } } }); if(wpIdx<0) wpSet(0); }finally{ window.__lmStill=false; } $('#eb-main').classList.toggle('on',ebAlleAn()); })();
+/* Start: alle schaltbaren Ebenen sind beim Laden aus (seit v126; vorher alle an) */
+(function(){ window.__lmStill=true; try{ ['b-plz','b-adr','b-namen','b-wpb','b-sperr','b-hst'].forEach(id=>{ const b=$('#'+id); if(b&&b.classList.contains('on')){ try{ b.click(); }catch(e){ console.error('Start',id,e); } } }); if(wpIdx>=0) wpSet(-1); }finally{ window.__lmStill=false; } $('#eb-main').classList.toggle('on',ebAlleAn()); })();
 
 /* Ebenen-Leiste rechts: je Kachel ein Schalter (Ortsnamen, Wärmeplanung, Straßennamen und Hausnummern, Bahnhöfe und Haltestellen, PLZ, Locations, B2C); Wärmeplanung schaltet Wärmeplan-Bilder und Wärmeplan Bremen gemeinsam */
 (function(){ const wpAn=()=>wpbOn||wpIdx>=0;
