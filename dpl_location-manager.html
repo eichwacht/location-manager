@@ -715,6 +715,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   /* Fenster (Gebiet, Dashboard, Planung, Daten): ein Fenster, zentriert über der Karte */
   .win{display:none;position:absolute;left:50%;top:12px;transform:translateX(-50%);width:min(860px,calc(100% - 24px));height:calc(100% - 84px - var(--sa-b));background:var(--navy);border:2px solid var(--hell);border-radius:12px;z-index:940;overflow:hidden;flex-direction:column}
   .win.active{display:flex}
+  #panel{left:12px;transform:none;width:min(430px,calc(100% - 24px));height:auto;max-height:calc(100% - 84px - var(--sa-b))} #panel .body{min-height:0} /* Gebietsfenster halb so breit, links, nur so hoch wie nötig */
   .win header{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex:none}
   .win header h2{margin:0;font-size:18px;flex:1;display:flex;align-items:center;gap:8px;min-width:0}
   .win header h2 .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -882,6 +883,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   @media (max-width:700px){
     .win{left:0;top:0;transform:none;width:100%;height:calc(100% - 72px - var(--sa-b));border-radius:0 0 12px 12px;border-width:0 0 2px 0}
     .win .body{padding:12px 12px 24px}
+    #panel{left:0;width:100%;height:auto;max-height:calc(100% - 72px - var(--sa-b))}
     .win header{padding:10px 12px}
     .bottombar{gap:3px}
     .ltile{width:min(40px,calc((100vw - 46px) / 11));height:min(40px,calc((100vw - 46px) / 11));border-radius:9px}
@@ -975,7 +977,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
             <div style="grid-column:span 2"><label for="e-group">Ort (Stadt oder Stadtteil)</label><input id="e-group" list="groups" placeholder="z. B. Bremerhaven" autocomplete="off"><datalist id="groups"></datalist></div>
             <div><label for="e-plz">PLZ</label><input id="e-plz" placeholder="27570" inputmode="numeric" autocomplete="off"></div>
           </div>
-          <div class="row" style="margin:8px 0 0"><button class="btn small" id="e-auto">Ort, PLZ und Adressen automatisch ermitteln</button><span class="s" id="e-autoinfo"></span></div>
+          <div class="row" style="margin:8px 0 0"><button class="btn small" id="e-auto" style="display:none">Ort, PLZ und Adressen automatisch ermitteln</button><span class="s" id="e-autoinfo"></span></div>
           <div class="row" style="margin-top:12px"><button class="btn primary" id="e-save">Speichern</button><button class="btn" id="e-shape">Form ändern</button><button class="btn danger" id="e-cancel">Abbrechen</button><button class="btn danger" id="p-del" style="margin-left:auto">Gebiet löschen</button></div>
         </div>
         <div class="stats four" id="p-stats">
@@ -1546,7 +1548,7 @@ function openPanel(id,edit=false,isNew=false){
   if(edit){ $('#e-name').value=isNew?'':cur.name; $('#e-group').value=cur.group||''; $('#e-plz').value=cur.plz||''; $('#e-autoinfo').textContent=''; $('#groups').innerHTML=[...new Set(D.locations.map(l=>l.group).filter(Boolean))].map(g=>`<option value="${esc(g)}">`).join(''); }
   renderShifts();
   show(null); menuOpen(false); $('#panel').classList.add('active'); $('#panel .body').scrollTop=0;
-  if(!edit||isNew) map.fitBounds(layers[id].getBounds(),{padding:[40,40],maxZoom:17});
+  if(!edit||isNew){ const wide=innerWidth>700; map.fitBounds(layers[id].getBounds(),wide?{paddingTopLeft:[$('#panel').offsetWidth+40,40],paddingBottomRight:[40,90],maxZoom:17}:{padding:[40,40],maxZoom:17}); }
   if(edit) setTimeout(()=>$('#e-name').focus(),50);
 }
 
