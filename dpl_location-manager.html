@@ -724,7 +724,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .w-close{width:36px;height:36px;border:2px solid var(--hell);border-radius:10px;background:var(--navy);color:var(--gruen);font-size:16px;font-weight:700;display:grid;place-items:center;flex:none;padding:0}
   .dot{width:12px;height:12px;border-radius:50%;display:inline-block;flex:none}
   /* Kachelreihe */
-  .bottombar{position:absolute;left:auto;right:12px;bottom:calc(68px + var(--sa-b));transform:none;flex-direction:column;z-index:950;display:flex;gap:8px;align-items:flex-end}
+  .bottombar{position:absolute;left:auto;right:12px;bottom:calc(12px + var(--sa-b));transform:none;flex-direction:column;z-index:950;display:flex;gap:8px;align-items:flex-end}
   .ltile{position:relative;width:48px;height:48px;padding:0;border:2px solid var(--hell);border-radius:10px;overflow:hidden;background:var(--navy);box-shadow:none;display:flex;align-items:center;justify-content:center;color:var(--gruen);flex:none}
   .ltile svg{width:22px;height:22px;fill:none;stroke:var(--gruen);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
   .ltile.on{background:var(--gruen);border-color:var(--navy)}
@@ -747,7 +747,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   @media (max-height:519px){ #ebleiste{gap:4px} } /* volle Kachelgröße wie Dashboard; erst wenn sieben Kacheln nicht mehr passen, enger und dann kleiner */
   @media (max-height:495px){ #ebleiste .ltile{width:36px;height:36px} #ebleiste .ltile svg{width:18px;height:18px} }
   @media (max-width:700px){ #ebleiste{gap:6px;bottom:calc(24px + var(--sa-b) + 2 * min(40px, calc((100vw - 46px) / 11)))} }
-  #ovbox{position:absolute;right:12px;bottom:calc(12px + var(--sa-b));z-index:950} /* Zahnrad in der Ecke, Zoomstufe links daneben */
+  #ovbox{position:absolute;right:12px;bottom:calc(68px + var(--sa-b));z-index:950} /* Zahnrad über dem Dashboard, Dashboard in der Ecke */
   #rtpanel{display:none;position:absolute;left:50%;top:12px;transform:translateX(-50%);width:min(560px,calc(100% - 24px));max-height:46%;overflow:auto;background:var(--navy);border:2px solid var(--hell);border-radius:12px;z-index:945;padding:10px 12px;color:var(--hell);-webkit-overflow-scrolling:touch}
   #rtpanel input{background:var(--hell);color:var(--navy)}
   #gpanel{display:none;position:absolute;right:12px;top:12px;bottom:calc(64px + var(--sa-b));width:min(460px,calc(100% - 24px));background:var(--navy);border:2px solid var(--hell);border-radius:12px;z-index:946;padding:10px 12px;color:var(--hell);flex-direction:column}
@@ -902,7 +902,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
     .win .body{padding:12px 12px 24px}
     #panel{left:0;width:100%;height:auto;max-height:calc(100% - 72px - var(--sa-b))}
     .win header{padding:10px 12px}
-    .bottombar{gap:3px;bottom:calc(12px + var(--sa-b) + min(40px,calc((100vw - 46px) / 11)) + 6px)}
+    .bottombar{gap:3px;bottom:calc(12px + var(--sa-b))}
+    #ovbox{bottom:calc(12px + var(--sa-b) + min(40px,calc((100vw - 46px) / 11)) + 6px)}
     .ltile{width:min(40px,calc((100vw - 46px) / 11));height:min(40px,calc((100vw - 46px) / 11));border-radius:9px}
     .ltile svg{width:19px;height:19px}
     .ltile.drawtile svg{width:26px;height:26px}
