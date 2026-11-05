@@ -724,7 +724,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .w-close{width:36px;height:36px;border:2px solid var(--hell);border-radius:10px;background:var(--navy);color:var(--gruen);font-size:16px;font-weight:700;display:grid;place-items:center;flex:none;padding:0}
   .dot{width:12px;height:12px;border-radius:50%;display:inline-block;flex:none}
   /* Kachelreihe */
-  .bottombar{position:absolute;left:50%;bottom:calc(12px + var(--sa-b));transform:translateX(-50%);z-index:950;display:flex;gap:8px;align-items:flex-end}
+  .bottombar{position:absolute;left:auto;right:12px;bottom:calc(68px + var(--sa-b));transform:none;flex-direction:column;z-index:950;display:flex;gap:8px;align-items:flex-end}
   .ltile{position:relative;width:48px;height:48px;padding:0;border:2px solid var(--hell);border-radius:10px;overflow:hidden;background:var(--navy);box-shadow:none;display:flex;align-items:center;justify-content:center;color:var(--gruen);flex:none}
   .ltile svg{width:22px;height:22px;fill:none;stroke:var(--gruen);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
   .ltile.on{background:var(--gruen);border-color:var(--navy)}
@@ -894,7 +894,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     .win .body{padding:12px 12px 24px}
     #panel{left:0;width:100%;height:auto;max-height:calc(100% - 72px - var(--sa-b))}
     .win header{padding:10px 12px}
-    .bottombar{gap:3px}
+    .bottombar{gap:3px;bottom:calc(12px + var(--sa-b) + min(40px,calc((100vw - 46px) / 11)) + 6px)}
     .ltile{width:min(40px,calc((100vw - 46px) / 11));height:min(40px,calc((100vw - 46px) / 11));border-radius:9px}
     .ltile svg{width:19px;height:19px}
     .ltile.drawtile svg{width:26px;height:26px}
