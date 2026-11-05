@@ -742,6 +742,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #radial .rad.mitte{left:-18px;top:-18px;width:36px;height:36px;border-radius:50%;z-index:2} #radial .rad.mitte svg{width:20px;height:20px} /* Ecken berühren sich an der Maus, Neue Location als runder Knopf darauf */
   #radial .rad.oben span{bottom:54px;left:50%;transform:translateX(-50%)} #radial .rad.unten span{top:54px;left:50%;transform:translateX(-50%)} #radial .rad.mitte span{top:50px;left:50%;transform:translateX(-50%);font-size:10px} #radial .rad-mitte{display:none}
   #radial .rad-mitte{position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;background:#9fd41f;border:2px solid #001a4d}
+  #ebleiste{position:absolute;right:12px;top:50%;transform:translateY(-50%);z-index:900;display:flex;flex-direction:column;gap:8px} /* Ebenen-Leiste: freie Spalte rechts zwischen Zoomstufe und Dashboard */
+  @media (max-width:700px){ #ebleiste{gap:6px} }
   #ovbox{position:absolute;right:12px;bottom:calc(12px + var(--sa-b));z-index:950} /* Zahnrad in der Ecke, Zoomstufe links daneben */
   #rtpanel{display:none;position:absolute;left:50%;top:12px;transform:translateX(-50%);width:min(560px,calc(100% - 24px));max-height:46%;overflow:auto;background:var(--navy);border:2px solid var(--hell);border-radius:12px;z-index:945;padding:10px 12px;color:var(--hell);-webkit-overflow-scrolling:touch}
   #rtpanel input{background:var(--hell);color:var(--navy)}
@@ -917,6 +919,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <section id="v-map">
       <div id="map"></div>
       <div id="brbar"><div id="zoombadge" aria-label="Zoomstufe">Z <span id="zoomval">12</span></div>
+      </div>
+      <!-- Ebenen-Leiste rechts: vier Schalter ohne Beschriftung -->
+      <div id="ebleiste" role="group" aria-label="Kartenebenen">
+        <button class="ltile" id="t-ort" aria-label="Städte und Ortsnamen an oder aus"><svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V11l4-2.5V21"/><path d="M9 21V4h6v17"/><path d="M15 21V9.5l4 2V21"/><path d="M11.5 8h1M11.5 12h1M11.5 16h1"/></svg></button>
+        <button class="ltile" id="t-wp" aria-label="Wärmeplanung an oder aus"><svg viewBox="0 0 24 24"><path d="M12 3c2 3 5 5 5 9a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3 1-6 1-8z"/></svg></button>
+        <button class="ltile" id="t-adr" aria-label="Straßennamen und Hausnummern an oder aus"><svg viewBox="0 0 24 24"><path d="M12 21v-9M12 6V3"/><path d="M5 6h12l2.5 3L17 12H5z"/><path d="M5 15h14"/><path d="M9 21h6"/></svg></button>
+        <button class="ltile" id="t-hst" aria-label="Bahnhöfe und Haltestellen an oder aus"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 11h14M8 21l1.5-4M16 21l-1.5-4"/><circle cx="9" cy="14" r=".8"/><circle cx="15" cy="14" r=".8"/></svg></button>
       </div>
       <div id="legend"></div>
       <div id="gpanel" role="dialog" aria-label="Adresse in Google Maps"><div class="row sb" style="margin:0 0 8px;gap:8px"><strong id="gp-title" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></strong><a id="gp-ext" class="w-close" target="_blank" rel="noopener" aria-label="In Google Maps öffnen" style="text-decoration:none;width:auto;padding:0 10px;font-size:13px">Google Maps</a><button class="w-close" id="gp-close" aria-label="Schließen">✕</button></div><iframe id="gp-frame" referrerpolicy="no-referrer-when-downgrade" loading="lazy" allowfullscreen></iframe></div>
@@ -2852,6 +2861,15 @@ document.addEventListener('contextmenu',e=>{ if(e.target instanceof Element&&e.t
 
 /* Start: alle Kartenebenen im Ebenen-Menü sind beim Öffnen aktiv (Wärmeplan Bremen auf Versorgungsgebiete) */
 (function(){ window.__lmStill=true; try{ ['b-plz','b-adr','b-namen','b-wpb','b-sperr','b-hst'].forEach(id=>{ const b=$('#'+id); if(b&&!b.classList.contains('on')){ try{ b.click(); }catch(e){ console.error('Start',id,e); } } }); if(wpIdx<0) wpSet(0); }finally{ window.__lmStill=false; } $('#eb-main').classList.toggle('on',ebAlleAn()); })();
+
+/* Ebenen-Leiste rechts: je Kachel ein Schalter; Wärmeplanung schaltet Wärmeplan-Bilder und Wärmeplan Bremen gemeinsam */
+(function(){ const wpAn=()=>wpbOn||wpIdx>=0;
+  const sync=()=>{ $('#t-ort').classList.toggle('on',namenOn); $('#t-wp').classList.toggle('on',wpAn()); $('#t-adr').classList.toggle('on',adrOn); $('#t-hst').classList.toggle('on',hstOn); $('#eb-main').classList.toggle('on',ebAlleAn()); };
+  $('#t-ort').onclick=()=>{ $('#b-namen').click(); sync(); };
+  $('#t-adr').onclick=()=>{ $('#b-adr').click(); sync(); };
+  $('#t-hst').onclick=()=>{ $('#b-hst').click(); sync(); };
+  $('#t-wp').onclick=()=>{ const an=!wpAn(); window.__lmStill=true; try{ if(wpbOn!==an) $('#b-wpb').click(); wpSet(an?(wpIdx>=0?wpIdx:0):-1); }finally{ window.__lmStill=false; } sync(); };
+  const mo=new MutationObserver(sync); ['b-namen','b-wpb','b-wp','b-adr','b-hst'].forEach(id=>mo.observe($('#'+id),{attributes:true,attributeFilter:['class']})); sync(); })();
 </script>
 </body>
 </html>
