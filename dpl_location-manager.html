@@ -808,6 +808,30 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .card .s{font-size:12px}
   .card strong{display:block;margin-bottom:6px}
   table{width:100%;border-collapse:collapse}
+  /* Dashboard ohne Scrollen (seit v129): kompakter Aufbau, lange Tabellen blättern, notfalls leicht verkleinert */
+  #v-dash .body{overflow:hidden;display:flex;flex-direction:column;padding:10px 14px 12px}
+  #v-dash .seg.tabs{margin:0 0 8px;flex:none} #v-dash .seg button{padding:6px 12px}
+  #v-dash .d-pane{flex:1;min-height:0;min-width:0;display:flex;flex-direction:column;gap:8px}
+  #v-dash .cards{margin:0;gap:8px;flex:none;grid-template-columns:repeat(5,minmax(0,1fr))}
+  #v-dash .card{margin:0;padding:7px 10px;border-radius:10px}
+  #v-dash .card .l{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #v-dash .card .v{font-size:21px;line-height:1.15;white-space:nowrap} #v-dash .card .v small{font-size:11px;font-weight:600;margin-left:5px}
+  #v-dash .d-zeile{flex:none;padding:6px 10px;font-size:12.5px} #v-dash .d-zeile strong{display:inline;margin-right:4px}
+  #v-dash .d-zwei{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+  #v-dash .d-box{display:flex;flex-direction:column;min-height:0;min-width:0}
+  #v-dash .card.d-box{padding:8px 10px}
+  #v-dash .d-fill{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+  #v-dash th,#v-dash td{padding:3px 5px;font-size:12.5px;line-height:1.25;white-space:nowrap} #v-dash th{font-size:11px}
+  #v-dash .empty{padding:10px 6px;font-size:13px}
+  #v-dash .d-nav{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:auto;padding-top:4px;font-size:12px}
+  #v-dash .d-nav .btn{padding:1px 10px;font-size:13px}
+  #v-dash .d-wkopf{flex:none;margin:0} #v-dash .d-wtitel{text-align:center;min-width:0} #v-dash .d-wtitel .s{font-size:11px;opacity:.85}
+  #v-dash .d-wzwei{grid-template-columns:minmax(0,55fr) minmax(0,45fr)}
+  #v-dash table.kw td,#v-dash table.kw th{padding:2px 4px} #v-dash .kw .bez{font-size:11px;opacity:.8;font-weight:400}
+  #v-dash .d-q td{padding:2px 4px;font-size:11.5px} #v-dash .d-q td:first-child{white-space:normal}
+  #v-dash .d-h{display:block;font-size:12px;margin:0 0 2px} #v-dash .d-h2{margin-top:8px}
+  #v-dash .d-ort{font-size:11.5px} #v-dash .d-rinfo{flex:none;font-size:11.5px;margin:0}
+  @media (max-width:700px){ #v-dash header .sub{display:none} #v-dash #d-range button{padding:6px 8px;font-size:13px} #v-dash .card .l{white-space:normal;font-size:11px;line-height:1.2} #v-dash .card .v small{display:block;margin:0} #v-dash .cards{grid-template-columns:repeat(3,minmax(0,1fr))} #v-dash .d-zwei{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr)} #v-dash .d-wzwei{grid-template-rows:auto auto} #v-dash .kw .bez{display:none} }
   th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--navy);font-size:14px}
   th{font-weight:600;font-size:12px}
   td.r,th.r{text-align:right}
@@ -1065,14 +1089,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
       <header><h2><span class="t">Dashboard</span><span class="sub">abgeschlossene Einsätze</span></h2><div class="seg" id="d-range"><button data-r="woche">Woche</button><button data-r="monat" class="on">Monat</button><button data-r="jahr">Jahr</button><button data-r="gesamt">Gesamt</button></div><button class="w-close" data-close title="Schließen">✕</button></header>
       <div class="body">
         <div class="seg tabs" id="d-tabs"><button data-t="einsatz" class="on">Einsätze</button><button data-t="woche">Woche</button><button data-t="rank">Ranking</button></div>
-        <div id="d-einsatz">
+        <div id="d-einsatz" class="d-pane">
         <div class="cards" id="d-cards"></div>
-        <div class="card" id="d-vergleich" style="display:none"></div>
-        <div class="card"><strong>Kalenderwochen</strong><div id="d-weeks"></div></div>
-        <div class="card"><strong>Top Gebiete</strong><div id="d-top"></div></div>
+        <div class="card d-zeile" id="d-vergleich" style="display:none"></div>
+        <div class="d-zwei"><div class="card d-box"><strong>Kalenderwochen</strong><div id="d-weeks" class="d-fill"></div></div><div class="card d-box"><strong>Top Gebiete</strong><div id="d-top" class="d-fill"></div></div></div>
         </div>
-        <div id="d-woche" style="display:none"></div>
-        <div id="d-rank" style="display:none"></div>
+        <div id="d-woche" class="d-pane" style="display:none"></div>
+        <div id="d-rank" class="d-pane" style="display:none"></div>
       </div>
     </section>
 
@@ -1725,22 +1748,40 @@ let range='monat';
 $$('#d-range button').forEach(b=>b.onclick=()=>{ $$('#d-range button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); range=b.dataset.r; renderDash(); });
 function inRange(s,r){ const d=new Date(s.date+'T00:00'), n=new Date(); if(r==='gesamt') return true; if(r==='jahr') return d.getFullYear()===n.getFullYear(); if(r==='monat') return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth(); return kw(s.date)===kw(today()); }
 function sum(s){ return {n:s.length,leads:s.reduce((a,b)=>a+(+b.leads||0),0),doors:s.reduce((a,b)=>a+(+b.doors||0),0),hours:s.reduce((a,b)=>a+(+b.hours||0),0)}; }
+/* Dashboard ohne Scrollen: Tabellen zeigen so viele Zeilen wie passen und blättern mit ‹ ›; passt der feste Teil nicht, wird der Reiter leicht verkleinert */
+const DT={}, DSEITE={}; let dFitT=null;
+function dTabelle(id,kopf,zeilen,leer){ DT[id]={kopf,zeilen,leer}; }
+function dBlatt(id){ const el=$('#'+id), t=DT[id]; if(!el||!t||!el.offsetParent) return;
+  if(!t.zeilen.length){ el.innerHTML=`<div class="empty">${t.leer}</div>`; return; }
+  const H=el.clientHeight, tab=z=>`<table>${t.kopf}${z.join('')}</table>`;
+  el.innerHTML=tab(t.zeilen.slice(0,1)); const rs=el.querySelector('table').rows, kH=rs[0].offsetHeight, zH=Math.max(16,rs[rs.length-1].offsetHeight);
+  if(t.zeilen.length<=Math.floor((H-kH)/zH)){ el.innerHTML=tab(t.zeilen); return; }
+  const per=Math.max(1,Math.floor((H-kH-28)/zH)), n=Math.ceil(t.zeilen.length/per), sei=Math.max(0,Math.min(DSEITE[id]||0,n-1)); DSEITE[id]=sei;
+  el.innerHTML=tab(t.zeilen.slice(sei*per,sei*per+per))+`<div class="d-nav"><button class="btn small" data-d="-1" aria-label="Vorherige Seite" ${sei?'':'disabled'}>‹</button><span>${sei+1} / ${n}</span><button class="btn small" data-d="1" aria-label="Nächste Seite" ${sei<n-1?'':'disabled'}>›</button></div>`;
+  el.querySelectorAll('.d-nav button').forEach(b=>b.onclick=()=>{ DSEITE[id]=sei+(+b.dataset.d); dBlatt(id); dEinpassen(false); }); }
+function dEinpassen(blaettern=true){ const v=$('#v-dash'); if(!v.classList.contains('active')) return; const pane=$('#d-'+dTab); if(!pane) return; pane.style.zoom='';
+  if(blaettern) ['d-weeks','d-top','d-rankt'].forEach(dBlatt);
+  const bd=v.querySelector('.body'); for(let i=0;i<5;i++){ const boxen=[pane,...pane.querySelectorAll('.d-fill,.d-box')]; let wf=1; boxen.forEach(b=>{ if(b.scrollWidth>b.clientWidth+1) wf=Math.min(wf,(b.clientWidth-2)/b.scrollWidth); }); // auch abgeschnittene breite Tabellen
+    const hoch=bd.scrollHeight>bd.clientHeight+1, breit=wf<1; if(!hoch&&!breit) break;
+    const f=Math.min(hoch?(bd.clientHeight-2)/bd.scrollHeight:1, wf); pane.style.zoom=Math.max(.55,(parseFloat(pane.style.zoom)||1)*f).toFixed(3); } }
+window.addEventListener('resize',()=>{ clearTimeout(dFitT); dFitT=setTimeout(()=>{ if($('#v-dash').classList.contains('active')) renderDash(); },150); });
 function renderDash(){
   const done=D.shifts.filter(x=>x.status==='abgeschlossen'); const s=done.filter(x=>inRange(x,range)); const t=sum(s);
-  $('#d-cards').innerHTML=[['Leads',t.leads,''],['Einsätze',t.n,''],['Ø Leads je Einsatz',t.n?(t.leads/t.n).toFixed(1):'0',''],['Türen',t.doors,t.doors?`${(t.leads/t.doors*100).toFixed(1)} % Quote`:''],['Leads je Stunde',t.hours?(t.leads/t.hours).toFixed(2):'0',`${t.hours} h`]].map(([l,v,x])=>`<div class="card" style="margin:0"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${x}</div></div>`).join('');
+  $('#d-cards').innerHTML=[['Leads',t.leads,''],['Einsätze',t.n,''],['Ø Leads je Einsatz',t.n?(t.leads/t.n).toFixed(1):'0',''],['Türen',t.doors,t.doors?`${(t.leads/t.doors*100).toFixed(1)} % Quote`:''],['Leads je Stunde',t.hours?(t.leads/t.hours).toFixed(2):'0',`${t.hours} h`]].map(([l,v,x])=>`<div class="card"><div class="l">${l}</div><div class="v">${v}${x?`<small>${x}</small>`:''}</div></div>`).join('');
   // Vergleich: Woche gegen Vorwoche, Monat gegen Vormonat
   const vg=$('#d-vergleich'); if(range==='woche'||range==='monat'){
     const n=new Date(); let prev; if(range==='woche'){ const d=new Date(n); d.setDate(d.getDate()-7); const k=kw(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`); prev=done.filter(x=>kw(x.date)===k); }
     else { const y=n.getMonth()?n.getFullYear():n.getFullYear()-1, mo=(n.getMonth()+11)%12; prev=done.filter(x=>{ const d=new Date(x.date+'T00:00'); return d.getFullYear()===y&&d.getMonth()===mo; }); }
     const p=sum(prev); const dl=t.leads-p.leads;
-    vg.style.display=''; vg.innerHTML=`<strong>${range==='woche'?'Vorwoche':'Vormonat'}</strong><div class="s">${p.n} Einsätze · ${p.leads} Leads · Ø ${p.n?(p.leads/p.n).toFixed(1):'0'} · ${p.hours} h &nbsp;→&nbsp; jetzt ${dl>=0?'+':''}${dl} Leads</div>`;
+    vg.style.display=''; vg.innerHTML=`<strong>${range==='woche'?'Vorwoche':'Vormonat'}:</strong> ${p.n} Einsätze · ${p.leads} Leads · Ø ${p.n?(p.leads/p.n).toFixed(1):'0'} · ${p.hours} h &nbsp;→&nbsp; jetzt ${dl>=0?'+':''}${dl} Leads`;
   } else vg.style.display='none';
   const byW={}; s.forEach(x=>{ const k=kw(x.date); byW[k]=byW[k]||{n:0,l:0,h:0}; byW[k].n++; byW[k].l+=+x.leads||0; byW[k].h+=+x.hours||0; });
   const ws=Object.keys(byW).sort().reverse();
-  $('#d-weeks').innerHTML=ws.length?`<table><tr><th>KW</th><th class="r">Einsätze</th><th class="r">Leads</th><th class="r">Ø</th><th class="r">Stunden</th></tr>${ws.map(k=>`<tr><td>${k}</td><td class="r">${byW[k].n}</td><td class="r">${byW[k].l}</td><td class="r">${(byW[k].l/byW[k].n).toFixed(1)}</td><td class="r">${byW[k].h}</td></tr>`).join('')}</table>`:'<div class="empty">Noch keine abgeschlossenen Einsätze im Zeitraum</div>';
+  DSEITE['d-weeks']=0; DSEITE['d-top']=0;
+  dTabelle('d-weeks','<tr><th>KW</th><th class="r">Einsätze</th><th class="r">Leads</th><th class="r">Ø</th><th class="r">Stunden</th></tr>',ws.map(k=>`<tr><td>${k}</td><td class="r">${byW[k].n}</td><td class="r">${byW[k].l}</td><td class="r">${(byW[k].l/byW[k].n).toFixed(1)}</td><td class="r">${byW[k].h}</td></tr>`),'Noch keine abgeschlossenen Einsätze im Zeitraum');
   const byL={}; s.forEach(x=>{ byL[x.locationId]=byL[x.locationId]||{n:0,l:0}; byL[x.locationId].n++; byL[x.locationId].l+=+x.leads||0; });
   const top=Object.entries(byL).map(([id,v])=>({loc:D.locations.find(l=>l.id===id),...v})).filter(x=>x.loc).sort((a,b)=>b.l-a.l).slice(0,10);
-  $('#d-top').innerHTML=top.length?`<table><tr><th>#</th><th>Gebiet</th><th class="r">Einsätze</th><th class="r">Leads</th><th class="r">Ø</th></tr>${top.map((t,i)=>`<tr><td>${i+1}</td><td><span class="dot" style="background:${t.loc.color}"></span> ${esc(t.loc.name)}${t.loc.group?' <span class="s">· '+esc(t.loc.group)+'</span>':''}</td><td class="r">${t.n}</td><td class="r">${t.l}</td><td class="r">${(t.l/t.n).toFixed(1)}</td></tr>`).join('')}</table>`:'<div class="empty">Noch keine Leads in einem Gebiet erfasst</div>';
+  dTabelle('d-top','<tr><th>#</th><th>Gebiet</th><th class="r">Einsätze</th><th class="r">Leads</th><th class="r">Ø</th></tr>',top.map((t,i)=>`<tr><td>${i+1}</td><td><span class="dot" style="background:${t.loc.color}"></span> ${esc(t.loc.name)}${t.loc.group?' <span class="s">· '+esc(t.loc.group)+'</span>':''}</td><td class="r">${t.n}</td><td class="r">${t.l}</td><td class="r">${(t.l/t.n).toFixed(1)}</td></tr>`),'Noch keine Leads in einem Gebiet erfasst');
 }
 
 /* ---------- Planung: Heute, Aktiv, Geplant ---------- */
@@ -2596,18 +2637,19 @@ let dTab='einsatz', wk=isoWeekOf(today());
 $$('#d-tabs button').forEach(b=>b.onclick=()=>{ dTab=b.dataset.t; kDashTab(); });
 const _renderDash=renderDash; renderDash=function(){ _renderDash(); kDashTab(); };
 function kDashTab(){ $$('#d-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===dTab)); ['einsatz','woche','rank'].forEach(t=>{ const el=$('#d-'+t); if(el) el.style.display=t===dTab?'':'none'; }); $('#d-range').style.display=dTab==='einsatz'?'':'none';
-  if(dTab==='woche') wocheRender(); if(dTab==='rank') rankRender(); }
+  if(dTab==='woche') wocheRender(); if(dTab==='rank') rankRender(); dEinpassen(); }
+const QKURZ=['Leads je 100 Türen (D2D)','Direkttermine je 100 Türen','Termin-Quote (CAS je Lead)','Show-up CHC (je CAS)','Folgetermin-Quote (CSA je CHC)','Angebotsquote (COF je CSA)','Show-up CSC (je CSA)','Abschlussquote (CCW je CSC)','Abschluss gesamt (CCW je CHC)','Widerrufsquote (CCR je CCW)','Empfehlungen je CCW'];
 function wocheRender(){ const el=$('#d-woche'); if(!el) return; const days=kpiWeek(wk.year,wk.week), S=kSum(days), mon=weekMonday(wk.year,wk.week);
-  let h=`<div class="row sb"><button class="btn small" id="wk-prev">‹</button><strong>KW ${wk.week} · ${tagKurz(mon)} bis ${tagKurz(addDays(mon,5))}</strong><button class="btn small" id="wk-next">›</button></div>
-    <div class="s">${KF.at?'An das Wochenblatt übergeben: '+fmtDT(KF.at):'Noch nicht an das Wochenblatt übergeben (bei Google anmelden).'}${KF.err==='scope'?' · Für die Übergabe einmal neu bei Google anmelden.':''}</div>
-    <div class="tscroll"><table class="kw"><tr><th></th>${WTAGE.map(k=>`<th class="r">${k[0].toUpperCase()+k[1]}</th>`).join('')}<th class="r">Σ</th><th class="r">Ziel</th></tr>`;
-  KCODES.forEach(c=>{ h+=`<tr title="${KDE[c]}"><td><b>${c}</b></td>${WTAGE.map(k=>`<td class="r">${days[k][c]||''}</td>`).join('')}<td class="r"><b>${S[c]}</b></td><td class="r">${KZIEL[c]}</td></tr>`; });
-  h+=`</table></div><div class="s" style="margin-top:6px">${KCODES.map(c=>c+' '+KDE[c]).join(' · ')}</div><h3 class="sec">Location je Tag</h3>${WTAGE.map(k=>days[k].loc?`<div class="s">${tagKurz(days[k].date)}: ${esc(days[k].loc)}${days[k].rating?' · Bewertung '+days[k].rating:''}${days[k].back?' · wiederkommen':''}</div>`:'').join('')||'<div class="s">Keine Einsätze in dieser Woche.</div>'}<h3 class="sec">Quoten (Rechnung wie im Wochenblatt)</h3><table>${kQuoten(S).map(q=>`<tr><td>${q[0]}</td><td class="r"><b>${q[1]}</b></td><td class="r s">${q[2]}</td></tr>`).join('')}</table>`;
-  el.innerHTML=h; $('#wk-prev').onclick=()=>{ wk=isoWeekOf(addDays(mon,-7)); wocheRender(); }; $('#wk-next').onclick=()=>{ wk=isoWeekOf(addDays(mon,7)); wocheRender(); }; }
+  const orte=WTAGE.map(k=>days[k].loc?`<div class="s d-ort">${tagKurz(days[k].date)}: ${esc(days[k].loc)}${days[k].rating?' · Bewertung '+days[k].rating:''}${days[k].back?' · wiederkommen':''}</div>`:'').join('')||'<div class="s d-ort">Keine Einsätze in dieser Woche.</div>';
+  let h=`<div class="row sb d-wkopf"><button class="btn small" id="wk-prev" aria-label="Vorwoche">‹</button><div class="d-wtitel"><strong>KW ${wk.week} · ${tagKurz(mon)} bis ${tagKurz(addDays(mon,5))}</strong><div class="s">${KF.at?'An das Wochenblatt übergeben: '+fmtDT(KF.at):'Noch nicht an das Wochenblatt übergeben (bei Google anmelden).'}${KF.err==='scope'?' · Für die Übergabe einmal neu bei Google anmelden.':''}</div></div><button class="btn small" id="wk-next" aria-label="Nächste Woche">›</button></div>
+    <div class="d-zwei d-wzwei"><div class="d-box"><table class="kw"><tr><th></th>${WTAGE.map(k=>`<th class="r">${k[0].toUpperCase()+k[1]}</th>`).join('')}<th class="r">Σ</th><th class="r">Ziel</th></tr>`;
+  KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td>${WTAGE.map(k=>`<td class="r">${days[k][c]||''}</td>`).join('')}<td class="r"><b>${S[c]}</b></td><td class="r">${KZIEL[c]}</td></tr>`; });
+  h+=`</table></div><div class="d-box"><strong class="d-h">Quoten (Rechnung wie im Wochenblatt)</strong><table class="d-q">${kQuoten(S).map((q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${q[1]}</b></td><td class="r s">${q[2]}</td></tr>`).join('')}</table><strong class="d-h d-h2">Location je Tag</strong>${orte}</div></div>`;
+  el.innerHTML=h; $('#wk-prev').onclick=()=>{ wk=isoWeekOf(addDays(mon,-7)); wocheRender(); dEinpassen(); }; $('#wk-next').onclick=()=>{ wk=isoWeekOf(addDays(mon,7)); wocheRender(); dEinpassen(); }; }
 function rankRender(){ const el=$('#d-rank'); if(!el) return; const rows=rankRows(); const f=(x,d=1)=>x==null?'':x.toFixed(d);
-  el.innerHTML=`<div class="s">Sortiert nach Abschlüssen je 100 Türen (nur D2D-Leads), dann Folgetermin-Quote (CSA je CHC), dann Leads je 100 Türen. Grau: weniger als 3 Abschlüsse, noch wenig Aussagekraft.</div>
-    <div class="tscroll"><table><tr><th>Location</th><th class="r">Türen</th><th class="r">Leads</th><th class="r">SL</th><th class="r">CHC</th><th class="r">CSA</th><th class="r">CCW</th><th class="r">CCW/100</th><th class="r">CSA-Q.</th><th class="r">Leads/100</th></tr>
-    ${rows.map(r=>`<tr class="${r.CCW<3?'grau':''}"><td>${r.loc?`<span class="dot" style="background:${STATUS_FARBE[locStatus(r.loc).k]}"></span> `:''}${esc(r.name)}</td><td class="r">${r.DOR}</td><td class="r">${r.CLD}</td><td class="r">${r.CLI}</td><td class="r">${r.CHC}</td><td class="r">${r.CSA}</td><td class="r">${r.CCW}</td><td class="r">${f(r.ccw100,2)}</td><td class="r">${r.csaQ==null?'':Math.round(r.csaQ*100)+' %'}</td><td class="r">${f(r.l100)}</td></tr>`).join('')}</table></div>`; }
+  el.innerHTML=`<div class="s d-rinfo">Sortiert nach Abschlüssen je 100 Türen (nur D2D), dann CSA je CHC, dann Leads je 100 Türen. Grau: unter 3 Abschlüssen.</div><div id="d-rankt" class="d-fill"></div>`; DSEITE['d-rankt']=0;
+  dTabelle('d-rankt','<tr><th>Location</th><th class="r">Türen</th><th class="r">Leads</th><th class="r">SL</th><th class="r">CHC</th><th class="r">CSA</th><th class="r">CCW</th><th class="r">CCW/100</th><th class="r">CSA-Q.</th><th class="r">Leads/100</th></tr>',
+    rows.map(r=>`<tr class="${r.CCW<3?'grau':''}"><td>${r.loc?`<span class="dot" style="background:${STATUS_FARBE[locStatus(r.loc).k]}"></span> `:''}${esc(r.name)}</td><td class="r">${r.DOR}</td><td class="r">${r.CLD}</td><td class="r">${r.CLI}</td><td class="r">${r.CHC}</td><td class="r">${r.CSA}</td><td class="r">${r.CCW}</td><td class="r">${f(r.ccw100,2)}</td><td class="r">${r.csaQ==null?'':Math.round(r.csaQ*100)+' %'}</td><td class="r">${f(r.l100)}</td></tr>`),'Noch keine Locations'); }
 
 /* ---------- Einstellungen und Daten, Einsatz-Felder, Aktualisierung ---------- */
 function kDatenInfo(){ const el=$('#kd-info'); if(!el) return; const n=D.leads.length, geo=D.leads.filter(l=>l.lat!=null).length;
