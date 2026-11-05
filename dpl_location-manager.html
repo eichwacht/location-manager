@@ -926,15 +926,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
         </div>
         <button class="ltile drawtile" id="b-draw" aria-label="Gebiet zeichnen"><svg viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></svg></button>
         <button class="ltile" id="b-route" style="display:none" aria-label="ÖPNV-Route: Kachel an, Ziel auf der Karte antippen"><!-- Kachel ausgeblendet seit v71: Route per Klick auf Haltestelle; Routensuche aus dem Lead-Fenster nutzt rtMode weiter --><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="15" rx="3"/><path d="M5 11h14M9 3v0M8 21l1-3M16 21l-1-3"/><circle cx="8.5" cy="14.5" r=".9"/><circle cx="15.5" cy="14.5" r=".9"/></svg></button>
-        <div id="layerbox">
+        <div id="layerbox" style="display:none"><!-- seit v88 im Zahnrad-Menü unter Grundkarte -->
           <button class="ltile" id="layer-main" aria-label="Grundkarte: Satellit, Luftbild">
             <svg data-ic="sat" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>
             <svg data-ic="dop" viewBox="0 0 24 24"><path d="M4 7h3l2-2h6l2 2h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
           </button>
           <div id="layermenu" class="flymenu">
             <div class="col">
-              <button class="lt" data-base="sat"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>Satellit</button>
-              <button class="lt" data-base="dop"><svg viewBox="0 0 24 24"><path d="M4 7h3l2-2h6l2 2h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Luftbild amtlich</button>
             </div>
           </div>
         </div>
@@ -946,7 +944,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
               <button class="lt" id="b-set"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Einstellungen und Daten</button>
               <button class="lt" id="b-leg"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="6" height="6" rx="1"/><rect x="3" y="14" width="6" height="6" rx="1"/><path d="M12 7h9M12 17h9"/></svg>Legende</button>
               <button class="lt" id="b-locate"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg>Mein Standort (GPS)</button>
+              <button class="lt" id="b-karte"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>Grundkarte<span style="margin-left:auto;padding-left:12px;font-size:16px">›</span></button>
               <button class="lt" id="b-ebenen"><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 17.5l9 5 9-5"/></svg>Ebenen<span style="margin-left:auto;padding-left:12px;font-size:16px">›</span></button>
+            </div>
+            <div class="col" id="ov-karte" style="display:none">
+              <button class="lt" id="b-karte-zurueck"><span style="margin-left:12px;font-size:16px">‹</span>Zurück</button>
+              <div class="fm-sep">Grundkarte</div>
+              <button class="lt" data-base="sat"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>Satellit</button>
+              <button class="lt" data-base="dop"><svg viewBox="0 0 24 24"><path d="M4 7h3l2-2h6l2 2h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Luftbild amtlich</button>
             </div>
             <div class="col" id="ov-ebenen" style="display:none">
               <button class="lt" id="b-ebenen-zurueck"><span style="margin-left:12px;font-size:16px">‹</span>Zurück</button>
@@ -1193,9 +1198,9 @@ const dop = L.layerGroup([
 ]);
 const bases = {sat, dop}; // Geländekarte seit v87 entfernt
 let base='sat';
-function setBase(k){ base=k; Object.values(bases).forEach(l=>map.removeLayer(l)); bases[k].addTo(map); $$('#layer-main svg').forEach(x=>x.classList.toggle('show',x.dataset.ic===k)); $$('#layermenu [data-base]').forEach(b=>b.classList.toggle('on',b.dataset.base===k)); try{ localStorage.setItem('sle_lm_base',k); }catch(e){} }
+function setBase(k){ base=k; Object.values(bases).forEach(l=>map.removeLayer(l)); bases[k].addTo(map); $$('#layer-main svg').forEach(x=>x.classList.toggle('show',x.dataset.ic===k)); $$('#ovmenu [data-base]').forEach(b=>b.classList.toggle('on',b.dataset.base===k)); try{ localStorage.setItem('sle_lm_base',k); }catch(e){} }
 setBase(['sat','dop'].includes(localStorage.getItem('sle_lm_base'))?localStorage.getItem('sle_lm_base'):'sat');
-$$('#layermenu [data-base]').forEach(b=>b.onclick=()=>{ setBase(b.dataset.base); menuOpen(false); });
+$$('#ovmenu [data-base]').forEach(b=>b.onclick=()=>{ setBase(b.dataset.base); menuOpen(false); });
 const layerMenu=$('#layermenu'), ovMenu=$('#ovmenu'), kMenu=$('#kmenu');
 function menuOpen(on,which='layer'){ if(!on){ layerMenu.classList.remove('open'); ovMenu.classList.remove('open'); kMenu.classList.remove('open'); $('#layer-main').classList.remove('on'); $('#ov-main').classList.remove('on'); $('#k-main').classList.remove('on'); return; }
   const m=which==='ov'?ovMenu:which==='k'?kMenu:layerMenu, b=which==='ov'?$('#ov-main'):which==='k'?$('#k-main'):$('#layer-main'); menuOpen(false); m.classList.add('open'); b.classList.add('on'); }
@@ -1203,8 +1208,8 @@ $('#k-main').onclick=()=>menuOpen(!kMenu.classList.contains('open'),'k');
 $('#layer-main').onclick=()=>menuOpen(!layerMenu.classList.contains('open'),'layer');
 $('#ov-main').onclick=()=>{ ovSeite(false); menuOpen(!ovMenu.classList.contains('open'),'ov'); };
 $('#b-set').onclick=()=>{ menuOpen(false); show('set'); };
-function ovSeite(e){ $('#ov-haupt').style.display=e?'none':''; $('#ov-ebenen').style.display=e?'':'none'; }
-$('#b-ebenen').onclick=()=>ovSeite(true); $('#b-ebenen-zurueck').onclick=()=>ovSeite(false);
+function ovSeite(k){ k=k===true?'ebenen':(k||'haupt'); ['haupt','ebenen','karte'].forEach(x=>$('#ov-'+x).style.display=x===k?'':'none'); }
+$('#b-ebenen').onclick=()=>ovSeite('ebenen'); $('#b-ebenen-zurueck').onclick=()=>ovSeite('haupt'); $('#b-karte').onclick=()=>ovSeite('karte'); $('#b-karte-zurueck').onclick=()=>ovSeite('haupt');
 map.on('mousedown dragstart',()=>menuOpen(false));
 if(D.view) map.setView([D.view.lat,D.view.lng],D.view.zoom);
 map.on('moveend',()=>{ const c=map.getCenter(); D.view={lat:c.lat,lng:c.lng,zoom:map.getZoom()}; Store.save(); });
@@ -2669,7 +2674,7 @@ function fensterZurueck(el){
   if(el.closest('#legend')){ legendOpen(false); return; }
   if(el.closest('#search')){ searchOpen(false); return; }
   if(el.closest('#rtpanel')){ rtMode(false); return; }
-  if(el.closest('#ovmenu')){ if($('#ov-ebenen').style.display!=='none') ovSeite(false); else menuOpen(false); return; }
+  if(el.closest('#ovmenu')){ if($('#ov-haupt').style.display==='none') ovSeite('haupt'); else menuOpen(false); return; }
   if(el.closest('.flymenu')){ menuOpen(false); return; }
   if(el.closest('#panel')){ if(curNew&&cur){ neuZurueck(); return; } if($('#s-form').style.display!=='none'){ $('#s-form').style.display='none'; return; } if($('#p-editform').style.display!=='none'){ $('#e-cancel').click(); return; } closePanel(); return; }
   if(el.closest('#v-lead')){ if(LD.book){ LD.book=null; leadRender(); return; } if(LD.mode==='edit'&&$('#lf-cancel')){ $('#lf-cancel').click(); return; } leadClose(); return; }
