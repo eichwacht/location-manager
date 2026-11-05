@@ -838,7 +838,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .seg{display:inline-flex;background:var(--hell);border-radius:10px;overflow:hidden}
   .seg button{border:0;background:transparent;color:var(--navy);padding:8px 12px;font-weight:600}
   .seg button.on{background:var(--gruen);color:var(--navy)}
-  /* Einsatz-Zeile */
+  /* Shift-Zeile */
   .shift{background:var(--hell);color:var(--navy);border-radius:10px;padding:10px 12px;margin:8px 0;display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;border-left:6px solid var(--hell)}
   .shift.s-geplant{border-left-color:var(--hell)}
   .shift.s-aktiv{border-left-color:var(--gruen)}
@@ -878,7 +878,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .pers{font-size:12px;font-weight:700;letter-spacing:.3px}
   .cal-ok{font-size:11px;color:var(--navy);border:1px solid var(--navy);border-radius:99px;padding:1px 7px;margin-left:6px}
   .stats.four{grid-template-columns:repeat(4,1fr)}
-  #p-stats.nur-adr{grid-template-columns:1fr} #p-stats.nur-adr .p-erfahrung{display:none} /* neues Gebiet ohne Einsatz: nur Adressen */
+  #p-stats.nur-adr{grid-template-columns:1fr} #p-stats.nur-adr .p-erfahrung{display:none} /* neues Gebiet ohne Shift: nur Adressen */
   .mono{font-family:ui-monospace,monospace;font-size:13px}
   .lt.rot svg{stroke:#e04545}
   #b-sv{touch-action:none}
@@ -1054,14 +1054,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
         </div>
         <div class="stats four" id="p-stats">
           <div class="stat"><div class="l">Postalische Adressen</div><div class="v" id="p-addr">–</div></div>
-          <div class="stat p-erfahrung"><div class="l">Einsätze</div><div class="v" id="p-shifts">0</div></div>
+          <div class="stat p-erfahrung"><div class="l">Shifts</div><div class="v" id="p-shifts">0</div></div>
           <div class="stat p-erfahrung"><div class="l">Leads gesamt</div><div class="v" id="p-leads">0</div></div>
-          <div class="stat p-erfahrung"><div class="l">Ø Leads je Einsatz</div><div class="v" id="p-avg">0</div></div>
+          <div class="stat p-erfahrung"><div class="l">Ø Leads je Shift</div><div class="v" id="p-avg">0</div></div>
         </div>
         <div id="p-einsaetze">
-        <div class="row sb"><strong>Einsätze</strong><button class="btn primary small" id="b-newshift">+ Neuer Einsatz</button></div>
+        <div class="row sb"><strong>Shifts</strong><button class="btn primary small" id="b-newshift">+ Neue Shift</button></div>
         <div class="form" id="s-form" style="display:none">
-          <h3 id="s-title">Neuer Einsatz</h3>
+          <h3 id="s-title">Neue Shift</h3>
           <div class="grid3">
             <div><label for="s-date">Datum</label><input type="date" id="s-date"></div>
             <div style="grid-column:span 2"><label for="s-status">Status</label><select id="s-status"><option value="geplant">Geplant</option><option value="aktiv">Aktiv (läuft gerade)</option><option value="abgeschlossen">Abgeschlossen</option></select></div>
@@ -1086,9 +1086,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
     <!-- Dashboard -->
     <section class="win" id="v-dash">
-      <header><h2><span class="t">Dashboard</span><span class="sub">abgeschlossene Einsätze</span></h2><div class="seg" id="d-range"><button data-r="woche">Woche</button><button data-r="monat" class="on">Monat</button><button data-r="jahr">Jahr</button><button data-r="gesamt">Gesamt</button></div><button class="w-close" data-close title="Schließen">✕</button></header>
+      <header><h2><span class="t">Dashboard</span><span class="sub">abgeschlossene Shifts</span></h2><div class="seg" id="d-range"><button data-r="woche">Woche</button><button data-r="monat" class="on">Monat</button><button data-r="jahr">Jahr</button><button data-r="gesamt">Gesamt</button></div><button class="w-close" data-close title="Schließen">✕</button></header>
       <div class="body">
-        <div class="seg tabs" id="d-tabs"><button data-t="einsatz" class="on">Einsätze</button><button data-t="woche">Woche</button><button data-t="rank">Ranking</button></div>
+        <div class="seg tabs" id="d-tabs"><button data-t="einsatz" class="on">Shifts</button><button data-t="woche">Woche</button><button data-t="rank">Ranking</button></div>
         <div id="d-einsatz" class="d-pane">
         <div class="cards" id="d-cards"></div>
         <div class="card d-zeile" id="d-vergleich" style="display:none"></div>
@@ -1101,8 +1101,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
     <!-- Planung -->
     <section class="win" id="v-plan">
-      <header><h2><span class="t">Planung</span><span class="sub">Tag, Einsätze, Kunden</span></h2><button class="w-close" data-close title="Schließen">✕</button></header>
-      <div class="body"><div class="seg tabs" id="pl-tabs"><button data-t="heute">Heute</button><button data-t="einsatz">Einsätze</button><button data-t="kunden">Kunden</button><button data-t="nach">Nachfassen</button></div><div id="pl-heute"></div><div id="pl-list"></div><div id="pl-kunden"></div><div id="pl-nach"></div></div>
+      <header><h2><span class="t">Planung</span><span class="sub">Tag, Shifts, Kunden</span></h2><button class="w-close" data-close title="Schließen">✕</button></header>
+      <div class="body"><div class="seg tabs" id="pl-tabs"><button data-t="heute">Heute</button><button data-t="einsatz">Shifts</button><button data-t="kunden">Kunden</button><button data-t="nach">Nachfassen</button></div><div id="pl-heute"></div><div id="pl-list"></div><div id="pl-kunden"></div><div id="pl-nach"></div></div>
     </section>
 
     <!-- Lead -->
@@ -1116,7 +1116,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
       <header><h2><span class="t">Daten</span><span class="sub">nur in diesem Browser</span></h2><button class="w-close" data-close title="Schließen">✕</button></header>
       <div class="body">
         <div class="card">
-          <strong>Gebiete und Einsätze</strong>
+          <strong>Gebiete und Shifts</strong>
           <div class="s" id="x-info"></div>
           <div class="row"><button class="btn primary" id="x-export">Export JSON</button><label class="btn" style="margin:0">Import JSON <input type="file" id="x-import" accept="application/json" style="display:none"></label><button class="btn ghost" id="x-demo">Demo-Gebiet anlegen</button></div>
           <div class="s">Export regelmäßig in den Projektordner legen (10-d2d). Import ersetzt den aktuellen Stand.</div>
@@ -1126,7 +1126,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
           <div class="s" id="g-status">Nicht angemeldet.</div>
           <div class="row"><button class="btn primary" id="g-login">Bei Google anmelden</button><button class="btn" id="g-sync" style="display:none">Jetzt abgleichen</button><button class="btn ghost" id="g-logout" style="display:none">Abmelden</button></div>
           <label for="g-client">Client-ID (aus der Google Cloud Console, einmalig)</label><input id="g-client" class="mono" placeholder="123456789-abc.apps.googleusercontent.com" autocomplete="off">
-          <div class="s">Angemeldet schreibt die Seite den Ort deiner D2D-Blöcke im Kalender „01-unternehmen" (Einsätze mit Fabian) und gleicht Gebiete und Einsätze über deinen Google-Drive-App-Speicher zwischen Notebook und Handy ab. Zugangs-Token gelten etwa eine Stunde, danach einmal „Anmelden" tippen.</div>
+          <div class="s">Angemeldet schreibt die Seite den Ort deiner D2D-Blöcke im Kalender „01-unternehmen" (Shifts mit Fabian) und gleicht Gebiete und Shifts über deinen Google-Drive-App-Speicher zwischen Notebook und Handy ab. Zugangs-Token gelten etwa eine Stunde, danach einmal „Anmelden" tippen.</div>
           <div class="s" id="g-log"></div>
         </div>
         <div class="card">
@@ -1143,7 +1143,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
         </div>
         <div class="card">
           <strong>Gebietsfarben</strong>
-          <div class="s"><span class="dot" style="background:#9fd41f"></span> hellgrün: noch nie ein Einsatz &nbsp; <span class="dot" style="background:#4f6e0c"></span> dunkelgrün: frei, mindestens ein Einsatz gewesen &nbsp; <span class="dot" style="background:#f28c28"></span> orange: heute eingeplant &nbsp; <span class="dot" style="background:#f2d11a"></span> gelb: für einen künftigen Tag geplant &nbsp; <span class="dot" style="background:#d42a2a"></span> rot: Sperrfrist 60 Tage nach dem letzten Einsatz</div>
+          <div class="s"><span class="dot" style="background:#9fd41f"></span> hellgrün: noch nie eine Shift &nbsp; <span class="dot" style="background:#4f6e0c"></span> dunkelgrün: frei, mindestens eine Shift gewesen &nbsp; <span class="dot" style="background:#f28c28"></span> orange: heute eingeplant &nbsp; <span class="dot" style="background:#f2d11a"></span> gelb: für einen künftigen Tag geplant &nbsp; <span class="dot" style="background:#d42a2a"></span> rot: Sperrfrist 60 Tage nach der letzten Shift</div>
         </div>
         <div class="card">
           <strong>Wärmeplanung</strong>
@@ -1199,7 +1199,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
         </div>
         <div class="card">
           <strong>Gebiete</strong>
-          <table><thead><tr><th>Name</th><th>Ort</th><th>PLZ</th><th class="r">Adressen</th><th class="r">Einsätze</th><th class="r">Leads</th></tr></thead><tbody id="x-table"></tbody></table>
+          <table><thead><tr><th>Name</th><th>Ort</th><th>PLZ</th><th class="r">Adressen</th><th class="r">Shifts</th><th class="r">Leads</th></tr></thead><tbody id="x-table"></tbody></table>
         </div>
         <div class="s" style="font-size:11px;opacity:.8">Kartenquellen: © OpenStreetMap-Mitwirkende (ODbL) · Esri, Maxar, Earthstar Geographics · DOP20 © LGLN Niedersachsen (CC BY 4.0) · DOP20 2023 © GeoInformation Bremen (CC BY 4.0) · DOP20 © Geobasis NRW (dl-de/zero-2-0) · Leaflet, Leaflet-Geoman</div>
       </div>
@@ -1291,7 +1291,7 @@ map.pm.addControls({drawMarker:false,drawCircleMarker:false,drawPolyline:false,d
 $('#b-draw').onclick=()=>{ if(map.pm.globalDrawModeEnabled()) map.pm.disableDraw(); else { show(null); closePanel(); menuOpen(false); map.pm.enableDraw('Polygon',{snappable:true,finishOn:'dblclick'});  } };
 map.on('pm:globaldrawmodetoggled',e=>{ $('#b-draw').classList.toggle('on',!!e.enabled); });
 $('#map').addEventListener('contextmenu',e=>e.preventDefault());
-/* Neu eingezeichnetes Gebiet, Fenster offen: Linksklick hinein = speichern und Einsatz planen, Rechtsklick hinein = verwerfen und ab dem vorletzten Punkt weiterzeichnen, Klick daneben = verwerfen */
+/* Neu eingezeichnetes Gebiet, Fenster offen: Linksklick hinein = speichern und Shift planen, Rechtsklick hinein = verwerfen und ab dem vorletzten Punkt weiterzeichnen, Klick daneben = verwerfen */
 function neuAktiv(id){ return !!(curNew&&cur&&(!id||cur.id===id)&&$('#panel').classList.contains('active')&&!(layers[cur.id]&&layers[cur.id].pm.enabled())); }
 function neuSpeichern(){ if(!$('#e-name').value.trim()) $('#e-name').value=cur.name; const id=cur.id; window.__lmStill=true; try{ $('#e-save').click(); }finally{ window.__lmStill=false; } if(cur&&cur.id===id&&!curNew){ $('#b-newshift').click(); setTimeout(()=>{ const f=$('#s-form'); if(f) f.scrollIntoView({block:'start',behavior:'smooth'}); },60); } }
 function neuZurueck(){ const pts=(cur.coords||[]).slice(0,-1); $('#e-cancel').click(); map.pm.enableDraw('Polygon',{snappable:true,finishOn:'dblclick'}); const d=map.pm.Draw.Polygon;
@@ -1313,13 +1313,13 @@ var locSicht=false; // Gebiete ein- oder ausgeblendet; beim Laden immer aus (sei
 const STATUS_FARBE={neu:'#9fd41f',frei:'#4f6e0c',heute:'#f28c28',geplant:'#f2d11a',sperre:'#d42a2a'};
 const SPERRTAGE=60;
 function dayDiff(a,b){ return Math.round((new Date(a+'T00:00')-new Date(b+'T00:00'))/864e5); }
-function locStatus(loc){ // heute > Sperrfrist > frei (schon mal Einsatz) > neu
+function locStatus(loc){ // heute > Sperrfrist > frei (schon mal Shift) > neu
   const td=today(); const sh=D.shifts.filter(s=>s.locationId===loc.id);
   if(sh.some(s=>s.date===td)) return {k:'heute',t:'heute eingeplant'};
   const zuk=sh.filter(s=>s.date>td&&s.status!=='abgeschlossen').map(s=>s.date).sort(); if(zuk.length) return {k:'geplant',t:'geplant für '+fmtDate(zuk[0])};
   const done=sh.filter(s=>s.date<td&&s.status!=='geplant').map(s=>s.date).sort();
-  if(done.length){ const last=done[done.length-1]; const d=dayDiff(td,last); if(d>=1&&d<=SPERRTAGE){ const frei=new Date(last+'T00:00'); frei.setDate(frei.getDate()+SPERRTAGE+1); return {k:'sperre',t:'Sperrfrist bis '+frei.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})+' (letzter Einsatz '+fmtDate(last)+')'}; } return {k:'frei',t:'frei, letzter Einsatz '+fmtDate(last)}; }
-  return {k:'neu',t:'noch kein Einsatz'};
+  if(done.length){ const last=done[done.length-1]; const d=dayDiff(td,last); if(d>=1&&d<=SPERRTAGE){ const frei=new Date(last+'T00:00'); frei.setDate(frei.getDate()+SPERRTAGE+1); return {k:'sperre',t:'Sperrfrist bis '+frei.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})+' (letzte Shift '+fmtDate(last)+')'}; } return {k:'frei',t:'frei, letzte Shift '+fmtDate(last)}; }
+  return {k:'neu',t:'noch keine Shift'};
 }
 function style(loc){ const st=locStatus(loc); loc.color=STATUS_FARBE[st.k]; return {color:loc.color,weight:4,opacity:1,fillColor:loc.color,fillOpacity: st.k==='heute'||st.k==='geplant'?0.6:0.45}; }
 function hasOpenShift(id){ return D.shifts.some(s=>s.locationId===id && s.status!=='abgeschlossen'); }
@@ -1679,7 +1679,7 @@ function stats(id){ const s=D.shifts.filter(x=>x.locationId===id); const leads=s
 function openPanel(id,edit=false,isNew=false){ if(!locSicht) locSichtSetzen(true); // Location öffnen blendet die Locations ein (beim Laden sind sie aus)
   cur=D.locations.find(l=>l.id===id); if(!cur) return; curNew=isNew;
   $('#p-name').textContent=isNew?'Neue Location':cur.name; $('#panel').classList.toggle('neu',!!isNew); $('#p-dot').style.background=STATUS_FARBE[locStatus(cur).k]; $('#p-dot').title=locStatus(cur).t; $('#p-sub').textContent=[cur.plz,cur.group].filter(Boolean).join(' ');
-  const st=stats(id); $('#p-shifts').textContent=st.n; $('#p-leads').textContent=st.leads; $('#p-avg').textContent=st.avg; $('#p-addr').textContent=cur.addr==null?'–':cur.addr; $('#p-stats').classList.toggle('nur-adr',isNew||st.n===0); $('#p-einsaetze').style.display=isNew?'none':''; // neues Gebiet: noch keine Einsätze
+  const st=stats(id); $('#p-shifts').textContent=st.n; $('#p-leads').textContent=st.leads; $('#p-avg').textContent=st.avg; $('#p-addr').textContent=cur.addr==null?'–':cur.addr; $('#p-stats').classList.toggle('nur-adr',isNew||st.n===0); $('#p-einsaetze').style.display=isNew?'none':''; // neues Gebiet: noch keine Shifts
   $('#p-editform').style.display=edit?'block':'none'; $('#s-form').style.display='none';
   $('#e-title').textContent=isNew?'Neues Gebiet':'Gebiet bearbeiten'; $('#e-cancel').textContent=isNew?'Verwerfen':'Abbrechen'; $('#p-del').style.display=isNew?'none':'';
   if(edit){ $('#e-name').value=isNew?'':cur.name; $('#e-name').dataset.vorschlag=''; $('#e-group').value=cur.group||''; $('#e-plz').value=cur.plz||''; $('#e-autoinfo').textContent=''; $('#groups').innerHTML=[...new Set(D.locations.map(l=>l.group).filter(Boolean))].map(g=>`<option value="${esc(g)}">`).join(''); }
@@ -1697,19 +1697,19 @@ $('#e-cancel').onclick=()=>{ if(curNew){ discardNew(); $('#panel').classList.rem
 $('#e-save').onclick=()=>{ const nm=$('#e-name').value.trim(); if(!nm){ $('#e-name').focus(); toast('Bitte einen Namen eingeben'); return; } cur.name=nm; cur.group=$('#e-group').value.trim(); cur.plz=$('#e-plz').value.trim(); const l=layers[cur.id]; let shapeChanged=false; if(l.pm.enabled()){ cur.coords=l.getLatLngs()[0].map(p=>[+p.lat.toFixed(6),+p.lng.toFixed(6)]); l.pm.disable(); shapeChanged=true; } curNew=false; Store.touch(cur); Store.save(); render(cur); openPanel(cur.id); toast('Gespeichert'); if(shapeChanged) autoFill(cur,false); calSyncAll(); };
 $('#e-auto').onclick=()=>autoFill(cur,true);
 $('#e-shape').onclick=()=>{ layers[cur.id].pm.enable({allowSelfIntersection:false}); toast('Eckpunkte ziehen, dann Speichern'); };
-$('#p-del').onclick=()=>{ if(!confirm(`„${cur.name}" samt Einsätzen löschen?`)) return; Store.tomb(cur.id); D.shifts.filter(s=>s.locationId===cur.id).forEach(s=>Store.tomb(s.id)); D.locations=D.locations.filter(l=>l.id!==cur.id); D.shifts=D.shifts.filter(s=>s.locationId!==cur.id); map.removeLayer(layers[cur.id]); delete layers[cur.id]; Store.save(); curNew=false; closePanel(); toast('Gelöscht'); calSyncAll(); };
+$('#p-del').onclick=()=>{ if(!confirm(`„${cur.name}" samt Shifts löschen?`)) return; Store.tomb(cur.id); D.shifts.filter(s=>s.locationId===cur.id).forEach(s=>Store.tomb(s.id)); D.locations=D.locations.filter(l=>l.id!==cur.id); D.shifts=D.shifts.filter(s=>s.locationId!==cur.id); map.removeLayer(layers[cur.id]); delete layers[cur.id]; Store.save(); curNew=false; closePanel(); toast('Gelöscht'); calSyncAll(); };
 
-/* Einsätze */
+/* Shifts */
 let editShift=null;
 function buildPersons(sel){ $('#s-persons').innerHTML=PERSONS.map(p=>`<button type="button" class="chip ${sel.includes(p)?'on':''}" data-p="${p}">${p}</button>`).join(''); $$('#s-persons .chip').forEach(c=>c.onclick=()=>c.classList.toggle('on')); }
-function fillShift(s){ $('#s-date').value=s?s.date:today(); $('#s-status').value=s?s.status:'geplant'; $('#s-leads').value=s?s.leads:0; $('#s-doors').value=s?s.doors:0; $('#s-hours').value=s?s.hours:0; $('#s-note').value=s?(s.note||''):''; buildPersons(s?(s.persons||[]):[ME]); $('#s-title').textContent=s?'Einsatz bearbeiten':'Neuer Einsatz'; $('#s-form').style.display='block'; $('#s-form').scrollIntoView({block:'nearest'}); }
+function fillShift(s){ $('#s-date').value=s?s.date:today(); $('#s-status').value=s?s.status:'geplant'; $('#s-leads').value=s?s.leads:0; $('#s-doors').value=s?s.doors:0; $('#s-hours').value=s?s.hours:0; $('#s-note').value=s?(s.note||''):''; buildPersons(s?(s.persons||[]):[ME]); $('#s-title').textContent=s?'Shift bearbeiten':'Neue Shift'; $('#s-form').style.display='block'; $('#s-form').scrollIntoView({block:'nearest'}); }
 $('#b-newshift').onclick=()=>{ editShift=null; fillShift(null); };
 $('#s-cancel').onclick=()=>$('#s-form').style.display='none';
 $$('.num button').forEach(b=>b.onclick=()=>{ const i=$('#'+b.dataset.for); const st=+b.dataset.step; const v=Math.max(0,Math.round(((+i.value||0)+st)*10)/10); i.value=v; });
 $('#s-save').onclick=()=>{
   const s=editShift||{id:Store.id(),locationId:cur.id,createdAt:new Date().toISOString()};
   Object.assign(s,{date:$('#s-date').value||today(),status:$('#s-status').value,leads:+$('#s-leads').value||0,doors:+$('#s-doors').value||0,hours:+$('#s-hours').value||0,note:$('#s-note').value.trim(),persons:$$('#s-persons .chip.on').map(c=>c.dataset.p)});
-  Store.touch(s); if(!editShift) D.shifts.push(s); editShift=null; Store.save(); render(cur); openPanel(cur.id); toast('Einsatz gespeichert'); calSyncAll();
+  Store.touch(s); if(!editShift) D.shifts.push(s); editShift=null; Store.save(); render(cur); openPanel(cur.id); toast('Shift gespeichert'); calSyncAll();
 };
 function shiftRow(s,withLoc){
   const l=withLoc?(D.locations.find(x=>x.id===s.locationId)||{name:'?',color:'#999'}):null;
@@ -1726,9 +1726,9 @@ function shiftRow(s,withLoc){
 }
 function shiftAction(b,after){
   const s=D.shifts.find(x=>x.id===b.closest('.shift').dataset.id); if(!s) return; const loc=D.locations.find(l=>l.id===s.locationId); const a=b.dataset.act;
-  if(a==='del'){ if(!confirm('Einsatz löschen?')) return; Store.tomb(s.id); D.shifts=D.shifts.filter(x=>x!==s); }
-  else if(a==='start'){ s.status='aktiv'; if(!s.date) s.date=today(); toast('Einsatz läuft'); }
-  else if(a==='done'){ s.status='abgeschlossen'; toast('Einsatz abgeschlossen: Türen, Stunden und Bewertung eintragen'); setTimeout(()=>{ show(null); openPanel(s.locationId); editShift=s; fillShift(s); },60); }
+  if(a==='del'){ if(!confirm('Shift löschen?')) return; Store.tomb(s.id); D.shifts=D.shifts.filter(x=>x!==s); }
+  else if(a==='start'){ s.status='aktiv'; if(!s.date) s.date=today(); toast('Shift läuft'); }
+  else if(a==='done'){ s.status='abgeschlossen'; toast('Shift abgeschlossen: Türen, Stunden und Bewertung eintragen'); setTimeout(()=>{ show(null); openPanel(s.locationId); editShift=s; fillShift(s); },60); }
   else if(a==='plus'){ s.leads=(+s.leads||0)+1; }
   else if(a==='minus'){ s.leads=Math.max(0,(+s.leads||0)-1); }
   else if(a==='open'){ show(null); openPanel(s.locationId); return; }
@@ -1737,7 +1737,7 @@ function shiftAction(b,after){
 }
 function renderShifts(){
   const list=D.shifts.filter(s=>s.locationId===cur.id).sort((a,b)=>b.date.localeCompare(a.date));
-  $('#p-shiftlist').innerHTML=list.length?list.map(s=>shiftRow(s,false)).join(''):'<button class="btn primary" id="b-newshift0" aria-label="Neuen Einsatz planen" style="margin:6px 0 0;width:48px;height:44px;font-size:26px;line-height:1;padding:0;display:grid;place-items:center">+</button>';
+  $('#p-shiftlist').innerHTML=list.length?list.map(s=>shiftRow(s,false)).join(''):'<button class="btn primary" id="b-newshift0" aria-label="Neue Shift planen" style="margin:6px 0 0;width:48px;height:44px;font-size:26px;line-height:1;padding:0;display:grid;place-items:center">+</button>';
   $('#b-newshift').style.display=list.length?'':'none';
   $$('#p-shiftlist button').forEach(b=>b.onclick=()=>shiftAction(b,()=>openPanel(cur.id)));
   { const b0=$('#b-newshift0'); if(b0) b0.onclick=()=>$('#b-newshift').click(); }
@@ -1767,21 +1767,21 @@ function dEinpassen(blaettern=true){ const v=$('#v-dash'); if(!v.classList.conta
 window.addEventListener('resize',()=>{ clearTimeout(dFitT); dFitT=setTimeout(()=>{ if($('#v-dash').classList.contains('active')) renderDash(); },150); });
 function renderDash(){
   const done=D.shifts.filter(x=>x.status==='abgeschlossen'); const s=done.filter(x=>inRange(x,range)); const t=sum(s);
-  $('#d-cards').innerHTML=[['Leads',t.leads,''],['Einsätze',t.n,''],['Ø Leads je Einsatz',t.n?(t.leads/t.n).toFixed(1):'0',''],['Türen',t.doors,t.doors?`${(t.leads/t.doors*100).toFixed(1)} % Quote`:''],['Leads je Stunde',t.hours?(t.leads/t.hours).toFixed(2):'0',`${t.hours} h`]].map(([l,v,x])=>`<div class="card"><div class="l">${l}</div><div class="v">${v}${x?`<small>${x}</small>`:''}</div></div>`).join('');
+  $('#d-cards').innerHTML=[['Leads',t.leads,''],['Shifts',t.n,''],['Ø Leads je Shift',t.n?(t.leads/t.n).toFixed(1):'0',''],['Türen',t.doors,t.doors?`${(t.leads/t.doors*100).toFixed(1)} % Quote`:''],['Leads je Stunde',t.hours?(t.leads/t.hours).toFixed(2):'0',`${t.hours} h`]].map(([l,v,x])=>`<div class="card"><div class="l">${l}</div><div class="v">${v}${x?`<small>${x}</small>`:''}</div></div>`).join('');
   // Vergleich: Woche gegen Vorwoche, Monat gegen Vormonat
   const vg=$('#d-vergleich'); if(range==='woche'||range==='monat'){
     const n=new Date(); let prev; if(range==='woche'){ const d=new Date(n); d.setDate(d.getDate()-7); const k=kw(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`); prev=done.filter(x=>kw(x.date)===k); }
     else { const y=n.getMonth()?n.getFullYear():n.getFullYear()-1, mo=(n.getMonth()+11)%12; prev=done.filter(x=>{ const d=new Date(x.date+'T00:00'); return d.getFullYear()===y&&d.getMonth()===mo; }); }
     const p=sum(prev); const dl=t.leads-p.leads;
-    vg.style.display=''; vg.innerHTML=`<strong>${range==='woche'?'Vorwoche':'Vormonat'}:</strong> ${p.n} Einsätze · ${p.leads} Leads · Ø ${p.n?(p.leads/p.n).toFixed(1):'0'} · ${p.hours} h &nbsp;→&nbsp; jetzt ${dl>=0?'+':''}${dl} Leads`;
+    vg.style.display=''; vg.innerHTML=`<strong>${range==='woche'?'Vorwoche':'Vormonat'}:</strong> ${p.n} Shifts · ${p.leads} Leads · Ø ${p.n?(p.leads/p.n).toFixed(1):'0'} · ${p.hours} h &nbsp;→&nbsp; jetzt ${dl>=0?'+':''}${dl} Leads`;
   } else vg.style.display='none';
   const byW={}; s.forEach(x=>{ const k=kw(x.date); byW[k]=byW[k]||{n:0,l:0,h:0}; byW[k].n++; byW[k].l+=+x.leads||0; byW[k].h+=+x.hours||0; });
   const ws=Object.keys(byW).sort().reverse();
   DSEITE['d-weeks']=0; DSEITE['d-top']=0;
-  dTabelle('d-weeks','<tr><th>KW</th><th class="r">Einsätze</th><th class="r">Leads</th><th class="r">Ø</th><th class="r">Stunden</th></tr>',ws.map(k=>`<tr><td>${k}</td><td class="r">${byW[k].n}</td><td class="r">${byW[k].l}</td><td class="r">${(byW[k].l/byW[k].n).toFixed(1)}</td><td class="r">${byW[k].h}</td></tr>`),'Noch keine abgeschlossenen Einsätze im Zeitraum');
+  dTabelle('d-weeks','<tr><th>KW</th><th class="r">Shifts</th><th class="r">Leads</th><th class="r">Ø</th><th class="r">Stunden</th></tr>',ws.map(k=>`<tr><td>${k}</td><td class="r">${byW[k].n}</td><td class="r">${byW[k].l}</td><td class="r">${(byW[k].l/byW[k].n).toFixed(1)}</td><td class="r">${byW[k].h}</td></tr>`),'Noch keine abgeschlossenen Shifts im Zeitraum');
   const byL={}; s.forEach(x=>{ byL[x.locationId]=byL[x.locationId]||{n:0,l:0}; byL[x.locationId].n++; byL[x.locationId].l+=+x.leads||0; });
   const top=Object.entries(byL).map(([id,v])=>({loc:D.locations.find(l=>l.id===id),...v})).filter(x=>x.loc).sort((a,b)=>b.l-a.l).slice(0,10);
-  dTabelle('d-top','<tr><th>#</th><th>Gebiet</th><th class="r">Einsätze</th><th class="r">Leads</th><th class="r">Ø</th></tr>',top.map((t,i)=>`<tr><td>${i+1}</td><td><span class="dot" style="background:${t.loc.color}"></span> ${esc(t.loc.name)}${t.loc.group?' <span class="s">· '+esc(t.loc.group)+'</span>':''}</td><td class="r">${t.n}</td><td class="r">${t.l}</td><td class="r">${(t.l/t.n).toFixed(1)}</td></tr>`),'Noch keine Leads in einem Gebiet erfasst');
+  dTabelle('d-top','<tr><th>#</th><th>Gebiet</th><th class="r">Shifts</th><th class="r">Leads</th><th class="r">Ø</th></tr>',top.map((t,i)=>`<tr><td>${i+1}</td><td><span class="dot" style="background:${t.loc.color}"></span> ${esc(t.loc.name)}${t.loc.group?' <span class="s">· '+esc(t.loc.group)+'</span>':''}</td><td class="r">${t.n}</td><td class="r">${t.l}</td><td class="r">${(t.l/t.n).toFixed(1)}</td></tr>`),'Noch keine Leads in einem Gebiet erfasst');
 }
 
 /* ---------- Planung: Heute, Aktiv, Geplant ---------- */
@@ -1789,15 +1789,15 @@ function renderPlan(){
   const open=D.shifts.filter(s=>s.status!=='abgeschlossen').sort((a,b)=>a.date.localeCompare(b.date)); const td=today();
   const heute=open.filter(s=>s.date===td), aktiv=open.filter(s=>s.date!==td&&s.status==='aktiv'), geplant=open.filter(s=>s.date!==td&&s.status==='geplant');
   const sec=(t,l,leer)=>`<h3 class="sec">${t}</h3>`+(l.length?l.map(s=>shiftRow(s,true)).join(''):`<div class="empty">${leer}</div>`);
-  $('#pl-list').innerHTML=sec('Heute',heute,'Nichts für heute geplant. Im Gebiet „+ Neuer Einsatz" anlegen.')+sec('Aktiv',aktiv,'Kein laufender Einsatz an anderen Tagen.')+sec('Geplant',geplant,'Keine weiteren geplanten Einsätze.');
+  $('#pl-list').innerHTML=sec('Heute',heute,'Nichts für heute geplant. Im Gebiet „+ Neue Shift" anlegen.')+sec('Aktiv',aktiv,'Keine laufende Shift an anderen Tagen.')+sec('Geplant',geplant,'Keine weiteren geplanten Shifts.');
   $$('#pl-list button').forEach(b=>b.onclick=()=>shiftAction(b,renderPlan));
 }
 
 /* ---------- Daten ---------- */
 $('#x-export').onclick=()=>{ const blob=new Blob([JSON.stringify(D,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${today()}_location-manager.json`; a.click(); toast('Export erstellt: '+a.download); };
-$('#x-import').onchange=e=>{ const f=e.target.files[0]; if(!f) return; f.text().then(t=>{ const d=JSON.parse(t); if(!d.locations||!d.shifts) throw 0; if(!confirm(`${d.locations.length} Gebiete und ${d.shifts.length} Einsätze importieren?\nErsetzt den aktuellen Stand (${D.locations.length} Gebiete, ${D.shifts.length} Einsätze).`)) return; Object.assign(D,{locations:d.locations,shifts:d.shifts,leads:d.leads||D.leads||[],deleted:d.deleted||[],cal:d.cal||{}}); Store.save(); location.reload(); }).catch(()=>toast('Datei nicht lesbar')); e.target.value=''; };
+$('#x-import').onchange=e=>{ const f=e.target.files[0]; if(!f) return; f.text().then(t=>{ const d=JSON.parse(t); if(!d.locations||!d.shifts) throw 0; if(!confirm(`${d.locations.length} Gebiete und ${d.shifts.length} Shifts importieren?\nErsetzt den aktuellen Stand (${D.locations.length} Gebiete, ${D.shifts.length} Shifts).`)) return; Object.assign(D,{locations:d.locations,shifts:d.shifts,leads:d.leads||D.leads||[],deleted:d.deleted||[],cal:d.cal||{}}); Store.save(); location.reload(); }).catch(()=>toast('Datei nicht lesbar')); e.target.value=''; };
 $('#x-demo').onclick=()=>{ const c=map.getCenter(); const d=0.004; const loc=Store.touch({id:Store.id(),name:'Demo Lehe Nord',group:'Bremerhaven',plz:'27576',addr:null,color:COLORS.gruen,coords:[[c.lat+d,c.lng-d],[c.lat+d,c.lng+d],[c.lat-d,c.lng+d],[c.lat-d,c.lng-d]],createdAt:new Date().toISOString()}); D.locations.push(loc); D.shifts.push(Store.touch({id:Store.id(),locationId:loc.id,date:today(),status:'abgeschlossen',leads:3,doors:80,hours:4,note:'Demo',persons:[ME]})); Store.save(); render(loc); openPanel(loc.id); };
-function renderData(){ $('#x-info').textContent=`${D.locations.length} Gebiete · ${D.shifts.length} Einsätze · ${(JSON.stringify(D).length/1024).toFixed(1)} kB`; $('#x-table').innerHTML=D.locations.map(l=>{const s=stats(l.id);return `<tr><td><span class="dot" style="background:${l.color}"></span> ${esc(l.name)}</td><td>${esc(l.group||'')}</td><td>${esc(l.plz||'')}</td><td class="r">${l.addr==null?'–':l.addr}</td><td class="r">${s.n}</td><td class="r">${s.leads}</td></tr>`;}).join('')||'<tr><td colspan="6" class="empty">Noch keine Gebiete</td></tr>'; bulkInfo(); gRenderStatus(); spInfo(); }
+function renderData(){ $('#x-info').textContent=`${D.locations.length} Gebiete · ${D.shifts.length} Shifts · ${(JSON.stringify(D).length/1024).toFixed(1)} kB`; $('#x-table').innerHTML=D.locations.map(l=>{const s=stats(l.id);return `<tr><td><span class="dot" style="background:${l.color}"></span> ${esc(l.name)}</td><td>${esc(l.group||'')}</td><td>${esc(l.plz||'')}</td><td class="r">${l.addr==null?'–':l.addr}</td><td class="r">${s.n}</td><td class="r">${s.leads}</td></tr>`;}).join('')||'<tr><td colspan="6" class="empty">Noch keine Gebiete</td></tr>'; bulkInfo(); gRenderStatus(); spInfo(); }
 
 /* Einheitliches Schema aller Wärmeplan-Ebenen (Fabi, 03.11.2026), Darstellung schraffiert */
 const WP_KLASSEN={netz:{farbe:'#d42a2a',text:'bestehendes Nah-/Fernwärmenetz',voll:true},sehr:{farbe:'#8b0000',text:'Wärmenetz-Eignungsgebiet, Anschluss sehr wahrscheinlich',voll:true},wahr:{farbe:'#f2d11a',text:'unklar: wahrscheinlich geeignet, Prüf- und Erweiterungsfläche'},pruef:{farbe:'#f2d11a',text:'unklar: wahrscheinlich geeignet, Prüf- und Erweiterungsfläche',alias:'wahr'},dez:{farbe:'#9fd41f',text:'dezentral (Wärmepumpe), wahrscheinlich ungeeignet'}};
@@ -2031,7 +2031,7 @@ async function gSync(full=true){
   }catch(e){ gLog('Abgleich: '+(e.message||e)); }
   G.busy=false; $('#g-sync')&&($('#g-sync').disabled=false); gRenderStatus();
 }
-// Kalender: je Datum mit Einsatz (Fabian, nicht abgeschlossen) Ort in die D2D-Blöcke; sonst Ort wieder leer
+// Kalender: je Datum mit Shift (Fabian, nicht abgeschlossen) Ort in die D2D-Blöcke; sonst Ort wieder leer
 const CAL_MARK='Location Manager: ';
 function calTitle(date){ const n=[]; D.shifts.filter(s=>s.date===date&&(s.persons||[]).includes(ME)).forEach(s=>{ const l=D.locations.find(x=>x.id===s.locationId); if(l&&!n.includes(l.name)) n.push(l.name); }); return n.length?'DSH · '+n.join(' + '):'D2D'; }
 function calText(date){ const sh=D.shifts.filter(s=>s.date===date&&(s.persons||[]).includes(ME)); const parts=[]; sh.forEach(s=>{ const l=D.locations.find(x=>x.id===s.locationId); if(!l) return; const t=[l.name,[l.plz,l.group].filter(Boolean).join(' ')].filter(Boolean).join(', '); if(!parts.includes(t)) parts.push(t); }); return parts.join(' · '); }
@@ -2222,7 +2222,7 @@ function legendHtml(){
   const aus=on=>on?'':' <span style="opacity:.6;font-weight:400;text-transform:none">(aus)</span>';
   const T=HST_BAHN_FARBE;
   let h='<div class="row sb" style="margin:0 0 4px"><strong>Legende</strong><button class="w-close" id="leg-close" aria-label="Legende schließen">✕</button></div>';
-  h+='<h4>Gebiete</h4>'+sw(STATUS_FARBE.neu,'hellgrün: noch kein Einsatz')+sw(STATUS_FARBE.frei,'dunkelgrün: frei, letzter Einsatz länger als '+SPERRTAGE+' Tage her')+sw(STATUS_FARBE.heute,'orange: heute eingeplant',.7)+sw(STATUS_FARBE.geplant,'gelb: für einen künftigen Tag eingeplant',.7)+sw(STATUS_FARBE.sperre,'rot: Sperrfrist, '+SPERRTAGE+' Tage nach dem letzten Einsatz');
+  h+='<h4>Gebiete</h4>'+sw(STATUS_FARBE.neu,'hellgrün: noch keine Shift')+sw(STATUS_FARBE.frei,'dunkelgrün: frei, letzte Shift länger als '+SPERRTAGE+' Tage her')+sw(STATUS_FARBE.heute,'orange: heute eingeplant',.7)+sw(STATUS_FARBE.geplant,'gelb: für einen künftigen Tag eingeplant',.7)+sw(STATUS_FARBE.sperre,'rot: Sperrfrist, '+SPERRTAGE+' Tage nach der letzten Shift');
   h+=tx('font-size:13px;font-weight:800;color:#f2f2f2','18','Zahl im Gebiet: postalische Adressen ab Zoom 14, darüber der Name ab Zoom 16');
   h+='<h4>Kunden'+aus(Object.values(klOn).some(Boolean))+'</h4>'
     +ci(`background:${KFARBE.offen};border:2px solid #001a4d`,'Lead, Termin offen')
@@ -2251,7 +2251,7 @@ function legendHtml(){
     h+='<div class="s" style="opacity:.8">Hausnummern ohne Planfläche gelten als dezentral, im Umkreis von 800 m um Biogasanlagen als unklar. Kommunen mit Plan: '+esc(kom.join(', '))+'. Sperrzonen sind ausgespart. Strategische Planung ohne Rechtswirkung, Quellen im Fenster Einstellungen und Daten.</div>'; }
   if(wpIdx>=0){ h+='<h4>Wärmeplan Bremen: '+WP_STUFEN[wpIdx].t+' (Zoom 10 bis 13)</h4><img src="'+$(wpIdx===0?'#wp-leg1':'#wp-leg2').src+'" alt="Legende Wärmeplan Bremen"><div class="s">Quelle: GeoInformation Bremen, Wärmeplan 2025, nur Stadtgebiet Bremen, ohne Rechtswirkung</div>'; }
   h+='<h4>Punkte</h4>'+ci('background:#7a9a1a;border:2px solid #001a4d','Suchtreffer (mit Adresse beim Drüberfahren)')+ci('background:#7a9a1a;border:2px solid #001a4d','Mein Standort, wenn „Mein Standort“ im Zahnrad-Menü an ist');
-  h+='<h4>Bedienung</h4><div class="s">Street View: ab Zoom 17 auf eine Straße klicken, Street View öffnet sich genau dort mit Blick auf das nächste Haus. Innerhalb einer Location öffnet ein Klick neben die Straße das Location-Fenster. Zoomstufe steht unten mittig.</div><div class="s">Rechtsklick in die Karte (ohne offenes Fenster) öffnet das Schnellmenü am Mauszeiger: in der Mitte Neue Location (erster Eckpunkt genau dort), im Kreis darum im Uhrzeigersinn ab oben Suchen, alle Kartenebenen an oder aus (mit Sperrzonen), Wärmeplanung, PLZ, Ortsnamen, Bahnhöfe und Haltestellen, Straßennamen und Hausnummern, Locations, B2C. Die Ebenen-Schalter lassen das Menü offen; es schließt mit Neue Location, Suchen, Rechtsklick oder Klick in die Karte. Zoomen geht bei offenem Menü weiter.</div><div class="s">Neues Gebiet eingezeichnet: Linksklick hinein speichert und öffnet die Einsatzplanung, Rechtsklick hinein verwirft und zeichnet ab dem vorletzten Punkt weiter, Klick daneben verwirft.</div><div class="s">Fenster: Rechtsklick ins Fenster geht einen Schritt zurück, bis es sich schließt. Ein Klick in die Karte schließt alle offenen Fenster.</div>';
+  h+='<h4>Bedienung</h4><div class="s">Street View: ab Zoom 17 auf eine Straße klicken, Street View öffnet sich genau dort mit Blick auf das nächste Haus. Innerhalb einer Location öffnet ein Klick neben die Straße das Location-Fenster. Zoomstufe steht unten mittig.</div><div class="s">Rechtsklick in die Karte (ohne offenes Fenster) öffnet das Schnellmenü am Mauszeiger: in der Mitte Neue Location (erster Eckpunkt genau dort), im Kreis darum im Uhrzeigersinn ab oben Suchen, alle Kartenebenen an oder aus (mit Sperrzonen), Wärmeplanung, PLZ, Ortsnamen, Bahnhöfe und Haltestellen, Straßennamen und Hausnummern, Locations, B2C. Die Ebenen-Schalter lassen das Menü offen; es schließt mit Neue Location, Suchen, Rechtsklick oder Klick in die Karte. Zoomen geht bei offenem Menü weiter.</div><div class="s">Neues Gebiet eingezeichnet: Linksklick hinein speichert und öffnet die Shift-Planung, Rechtsklick hinein verwirft und zeichnet ab dem vorletzten Punkt weiter, Klick daneben verwirft.</div><div class="s">Fenster: Rechtsklick ins Fenster geht einen Schritt zurück, bis es sich schließt. Ein Klick in die Karte schließt alle offenen Fenster.</div>';
   h+='<h4>Grundkarte</h4><div class="li"><span>'+({sat:'Satellit (Esri)',dop:'Amtliches Luftbild (LGLN, GeoInformation Bremen, Geobasis NRW)'}[base])+'</span></div>';
   return h;
 }
@@ -2345,7 +2345,7 @@ function dlfImport(){ const seen=dlfSeen(); let n=0;
       D.leads.push(l); seen.add(f.nachweis_nr); n++; }); }
   if(n){ try{ localStorage.setItem('sle_lm_dlfseen',JSON.stringify([...seen].slice(-3000))); }catch(e){} shiftLeadsSync(); Store.save(); kAfterChange(); geoQueue(); toast(n===1?'1 Lead aus dem Lead-Formular übernommen':n+' Leads aus dem Lead-Formular übernommen'); }
   return n; }
-// Leads je Einsatz zählt der Location Manager selbst (höchstens nach oben, falls von Hand mehr eingetragen)
+// Leads je Shift zählt der Location Manager selbst (höchstens nach oben, falls von Hand mehr eingetragen)
 function shiftLeadsSync(){ D.shifts.forEach(s=>{ const n=D.leads.filter(l=>l.einsatzId===s.id&&l.herkunft==='D2D').length; if(n>(+s.leads||0)){ s.leads=n; Store.touch(s); } }); }
 
 /* ---------- Kalender 01-unternehmen (primär): lesen, zuordnen, buchen ---------- */
@@ -2469,7 +2469,7 @@ $('#k-main').onclick=()=>{ menuOpen(false); const an=!Object.keys(KL).every(k=>k
 const _legendHtml=legendHtml;
 legendHtml=function(){ return _legendHtml(); }; // Kunden stehen seit v72 in der Grundlegende
 
-/* ---------- Fenster Planung: Reiter Heute, Einsätze, Kunden, Nachfassen ---------- */
+/* ---------- Fenster Planung: Reiter Heute, Shifts, Kunden, Nachfassen ---------- */
 let plTab=localStorage.getItem('sle_lm_pltab')||'heute', kFilter={loc:'',st:'aktiv',q:''};
 $$('#pl-tabs button').forEach(b=>b.onclick=()=>{ plTab=b.dataset.t; try{ localStorage.setItem('sle_lm_pltab',plTab); }catch(e){} kPlanTab(); });
 const _renderPlan=renderPlan; renderPlan=function(){ _renderPlan(); kPlanTab(); };
@@ -2484,8 +2484,8 @@ function heuteRender(){ const el=$('#pl-heute'); if(!el) return; let h='';
     h+=`<div class="card day"><strong>${i===0?'Heute, ':''}${tagKurz(date)}</strong>`;
     const items=[...p.slots.map(e=>({s:e.s,html:slotHtml(e)}))];
     if(p.d2d){ let dh=`<div class="slot d2d"><b>${hm(p.d2d.s)} bis ${hm(p.d2d.e)}</b> D2D`;
-      if(p.sh.length) dh+=` · Einsatz geplant: <b>${esc(p.sh.map(s=>(D.locations.find(x=>x.id===s.locationId)||{}).name||'?').join(' + '))}</b>`;
-      else if(p.rec) dh+=` · Empfehlung: <b>${esc(p.rec.name)}</b> <span class="s">(${esc(p.why)})</span> <button class="btn primary small" data-take="${date}|${p.rec.id}">Einsatz übernehmen</button>`; else dh+=` · ${esc(p.why)}`;
+      if(p.sh.length) dh+=` · Shift geplant: <b>${esc(p.sh.map(s=>(D.locations.find(x=>x.id===s.locationId)||{}).name||'?').join(' + '))}</b>`;
+      else if(p.rec) dh+=` · Empfehlung: <b>${esc(p.rec.name)}</b> <span class="s">(${esc(p.why)})</span> <button class="btn primary small" data-take="${date}|${p.rec.id}">Shift übernehmen</button>`; else dh+=` · ${esc(p.why)}`;
       if(p.blockers.length) dh+=`<div class="s warn">Im Block: ${p.blockers.map(b=>esc(b.t)+' '+hm(b.s)+' bis '+hm(b.e)).join(', ')}. Schicht ${Math.round(p.minutes/6)/10} Stunden${p.minutes<180?', zählt nicht als DSH (unter 3 Stunden)':''}.</div>`;
       if(p.lang) dh+='<div class="s">Beide Fenster frei: lange Schicht bis 6 Stunden möglich (zählt als eine Schicht).</div>';
       items.push({s:p.d2d.s,html:dh+'</div>'}); }
@@ -2494,7 +2494,7 @@ function heuteRender(){ const el=$('#pl-heute'); if(!el) return; let h='';
   el.innerHTML=h; $('#hz-reload').onclick=async()=>{ if(!gReady()){ toast('Erst bei Google anmelden (Einstellungen und Daten)'); return; } await calRead(false); };
   $$('#pl-heute [data-lead]').forEach(x=>x.onclick=e=>{ if(e.target.closest('a')) return; leadOpen(x.dataset.lead,'plan'); });
   $$('#pl-heute [data-take]').forEach(b=>b.onclick=()=>{ const [date,lid]=b.dataset.take.split('|'); const loc=D.locations.find(x=>x.id===lid); if(!loc) return;
-    D.shifts.push(Store.touch({id:Store.id(),locationId:loc.id,date,status:'geplant',leads:0,doors:0,hours:3,note:'',persons:[ME],createdAt:nowIso()})); Store.save(); render(loc); toast('Einsatz '+loc.name+' am '+tagKurz(date)+' angelegt'); calSyncAll(); heuteRender(); }); }
+    D.shifts.push(Store.touch({id:Store.id(),locationId:loc.id,date,status:'geplant',leads:0,doors:0,hours:3,note:'',persons:[ME],createdAt:nowIso()})); Store.save(); render(loc); toast('Shift '+loc.name+' am '+tagKurz(date)+' angelegt'); calSyncAll(); heuteRender(); }); }
 function kundenRender(){ const el=$('#pl-kunden'); if(!el) return; const locs=[...D.locations].sort((a,b)=>a.name.localeCompare(b.name));
   let h=`<div class="row"><button class="btn primary small" id="k-neu">+ Lead</button><a class="btn small" href="lead-formular.html" target="_blank" rel="noopener">Lead-Formular</a><span class="s">${D.leads.length} Leads</span></div>
   <div class="grid3"><div><label for="k-loc">Location</label><select id="k-loc"><option value="">alle</option>${locs.map(x=>`<option value="${x.id}" ${kFilter.loc===x.id?'selected':''}>${esc(x.name)}</option>`).join('')}<option value="-" ${kFilter.loc==='-'?'selected':''}>ohne Gebiet</option></select></div>
@@ -2640,7 +2640,7 @@ function kDashTab(){ $$('#d-tabs button').forEach(b=>b.classList.toggle('on',b.d
   if(dTab==='woche') wocheRender(); if(dTab==='rank') rankRender(); dEinpassen(); }
 const QKURZ=['Leads je 100 Türen (D2D)','Direkttermine je 100 Türen','Termin-Quote (CAS je Lead)','Show-up CHC (je CAS)','Folgetermin-Quote (CSA je CHC)','Angebotsquote (COF je CSA)','Show-up CSC (je CSA)','Abschlussquote (CCW je CSC)','Abschluss gesamt (CCW je CHC)','Widerrufsquote (CCR je CCW)','Empfehlungen je CCW'];
 function wocheRender(){ const el=$('#d-woche'); if(!el) return; const days=kpiWeek(wk.year,wk.week), S=kSum(days), mon=weekMonday(wk.year,wk.week);
-  const orte=WTAGE.map(k=>days[k].loc?`<div class="s d-ort">${tagKurz(days[k].date)}: ${esc(days[k].loc)}${days[k].rating?' · Bewertung '+days[k].rating:''}${days[k].back?' · wiederkommen':''}</div>`:'').join('')||'<div class="s d-ort">Keine Einsätze in dieser Woche.</div>';
+  const orte=WTAGE.map(k=>days[k].loc?`<div class="s d-ort">${tagKurz(days[k].date)}: ${esc(days[k].loc)}${days[k].rating?' · Bewertung '+days[k].rating:''}${days[k].back?' · wiederkommen':''}</div>`:'').join('')||'<div class="s d-ort">Keine Shifts in dieser Woche.</div>';
   let h=`<div class="row sb d-wkopf"><button class="btn small" id="wk-prev" aria-label="Vorwoche">‹</button><div class="d-wtitel"><strong>KW ${wk.week} · ${tagKurz(mon)} bis ${tagKurz(addDays(mon,5))}</strong><div class="s">${KF.at?'An das Wochenblatt übergeben: '+fmtDT(KF.at):'Noch nicht an das Wochenblatt übergeben (bei Google anmelden).'}${KF.err==='scope'?' · Für die Übergabe einmal neu bei Google anmelden.':''}</div></div><button class="btn small" id="wk-next" aria-label="Nächste Woche">›</button></div>
     <div class="d-zwei d-wzwei"><div class="d-box"><table class="kw"><tr><th></th>${WTAGE.map(k=>`<th class="r">${k[0].toUpperCase()+k[1]}</th>`).join('')}<th class="r">Σ</th><th class="r">Ziel</th></tr>`;
   KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td>${WTAGE.map(k=>`<td class="r">${days[k][c]||''}</td>`).join('')}<td class="r"><b>${S[c]}</b></td><td class="r">${KZIEL[c]}</td></tr>`; });
@@ -2651,13 +2651,13 @@ function rankRender(){ const el=$('#d-rank'); if(!el) return; const rows=rankRow
   dTabelle('d-rankt','<tr><th>Location</th><th class="r">Türen</th><th class="r">Leads</th><th class="r">SL</th><th class="r">CHC</th><th class="r">CSA</th><th class="r">CCW</th><th class="r">CCW/100</th><th class="r">CSA-Q.</th><th class="r">Leads/100</th></tr>',
     rows.map(r=>`<tr class="${r.CCW<3?'grau':''}"><td>${r.loc?`<span class="dot" style="background:${STATUS_FARBE[locStatus(r.loc).k]}"></span> `:''}${esc(r.name)}</td><td class="r">${r.DOR}</td><td class="r">${r.CLD}</td><td class="r">${r.CLI}</td><td class="r">${r.CHC}</td><td class="r">${r.CSA}</td><td class="r">${r.CCW}</td><td class="r">${f(r.ccw100,2)}</td><td class="r">${r.csaQ==null?'':Math.round(r.csaQ*100)+' %'}</td><td class="r">${f(r.l100)}</td></tr>`),'Noch keine Locations'); }
 
-/* ---------- Einstellungen und Daten, Einsatz-Felder, Aktualisierung ---------- */
+/* ---------- Einstellungen und Daten, Shift-Felder, Aktualisierung ---------- */
 function kDatenInfo(){ const el=$('#kd-info'); if(!el) return; const n=D.leads.length, geo=D.leads.filter(l=>l.lat!=null).length;
   el.innerHTML=`${n} Leads, ${geo} auf der Karte.${CAL.at?' Kalender gelesen '+fmtDT(CAL.at)+'.':''}<br>${KF.at?'Wochenzahlen an das Wochenblatt übergeben: '+fmtDT(KF.at)+'.':'Wochenzahlen noch nicht übergeben.'}${KF.err==='scope'?' <b>Einmal „Abmelden“ und neu „Bei Google anmelden“, damit die Seite die Datei für das Wochenblatt schreiben darf.</b>':KF.err?' Fehler: '+esc(KF.err):''}`; }
 if($('#kd-kpi')) $('#kd-kpi').onclick=async()=>{ if(!gReady()){ toast('Erst bei Google anmelden'); return; } await kpiFileSync(true); toast(KF.err?'Übergabe fehlgeschlagen':'Wochenzahlen übergeben'); };
 let kTimer=null;
 function kAfterChange(){ clearTimeout(kTimer); kTimer=setTimeout(()=>{ klRender(); kDatenInfo(); if(openWin==='plan') kPlanTab(); if(openWin==='dash') kDashTab(); if(openWin==='lead'&&!LD.mode&&!LD.book&&!($('#ld-form')&&$('#ld-form').innerHTML)) leadRender(); },80); }
-// Einsatz: Bewertung 1 bis 5 und „wiederkommen“ (für Seite 2 des Wochenblatts)
+// Shift: Bewertung 1 bis 5 und „wiederkommen“ (für Seite 2 des Wochenblatts)
 function sRatingSet(v){ $$('#s-rating .chip').forEach(c=>c.classList.toggle('on',+c.dataset.r===+v)); }
 $$('#s-rating .chip').forEach(c=>c.onclick=()=>sRatingSet($$('#s-rating .chip.on')[0]===c?0:c.dataset.r));
 const _fillShift=fillShift; fillShift=function(s){ _fillShift(s); sRatingSet(s&&s.rating||0); $('#s-back').value=s&&s.back||''; };
