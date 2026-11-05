@@ -902,7 +902,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <section id="v-map">
       <div id="map"></div>
       <div id="brbar"><div id="zoombadge" aria-label="Zoomstufe">Z <span id="zoomval">12</span></div>
-      <button id="legbtn" aria-label="Legende"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="6" height="6" rx="1"/><rect x="3" y="14" width="6" height="6" rx="1"/><path d="M12 7h9M12 17h9"/></svg>Legende</button></div>
+      </div>
       <div id="legend"></div>
       <div id="gpanel" role="dialog" aria-label="Adresse in Google Maps"><div class="row sb" style="margin:0 0 8px;gap:8px"><strong id="gp-title" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></strong><a id="gp-ext" class="w-close" target="_blank" rel="noopener" aria-label="In Google Maps öffnen" style="text-decoration:none;width:auto;padding:0 10px;font-size:13px">Google Maps</a><button class="w-close" id="gp-close" aria-label="Schließen">✕</button></div><iframe id="gp-frame" referrerpolicy="no-referrer-when-downgrade" loading="lazy" allowfullscreen></iframe></div>
       <div id="rtpanel"><div class="row sb" style="margin:0 0 6px"><strong>ÖPNV-Verbindungen</strong><button class="w-close" id="rt-close" aria-label="Schließen">✕</button></div><div id="rt-body"></div><div class="s" style="margin-top:6px;opacity:.75">Fahrplandaten: Google. Tippen auf die Karte wählt ein neues Ziel.</div></div>
@@ -944,6 +944,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
           <div id="ovmenu" class="flymenu">
             <div class="col">
               <button class="lt" id="b-set"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Einstellungen und Daten</button>
+              <button class="lt" id="b-leg"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="6" height="6" rx="1"/><rect x="3" y="14" width="6" height="6" rx="1"/><path d="M12 7h9M12 17h9"/></svg>Legende</button>
               <div class="fm-sep">Ebenen</div>
               <button class="lt" id="b-plz"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10M15 10v10"/></svg>PLZ-Gebiete</button>
               <button class="lt" id="b-adr"><svg viewBox="0 0 24 24"><path d="M3 20V9l9-6 9 6v11"/><path d="M9 20v-6h6v6"/><path d="M3 20h18"/></svg>Adressen</button>
@@ -2009,27 +2010,46 @@ wpbLoadStored();
 
 /* ---------- Legende (rechts unten) ---------- */
 function legendHtml(){
-  const sw=(c,t,op=.55)=>`<div class="li"><span class="sw" style="background:${c};opacity:1;border-color:${c};background:color-mix(in srgb, ${c} ${Math.round(op*100)}%, transparent)"></span><span>${t}</span></div>`;
-  let h='<h4>Gebiete</h4>'+sw(STATUS_FARBE.neu,'hellgrün: noch kein Einsatz')+sw(STATUS_FARBE.frei,'dunkelgrün: frei, Einsatz länger als 60 Tage her')+sw(STATUS_FARBE.heute,'orange: heute eingeplant',.7)+sw(STATUS_FARBE.geplant,'gelb: für einen künftigen Tag geplant',.7)+sw(STATUS_FARBE.sperre,'rot: Sperrfrist, 60 Tage nach dem letzten Einsatz');
-  h+='<h4>Einblendungen</h4>';
-  h+=`<div class="li"><span class="sw" style="border-color:#d42a2a;background:#8b0000;border-color:#8b0000"></span><span>Sperrzonen: Industrie, Gewerbe, Hafen, Flughafen, Militär, Bahn (OSM), sichtbar Zoom 14 bis 17${sperrOn?'':' · aus'}</span></div>`;
-  h+=`<div class="li"><span class="sw" style="border-color:var(--navy);background:transparent;outline:2px solid #001a4d"></span><span>PLZ-Gebiete, Nummer Zoom 11 bis 12${plzOn?'':' · aus'}</span></div>`;
-  h+=`<div class="li"><span class="txt" style="font-style:italic;font-size:12px;width:22px">Str.</span><span>Straßennamen ab Zoom 17${adrOn?'':' · aus'}</span></div>`;
-  h+=`<div class="li"><span class="txt" style="color:#9fd41f;font-size:11px;width:22px">12</span><span>Hausnummern ab Zoom 18${adrOn?'':' · aus'}</span></div>`;
-  h+=`<div class="li"><span class="txt" style="font-size:12px;width:22px">Ort</span><span>Ortsnamen: größere Städte (ab 20.000 Einwohner) ab Zoom 9, alle Städte ab 10, Ortsteil ab 12, Quartier ab 13${namenOn?'':' · aus'}</span></div>`;
-  h+='<h4>Punkte</h4>';
-  h+=`<div class="li"><span class="ci" style="background:#9fd41f;border:2px solid #001a4d"></span><span>Suchtreffer</span></div>`;
-  h+=`<div class="li"><span class="ci" style="background:#7a9a1a;border:2px solid #001a4d"></span><span>Mein Standort</span></div>`;
-  h+=`<div class="li"><span class="ci" style="background:#7a9a1a;border:2px solid #001a4d;border-radius:50%"></span><span>Street View: Figur auf eine blaue Linie ziehen und loslassen; ohne Street View springt sie zurück</span></div>`;
-  if(wpbOn){ h+='<h4>Wärmeplanung</h4>'+Object.values(WP_KLASSEN).filter(x=>!x.alias).map(x=>`<div class="li">${klSwatch(x.farbe)}<span>${esc(x.text)}</span></div>`).join('');
-    const kom=WP_VEKTOR.map(v=>v.titel.split(':')[0]+' (live)').concat(wpbPaket?wpbPaket.bilder.map(b=>b.titel.split(':')[0]):[]);
-    h+='<div class="s" style="opacity:.8">Grundregel im ganzen 40-km-Kreis: Hausnummern ohne Planfläche gelten als dezentral (Wärmenetz unwirtschaftlich), im Umkreis von 800 m um Biogasanlagen als unklar. Kommunen mit Plan: '+esc(kom.join(', '))+'. Quellen und Stand je Kommune im Fenster Daten. Strategische Planung ohne Rechtswirkung.</div>'; }
-  if(wpIdx>=0){ h+='<h4>Wärmeplan Bremen: '+WP_STUFEN[wpIdx].t+'</h4><img src="'+$(wpIdx===0?'#wp-leg1':'#wp-leg2').src+'" alt="Legende Wärmeplan"><div class="s">Quelle: GeoInformation Bremen, Wärmeplan 2025, nur Stadtgebiet Bremen, ohne Rechtswirkung</div>'; }
+  const sw=(c,t,op=.55)=>`<div class="li"><span class="sw" style="border-color:${c};background:color-mix(in srgb, ${c} ${Math.round(op*100)}%, transparent)"></span><span>${t}</span></div>`;
+  const ci=(st,t)=>`<div class="li"><span class="ci" style="${st}"></span><span>${t}</span></div>`;
+  const tx=(st,z,t)=>`<div class="li"><span class="txt" style="${st};width:22px">${z}</span><span>${t}</span></div>`;
+  const aus=on=>on?'':' <span style="opacity:.6;font-weight:400;text-transform:none">(aus)</span>';
+  const T=HST_BAHN_FARBE;
+  let h='<div class="row sb" style="margin:0 0 4px"><strong>Legende</strong><button class="w-close" id="leg-close" aria-label="Legende schließen">✕</button></div>';
+  h+='<h4>Gebiete</h4>'+sw(STATUS_FARBE.neu,'hellgrün: noch kein Einsatz')+sw(STATUS_FARBE.frei,'dunkelgrün: frei, letzter Einsatz länger als '+SPERRTAGE+' Tage her')+sw(STATUS_FARBE.heute,'orange: heute eingeplant',.7)+sw(STATUS_FARBE.geplant,'gelb: für einen künftigen Tag eingeplant',.7)+sw(STATUS_FARBE.sperre,'rot: Sperrfrist, '+SPERRTAGE+' Tage nach dem letzten Einsatz');
+  h+='<h4>Kunden'+aus(Object.values(klOn).some(Boolean))+'</h4>'
+    +ci(`background:${KFARBE.offen};border:2px solid #001a4d`,'Lead, Termin offen')
+    +ci(`background:${KFARBE.cas};border:2px solid #001a4d`,'Potenzialanalyse vereinbart oder gehalten')
+    +ci(`background:${KFARBE.csa};border:2px solid #001a4d`,'Festpreisgespräch vereinbart oder Angebot erstellt')
+    +ci(`background:${KFARBE.ccl};border:2px solid #001a4d`,'Nachfassen')
+    +ci(`background:${KFARBE.ccw};border:2px solid #001a4d`,'Abschluss (Lead-Punkt)')
+    +ci(`background:${KFARBE.ruhend};border:2px solid #001a4d`,'ruhend')
+    +ci(`background:${KFARBE.verloren};border:2px solid #001a4d`,'verloren oder widerrufen')
+    +ci('border:3px solid #E87373;background:rgba(255,255,255,.15)','Ring: Ort einer Potenzialanalyse')
+    +ci('width:18px;height:18px;border:3px solid #E24C4C;background:rgba(255,255,255,.15)','großer Ring: Ort eines Festpreisgesprächs')
+    +ci('background:#D50000;border:2px solid #fff','Abschluss (ohne Widerruf)')
+    +'<div class="s" style="opacity:.8">Punkt anklicken: Lead-Fenster</div>';
+  h+='<h4>Ebenen</h4>';
+  h+=`<div class="li"><span class="sw" style="background:transparent;border:3px solid #001a4d;outline:1px solid #f2f2f2"></span><span>PLZ-Gebiete: Grenzlinie, Nummer bei Zoom 11 und 12${aus(plzOn)}</span></div>`;
+  h+=tx('font-style:italic;font-size:12px;color:#f2f2f2','Str.','Straßennamen ab Zoom 17'+aus(adrOn));
+  h+=tx('color:#9fd41f;font-size:11px','12','Hausnummern ab Zoom 18; anklicken öffnet die Google-Adresse'+aus(adrOn));
+  h+=tx('font-size:12px','Ort','Ortsnamen: größere Städte (Großstadt oder ab 20.000 Einwohner) ab Zoom 9, alle Städte ab 10, Ortsteile ab 12, Quartiere ab 13'+aus(namenOn));
+  h+=sw('#8b0000','Sperrzonen bei Zoom 14 bis 17: Industrie, Gewerbe, Handel, Hafen, Flughafen, Militär, Bahngelände (ohne Flächen unter den türkisen Strecken), Steinbruch, Deponie, Depot, Gefängnis (OSM)'+aus(sperrOn),.6);
+  h+=ci(`background:${T};border:2px solid #fff`,'Bahnhof, Haltepunkt: Zoom 11 bis 16, ohne Namen'+aus(hstOn));
+  h+=`<div class="li"><span class="sw" style="height:5px;border-radius:3px;background:${T};border:1px solid #fff"></span><span>Bahnstrecke: Zoom 11 bis 16${aus(hstOn)}</span></div>`;
+  h+=ci(`width:10px;height:10px;background:${T};border:1.5px solid #fff`,'Bushaltestelle: ab Zoom 14, Name beim Drüberfahren'+aus(hstOn));
+  h+='<div class="s" style="opacity:.8">Bahnhof oder Haltestelle anklicken: ÖPNV-Route vom Start (Standort-Kachel an: genauer Standort, sonst Startadresse) in Google Maps</div>';
+  h+='<h4>Wärmeplanung (Zoom 10 bis 13)'+aus(wpbOn)+'</h4>'+Object.values(WP_KLASSEN).filter(x=>!x.alias).map(x=>`<div class="li">${klSwatch(x.farbe)}<span>${esc(x.text)}</span></div>`).join('');
+  { const kom=WP_VEKTOR.map(v=>v.titel.split(':')[0]+' (live)').concat(wpbPaket?wpbPaket.bilder.map(b=>b.titel.split(':')[0]):[]);
+    h+='<div class="s" style="opacity:.8">Hausnummern ohne Planfläche gelten als dezentral, im Umkreis von 800 m um Biogasanlagen als unklar. Kommunen mit Plan: '+esc(kom.join(', '))+'. Sperrzonen sind ausgespart. Strategische Planung ohne Rechtswirkung, Quellen im Fenster Einstellungen und Daten.</div>'; }
+  if(wpIdx>=0){ h+='<h4>Wärmeplan Bremen: '+WP_STUFEN[wpIdx].t+' (Zoom 10 bis 13)</h4><img src="'+$(wpIdx===0?'#wp-leg1':'#wp-leg2').src+'" alt="Legende Wärmeplan Bremen"><div class="s">Quelle: GeoInformation Bremen, Wärmeplan 2025, nur Stadtgebiet Bremen, ohne Rechtswirkung</div>'; }
+  h+='<h4>Punkte</h4>'+ci('background:#7a9a1a;border:2px solid #001a4d','Suchtreffer (mit Adresse beim Drüberfahren)')+ci('background:#7a9a1a;border:2px solid #001a4d','Mein Standort, wenn die Standort-Kachel an ist');
+  h+='<h4>Bedienung</h4><div class="s">Street View: Figur aus der Kachel auf eine blaue Linie ziehen und loslassen, ohne blaue Linie springt sie zurück. Zoomstufe steht unten rechts.</div>';
   h+='<h4>Grundkarte</h4><div class="li"><span>'+({sat:'Satellit (Esri)',dop:'Amtliches Luftbild (LGLN, GeoInformation Bremen, Geobasis NRW)',topo:'Geländekarte (OpenTopoMap)'}[base])+'</span></div>';
   return h;
 }
-function legendOpen(on){ $('#legend').classList.toggle('open',on); $('#legbtn').classList.toggle('on',on); if(on) $('#legend').innerHTML=legendHtml(); }
-$('#legbtn').onclick=()=>legendOpen(!$('#legend').classList.contains('open'));
+function legendOpen(on){ $('#legend').classList.toggle('open',on); if(on){ $('#legend').innerHTML=legendHtml(); const x=$('#leg-close'); if(x) x.onclick=()=>legendOpen(false); } }
+$('#b-leg').onclick=()=>{ menuOpen(false); legendOpen(true); };
 map.on('mousedown dragstart',()=>legendOpen(false));
 
 /* ---------- Navigation ---------- */
@@ -2238,7 +2258,7 @@ function klRender(){ Object.values(KL).forEach(x=>x.g.clearLayers());
   Object.entries(KL).forEach(([k,x])=>{ const b=$('#b-k'+k); if(b) b.classList.toggle('on',!!klOn[k]); if(klOn[k]) x.g.addTo(map); else map.removeLayer(x.g); }); $('#k-main').classList.toggle('aktiv',Object.values(klOn).some(Boolean)); }
 Object.keys(KL).forEach(k=>{ const b=$('#b-k'+k); if(b) b.onclick=()=>{ klOn[k]=!klOn[k]; try{ localStorage.setItem('sle_lm_kl',JSON.stringify(klOn)); }catch(e){} klRender(); if(klOn[k]&&!D.leads.some(l=>l.lat!=null)) toast('Noch keine Kunden mit Adresse auf der Karte'); }; });
 const _legendHtml=legendHtml;
-legendHtml=function(){ let h=_legendHtml(); if(Object.values(klOn).some(Boolean)){ h+='<div class="s" style="margin-top:8px"><b>Kunden</b></div>'+Object.entries(KTXT).filter(([k])=>['offen','cas','csa','ccl','ccw','verloren'].includes(k)).map(([k,t])=>`<div class="li"><span class="ci" style="background:${KFARBE[k]};border:2px solid #001a4d;border-radius:50%"></span><span>${t}</span></div>`).join('')+'<div class="li"><span class="ci" style="border:3px solid #E87373;border-radius:50%"></span><span>Ort einer Potenzialanalyse</span></div><div class="li"><span class="ci" style="border:3px solid #E24C4C;border-radius:50%"></span><span>Ort eines Festpreisgesprächs</span></div><div class="li"><span class="ci" style="background:#D50000;border:2px solid #fff;border-radius:50%"></span><span>Abschluss</span></div>'; } return h; };
+legendHtml=function(){ return _legendHtml(); }; // Kunden stehen seit v72 in der Grundlegende
 
 /* ---------- Fenster Planung: Reiter Heute, Einsätze, Kunden, Nachfassen ---------- */
 let plTab=localStorage.getItem('sle_lm_pltab')||'heute', kFilter={loc:'',st:'aktiv',q:''};
@@ -2504,7 +2524,7 @@ if($('#hst-reload')){ const _r=$('#hst-reload').onclick; $('#hst-reload').onclic
 
 idb.get('hst_v1_40km').then(fc=>{ if(fc&&!hstFc){ hstFc=fc; hstInfo(); if(hstOn) hstRender(true); } }).catch(()=>{}); // Einschalten beim Start: siehe Startblock am Ende
 const _legendHtml2=legendHtml;
-legendHtml=function(){ let h=_legendHtml2(); if(hstOn) h+='<div class="s" style="margin-top:8px"><b>Haltestellen</b></div><div class="li"><span class="ci" style="background:'+HST_BAHN_FARBE+';border:2px solid #fff;border-radius:50%"></span><span>Bahnhof, Haltepunkt (sichtbar Zoom 11 bis 16, ohne Beschriftung)</span></div><div class="li"><span class="sw" style="height:4px;border-radius:2px;background:'+HST_BAHN_FARBE+';border:1px solid #fff"></span><span>Bahnstrecke (sichtbar Zoom 11 bis 16)</span></div><div class="li"><span class="ci" style="width:10px;height:10px;background:'+HST_BAHN_FARBE+';border:1.5px solid #fff;border-radius:50%"></span><span>Bushaltestelle (ab Zoomstufe 14, Name beim Drüberfahren)</span></div>'; return h; };
+legendHtml=function(){ return _legendHtml2(); }; // Haltestellen stehen seit v72 in der Grundlegende
 
 /* ---------- ÖPNV-Route (Google Routes API, Verkehrsmittel TRANSIT) ----------
    Kachel an, auf die Karte tippen: Verbindungen vom aktuellen Standort bis zu diesem Punkt (bis zu drei Möglichkeiten).
