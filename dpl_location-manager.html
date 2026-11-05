@@ -938,13 +938,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
           </div>
         </div>
         <button class="ltile" id="b-sv" aria-label="Google Street View an der Kartenmitte"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><path d="M8 22v-8l-2-5h12l-2 5v8M9 9v13M15 9v13"/></svg></button>
-        <button class="ltile" id="b-locate" aria-label="Mein Standort"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg></button>
         <div id="ovbox">
           <button class="ltile" id="ov-main" aria-label="Einstellungen und Ebenen"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
           <div id="ovmenu" class="flymenu">
             <div class="col">
               <button class="lt" id="b-set"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Einstellungen und Daten</button>
               <button class="lt" id="b-leg"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="6" height="6" rx="1"/><rect x="3" y="14" width="6" height="6" rx="1"/><path d="M12 7h9M12 17h9"/></svg>Legende</button>
+              <button class="lt" id="b-locate"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg>Mein Standort (GPS)</button>
               <div class="fm-sep">Ebenen</div>
               <button class="lt" id="b-plz"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10M15 10v10"/></svg>PLZ-Gebiete</button>
               <button class="lt" id="b-adr"><svg viewBox="0 0 24 24"><path d="M3 20V9l9-6 9 6v11"/><path d="M9 20v-6h6v6"/><path d="M3 20h18"/></svg>Adressen</button>
@@ -1100,7 +1100,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
           <strong>ÖPNV-Route</strong>
           <div class="s" id="rts-info"></div>
           <label for="rts-addr">Startadresse (nur in diesem Browser gespeichert)</label><div class="row" style="margin-top:0"><input id="rts-addr" placeholder="Straße Hausnummer, PLZ Ort" autocomplete="off" style="flex:1"><button class="btn primary small" id="rts-save">Speichern</button></div>
-          <div class="s">Routen starten hier. Ist die Standort-Kachel eingeschaltet, starten sie am genauen Standort (am Handy GPS).</div>
+          <div class="s">Routen starten hier. Ist „Mein Standort“ im Zahnrad-Menü eingeschaltet, starten sie am genauen Standort (am Handy GPS).</div>
         </div>
         <div class="card">
           <strong>Haltestellen Bus und Bahn</strong>
@@ -1341,7 +1341,7 @@ orteLoad();
 
 /* ---------- Straßennamen und Hausnummern ----------
    Daten je Kachel der Zoomstufe 14 in IndexedDB (Schlüssel adr_v2_14_x_y).
-   Quelle 1: einmaliger Gesamtlauf über das Leadgebiet (Fenster Daten), Kacheln der Zoomstufe 11, aufgeteilt in Kacheln der Zoomstufe 14.
+   Quelle 1: einmaliger Gesamtlauf über das Leadgebiet (Einstellungen und Daten), Kacheln der Zoomstufe 11, aufgeteilt in Kacheln der Zoomstufe 14.
    Quelle 2: Nachladen je Ausschnitt, wenn eine Kachel fehlt (außerhalb des Gebiets).
    Zeichnen auf einer Canvas-Ebene: eine Zeichenfläche statt tausend Elemente. */
 const ADR_MINZOOM=17, HN_MINZOOM=18;
@@ -1433,15 +1433,15 @@ function adrText(hit){ const h=hit.h, d=hit.d; let st=h.st||'';
   return [(st+' '+h.n).trim(), [h.p,ort].filter(Boolean).join(' ')].filter(Boolean).join(', '); }
 function gpOpen(hit){ const t=adrText(hit), h=hit.h; $('#gp-title').textContent=t;
   $('#gp-ext').href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(t);
-  if(!GM.key){ toast('Kein Google-Schlüssel eingetragen (Fenster Daten)'); return; }
+  if(!GM.key){ toast('Kein Google-Schlüssel eingetragen (Einstellungen und Daten)'); return; }
   $('#gp-frame').src='https://www.google.com/maps/embed/v1/place?key='+encodeURIComponent(GM.key)+'&q='+encodeURIComponent(t)+'&center='+h.lat+','+h.lon+'&zoom=18&maptype=satellite&language=de&region=DE';
   $('#gpanel').classList.add('open'); }
-/* Bahnhof oder Haltestelle anklicken: ÖPNV-Route vom Start (Standort-Kachel an: genauer Standort, sonst Startadresse) bis dorthin, Google Maps im Location Manager (Maps Embed API, kostenlos) */
-async function hstRoute(p){ if(!GM.key){ toast('Kein Google-Schlüssel eingetragen (Fenster Daten)'); return; }
+/* Bahnhof oder Haltestelle anklicken: ÖPNV-Route vom Start („Mein Standort“ an: genauer Standort, sonst Startadresse) bis dorthin, Google Maps im Location Manager (Maps Embed API, kostenlos) */
+async function hstRoute(p){ if(!GM.key){ toast('Kein Google-Schlüssel eingetragen (Einstellungen und Daten)'); return; }
   let o=null, otxt=''; const st=rtStart();
   if(typeof meOn!=='undefined'&&meOn){ const ll=meMarker?meMarker.getLatLng():await rtPos(); if(ll){ o=(+ll.lat).toFixed(6)+','+(+ll.lng).toFixed(6); otxt='Standort'; } }
   if(!o&&st){ o=st.txt; otxt=st.txt; }
-  if(!o){ toast('Keine Startadresse: im Fenster Daten unter „ÖPNV-Route“ eintragen oder Standort-Kachel einschalten'); return; }
+  if(!o){ toast('Keine Startadresse: unter Einstellungen und Daten unter „ÖPNV-Route“ eintragen oder „Mein Standort“ im Zahnrad-Menü einschalten'); return; }
   const d=p.lat.toFixed(6)+','+p.lon.toFixed(6), name=p.n||(p.a==='bahn'?'Bahnhof':'Haltestelle');
   gpShow('ÖPNV bis '+name,'https://www.google.com/maps/embed/v1/directions?key='+encodeURIComponent(GM.key)+'&origin='+encodeURIComponent(o)+'&destination='+encodeURIComponent(d)+'&mode=transit&language=de&region=DE',
     'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(o)+'&destination='+encodeURIComponent(d)+'&travelmode=transit'); }
@@ -1773,7 +1773,7 @@ function gRenderStatus(){
 }
 function gLoadGis(){ return new Promise((res,rej)=>{ if(window.google&&google.accounts) return res(); const s=document.createElement('script'); s.src='https://accounts.google.com/gsi/client'; s.onload=()=>res(); s.onerror=()=>rej(new Error('Google-Anmeldeskript nicht erreichbar')); document.head.appendChild(s); }); }
 async function gLogin(silent=false){
-  if(!G.clientId){ toast('Client-ID fehlt (Fenster Daten)'); return false; }
+  if(!G.clientId){ toast('Client-ID fehlt (Einstellungen und Daten)'); return false; }
   await gLoadGis();
   return new Promise(res=>{
     const tc=google.accounts.oauth2.initTokenClient({client_id:G.clientId,scope:GSCOPES,callback:r=>{ if(r&&r.access_token){ G.token=r.access_token; G.exp=Date.now()+(+r.expires_in||3600)*1000-60000; localStorage.setItem('sle_lm_gtoken',JSON.stringify({token:G.token,exp:G.exp})); gRenderStatus(); res(true); } else { gLog('Anmeldung abgebrochen'); gRenderStatus(); res(false); } },error_callback:e=>{ gLog('Anmeldung fehlgeschlagen: '+(e.type||e.message||e)); gRenderStatus(); res(false); }});
@@ -1904,7 +1904,7 @@ let gmTimer=null;
 function gmKeySet(){ const v=$('#gm-key').value.replace(/\s+/g,''); if(v===GM.key) return; GM.key=v; try{ localStorage.setItem('sle_lm_gmkey',GM.key); }catch(e){} if(GM.state==='fehler'&&!GM.map) GM.state='aus'; gmInfo();
   clearTimeout(gmTimer); if(/^AIza[\w-]{30,}$/.test(GM.key)&&GM.state==='aus') gmTimer=setTimeout(()=>{ const el=$('#gm-info'); if(el) el.textContent='Schlüssel wird bei Google geprüft …'; gmLoad().then(ok=>{ gmInfo(); if(ok) setTimeout(()=>{ if(GM.state==='bereit') toast('Google-Maps-Schlüssel gespeichert und aktiv'); },2500); }); },600); }
 $('#gm-key').addEventListener('input',gmKeySet); $('#gm-key').addEventListener('change',gmKeySet); $('#gm-key').addEventListener('paste',()=>setTimeout(gmKeySet,0)); gmInfo();
-window.gm_authFailure=()=>{ GM.state='fehler'; gmInfo(); if(GM.el) GM.el.style.visibility='hidden'; toast('Google-Maps-Schlüssel abgelehnt (Fenster Daten)'); };
+window.gm_authFailure=()=>{ GM.state='fehler'; gmInfo(); if(GM.el) GM.el.style.visibility='hidden'; toast('Google-Maps-Schlüssel abgelehnt (Einstellungen und Daten)'); };
 function gmLoad(){ return new Promise(res=>{ if(GM.state==='bereit') return res(true); if(GM.state==='fehler'||!GM.key) return res(false); GM.cb.push(res); if(GM.state==='laedt') return; GM.state='laedt';
   window.__gmReady=()=>{ try{ GM.el=document.createElement('div'); GM.el.id='gmov'; $('#map').appendChild(GM.el);
       GM.map=new google.maps.Map(GM.el,{center:{lat:map.getCenter().lat,lng:map.getCenter().lng},zoom:map.getZoom(),mapTypeId:'satellite',tilt:0,disableDefaultUI:true,gestureHandling:'none',keyboardShortcuts:false,clickableIcons:false,isFractionalZoomEnabled:true});
@@ -1927,7 +1927,7 @@ function svOpen(url,w){ if(w&&!w.closed&&w.location){ try{ w.opener=null; w.loca
     svCheck(q.ll.lat,q.ll.lng).then(r=>{ d.busy=false; if(drag!==d&&!d.wait) return; d.chk={x:q.x,y:q.y,r}; ghost.classList.toggle('sv-ok',!!(r&&r.ok)); ghost.classList.toggle('sv-no',!!(r&&!r.ok)); if(d.wait){ if(Math.hypot(q.x-d.last.x,q.y-d.last.y)>=6){ probe(d); return; } const w=d.wait; d.wait=null; w(); } else setTimeout(()=>{ if(drag===d) probe(d); },150); }); };
   tile.addEventListener('pointerdown',e=>{ if(e.button&&e.button!==0) return; drag={id:e.pointerId,x0:e.clientX,y0:e.clientY,moved:false,last:null,chk:null,busy:false}; tile.setPointerCapture(e.pointerId); e.preventDefault(); });
   tile.addEventListener('pointermove',e=>{ if(!drag||e.pointerId!==drag.id) return; if(!drag.moved&&Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)<8) return;
-    if(!drag.moved){ drag.moved=true; document.body.classList.add('svdrag'); const d=drag; if(GM.key) gmLoad().then(ok=>{ if(ok&&drag===d){ gmShow(true); probe(d); } }); else if(!GM.hinweis){ GM.hinweis=1; toast('Blaue Street-View-Linien: Google-Maps-Schlüssel im Fenster Daten eintragen'); } }
+    if(!drag.moved){ drag.moved=true; document.body.classList.add('svdrag'); const d=drag; if(GM.key) gmLoad().then(ok=>{ if(ok&&drag===d){ gmShow(true); probe(d); } }); else if(!GM.hinweis){ GM.hinweis=1; toast('Blaue Street-View-Linien: Google-Maps-Schlüssel unter Einstellungen und Daten eintragen'); } }
     ghost.style.display='block'; ghost.style.left=e.clientX+'px'; ghost.style.top=e.clientY+'px'; drag.last=pt(e); if(!drag.last){ ghost.classList.remove('sv-ok','sv-no'); } else probe(drag); });
   const reset=()=>{ ghost.style.display='none'; ghost.classList.remove('sv-ok','sv-no'); document.body.classList.remove('svdrag'); gmShow(false); };
   const end=e=>{ if(!drag||e.pointerId!==drag.id) return; const d=drag; drag=null; menuOpen(false);
@@ -2002,7 +2002,7 @@ map.on('moveend zoomend viewreset',()=>{ if(wpbOn) sperrMaskUpdate(); });
 let wpbGen=0;
 function wpbBuild(){ const gen=++wpbGen; wpbLayers.forEach(l=>map.removeLayer(l)); wpbLayers.length=0; grundLayer=null; grundEbene().then(r=>{ if(!r||gen!==wpbGen) return; const l=L.imageOverlay(r.url,[[r.bb.south,r.bb.west],[r.bb.north,r.bb.east]],{opacity:.95,interactive:false,className:'wpb-hatch',zIndex:1}); grundLayer=l; wpbLayers.push(l); if(wpbOn&&wpSicht()) l.addTo(map); }); if(wpbPaket) wpbPaket.bilder.forEach(b=>{ const bb=b.bounds; wpbMaskImg(b).then(r=>{ if(gen!==wpbGen) return; const l=L.imageOverlay(r.hatch,[[bb.south,bb.west],[bb.north,bb.east]],{opacity:.95,interactive:false,className:'wpb-hatch',zIndex:2}); wpbLayers.push(l); if(wpbOn&&wpSicht()) l.addTo(map); if(r.solid){ const l2=L.imageOverlay(r.solid,[[bb.south,bb.west],[bb.north,bb.east]],{opacity:.6,interactive:false,zIndex:3}); wpbLayers.push(l2); if(wpbOn&&wpSicht()) l2.addTo(map); } }); }); sperrMaskUpdate(); WP_VEKTOR.forEach(v=>wpVekLoad(v).then(l=>{ if(l&&gen===wpbGen){ if(!wpbLayers.includes(l)) wpbLayers.push(l); if(wpbOn&&wpSicht()) l.addTo(map); } })); }
 async function wpbLoadStored(){ try{ const p=await idb.get('wp_paket_v1'); if(p&&p.bilder) wpbPaket=p; }catch(e){} wpbBuild(); wpbInfo(); }
-$('#b-wpb').onclick=()=>{ if(!wpbPaket&&!wpbOn) toast('Live: Landkreis Osterholz. Bremerhaven, Südkreis und weitere: Bildpaket im Fenster Daten laden'); wpbOn=!wpbOn; $('#b-wpb').classList.toggle('on',wpbOn); if(wpbOn&&(!wpbLayers.length||!grundLayer)) wpbBuild(); else wpbLayers.forEach(l=>wpbOn&&wpSicht()?l.addTo(map):map.removeLayer(l)); };
+$('#b-wpb').onclick=()=>{ if(!wpbPaket&&!wpbOn) toast('Live: Landkreis Osterholz. Bremerhaven, Südkreis und weitere: Bildpaket unter Einstellungen und Daten laden'); wpbOn=!wpbOn; $('#b-wpb').classList.toggle('on',wpbOn); if(wpbOn&&(!wpbLayers.length||!grundLayer)) wpbBuild(); else wpbLayers.forEach(l=>wpbOn&&wpSicht()?l.addTo(map):map.removeLayer(l)); };
 map.on('zoomend',()=>{ const an=wpSicht(); if(wpLayer){ if(an) wpLayer.addTo(map); else map.removeLayer(wpLayer); } wpbLayers.forEach(l=>wpbOn&&an?l.addTo(map):map.removeLayer(l)); });
 $('#wpb-file').onchange=e=>{ const f=e.target.files[0]; if(!f) return; f.text().then(async t=>{ const p=JSON.parse(t); if(!p.bilder||!p.bilder.length||!p.bilder[0].png||!p.bilder[0].bounds) throw 0; wpbPaket=p; try{ await idb.set('wp_paket_v1',p); }catch(err){ toast('Speichern im Browser fehlgeschlagen: '+(err.message||err)); } wpbBuild(); wpbInfo(); toast(p.bilder.length+' Wärmeplan-Bilder geladen'); }).catch(()=>toast('Paket nicht lesbar')); e.target.value=''; };
 $('#wpb-clear').onclick=async()=>{ if(!confirm('Bildpaket aus dem Browserspeicher entfernen?')) return; wpbPaket=null; wpbOn=false; $('#b-wpb').classList.remove('on'); wpbBuild(); wpbInfo(); try{ await idb.set('wp_paket_v1',null); }catch(e){} };
@@ -2038,12 +2038,12 @@ function legendHtml(){
   h+=ci(`background:${T};border:2px solid #fff`,'Bahnhof, Haltepunkt: Zoom 11 bis 16, ohne Namen'+aus(hstOn));
   h+=`<div class="li"><span class="sw" style="height:5px;border-radius:3px;background:${T};border:1px solid #fff"></span><span>Bahnstrecke: Zoom 11 bis 16${aus(hstOn)}</span></div>`;
   h+=ci(`width:10px;height:10px;background:${T};border:1.5px solid #fff`,'Bushaltestelle: ab Zoom 14, Name beim Drüberfahren'+aus(hstOn));
-  h+='<div class="s" style="opacity:.8">Bahnhof oder Haltestelle anklicken: ÖPNV-Route vom Start (Standort-Kachel an: genauer Standort, sonst Startadresse) in Google Maps</div>';
+  h+='<div class="s" style="opacity:.8">Bahnhof oder Haltestelle anklicken: ÖPNV-Route vom Start („Mein Standort“ an: genauer Standort, sonst Startadresse) in Google Maps</div>';
   h+='<h4>Wärmeplanung (Zoom 10 bis 13)'+aus(wpbOn)+'</h4>'+Object.values(WP_KLASSEN).filter(x=>!x.alias).map(x=>`<div class="li">${klSwatch(x.farbe)}<span>${esc(x.text)}</span></div>`).join('');
   { const kom=WP_VEKTOR.map(v=>v.titel.split(':')[0]+' (live)').concat(wpbPaket?wpbPaket.bilder.map(b=>b.titel.split(':')[0]):[]);
     h+='<div class="s" style="opacity:.8">Hausnummern ohne Planfläche gelten als dezentral, im Umkreis von 800 m um Biogasanlagen als unklar. Kommunen mit Plan: '+esc(kom.join(', '))+'. Sperrzonen sind ausgespart. Strategische Planung ohne Rechtswirkung, Quellen im Fenster Einstellungen und Daten.</div>'; }
   if(wpIdx>=0){ h+='<h4>Wärmeplan Bremen: '+WP_STUFEN[wpIdx].t+' (Zoom 10 bis 13)</h4><img src="'+$(wpIdx===0?'#wp-leg1':'#wp-leg2').src+'" alt="Legende Wärmeplan Bremen"><div class="s">Quelle: GeoInformation Bremen, Wärmeplan 2025, nur Stadtgebiet Bremen, ohne Rechtswirkung</div>'; }
-  h+='<h4>Punkte</h4>'+ci('background:#7a9a1a;border:2px solid #001a4d','Suchtreffer (mit Adresse beim Drüberfahren)')+ci('background:#7a9a1a;border:2px solid #001a4d','Mein Standort, wenn die Standort-Kachel an ist');
+  h+='<h4>Punkte</h4>'+ci('background:#7a9a1a;border:2px solid #001a4d','Suchtreffer (mit Adresse beim Drüberfahren)')+ci('background:#7a9a1a;border:2px solid #001a4d','Mein Standort, wenn „Mein Standort“ im Zahnrad-Menü an ist');
   h+='<h4>Bedienung</h4><div class="s">Street View: Figur aus der Kachel auf eine blaue Linie ziehen und loslassen, ohne blaue Linie springt sie zurück. Zoomstufe steht unten rechts.</div>';
   h+='<h4>Grundkarte</h4><div class="li"><span>'+({sat:'Satellit (Esri)',dop:'Amtliches Luftbild (LGLN, GeoInformation Bremen, Geobasis NRW)',topo:'Geländekarte (OpenTopoMap)'}[base])+'</span></div>';
   return h;
@@ -2164,12 +2164,12 @@ function calMatch(){ let ch=false; const byId=new Map(CAL.events.map(e=>[e.id,e]
 async function calPatch(id,body){ return gFetch(calUrl+'/'+encodeURIComponent(id),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); }
 // Farben: eigene RGB-Farben kann die Schnittstelle nicht setzen; nächste Standardfarbe: CHC Flamingo (4), CSC Tomate (11), grau Graphit (8)
 const CAL_FARBE={chc:'4',csc:'11',grau:'8'};
-async function calBook(l,art,e,o={}){ if(!gReady()) throw new Error('Für das Buchen bei Google anmelden (Fenster Daten)');
+async function calBook(l,art,e,o={}){ if(!gReady()) throw new Error('Für das Buchen bei Google anmelden (Einstellungen und Daten)');
   const key=calKeyOf(l); const curE=await gFetch(calUrl+'/'+encodeURIComponent(e.id)); if(!/^Freier Termin/i.test((curE.summary||'').trim())) throw new Error('Das Fenster ist inzwischen belegt');
   await calPatch(e.id,{summary:art.toUpperCase()+' · '+key,colorId:CAL_FARBE[art]});
   if(!l.leadNr) l.calKey=key; l.termine=l.termine||{}; l.termine[art]={start:e.s,end:e.e,calId:e.id,prev:curE.colorId||''};
   l.verlauf.push({c:art==='chc'?'CAS':'CSA',at:nowIso(),termin:e.s,calId:e.id,ok:o.ok!==false,dda:art==='chc'&&!!o.dda}); leadSave(l); await calRead(); }
-async function calBookNew(l,art,startIso,o={}){ if(!gReady()) throw new Error('Für das Buchen bei Google anmelden (Fenster Daten)');
+async function calBookNew(l,art,startIso,o={}){ if(!gReady()) throw new Error('Für das Buchen bei Google anmelden (Einstellungen und Daten)');
   const key=calKeyOf(l); const s=new Date(startIso), en=new Date(s.getTime()+75*6e4);
   const c=await gFetch(calUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({summary:art.toUpperCase()+' · '+key,colorId:CAL_FARBE[art],start:{dateTime:s.toISOString(),timeZone:'Europe/Berlin'},end:{dateTime:en.toISOString(),timeZone:'Europe/Berlin'}})});
   if(!l.leadNr) l.calKey=key; l.termine=l.termine||{}; l.termine[art]={start:c.start.dateTime,end:c.end.dateTime,calId:c.id,prev:'',extra:true};
@@ -2282,7 +2282,7 @@ function heuteRender(){ const el=$('#pl-heute'); if(!el) return; let h='';
       items.push({s:p.d2d.s,html:dh+'</div>'}); }
     p.evs.filter(e=>!istSlot(e)&&!istD2D(e)&&!/^(Calls|Planung|Nachbereitung|Office|KPI)/i.test(e.t)&&!p.blockers.includes(e)).forEach(e=>items.push({s:e.s,html:`<div class="slot anders"><b>${hm(e.s)}</b> ${esc(e.t)}</div>`}));
     items.sort((a,b)=>a.s.localeCompare(b.s)); h+=items.length?items.map(x=>x.html).join(''):'<div class="empty">Keine Termine im Kalender.</div>'; h+='</div>'; }
-  el.innerHTML=h; $('#hz-reload').onclick=async()=>{ if(!gReady()){ toast('Erst bei Google anmelden (Fenster Daten)'); return; } await calRead(false); };
+  el.innerHTML=h; $('#hz-reload').onclick=async()=>{ if(!gReady()){ toast('Erst bei Google anmelden (Einstellungen und Daten)'); return; } await calRead(false); };
   $$('#pl-heute [data-lead]').forEach(x=>x.onclick=e=>{ if(e.target.closest('a')) return; leadOpen(x.dataset.lead,'plan'); });
   $$('#pl-heute [data-take]').forEach(b=>b.onclick=()=>{ const [date,lid]=b.dataset.take.split('|'); const loc=D.locations.find(x=>x.id===lid); if(!loc) return;
     D.shifts.push(Store.touch({id:Store.id(),locationId:loc.id,date,status:'geplant',leads:0,doors:0,hours:3,note:'',persons:[ME],createdAt:nowIso()})); Store.save(); render(loc); toast('Einsatz '+loc.name+' am '+tagKurz(date)+' angelegt'); calSyncAll(); heuteRender(); }); }
@@ -2410,7 +2410,7 @@ function bookRender(l){ const F=$('#ld-form'), B=LD.book, art=B.art; const {list
   const btn=(e,p)=>`<button class="btn ${p?'primary':''} small" data-ev="${e.id}">${tagKurz(isoDay(e.s))} ${hm(e.s)}${gleich(e)?' · gleiche Location':''}</button>`;
   F.innerHTML=`<div class="form"><h3>${art==='chc'?'Potenzialanalyse':'Festpreisgespräch'} buchen</h3>
     <div class="seg" id="bk-w">${['egal','mittags','nachmittags'].map(w=>`<button data-w="${w}" class="${B.wunsch===w?'on':''}">${w==='egal'?'Kunde: egal':w==='mittags'?'12:30':'16:45'}</button>`).join('')}</div>
-    ${!gReady()?'<div class="s warn">Nicht bei Google angemeldet: Buchen geht erst nach der Anmeldung (Fenster Daten).</div>':''}${warn?`<div class="s warn">${warn}</div>`:''}
+    ${!gReady()?'<div class="s warn">Nicht bei Google angemeldet: Buchen geht erst nach der Anmeldung (Einstellungen und Daten).</div>':''}${warn?`<div class="s warn">${warn}</div>`:''}
     <div class="s" style="margin-top:6px">Immer zwei Termine zur Wahl anbieten:</div><div class="row">${list.slice(0,2).map(e=>btn(e,true)).join('')||'<span class="s">Kein freies Fenster im Zeitraum.</span>'}</div>
     ${list.length>2||weiter.length?`<details><summary class="s">weitere Fenster</summary><div class="row">${list.slice(2).concat(weiter.slice(0,8)).map(e=>btn(e,false)).join('')}</div></details>`:''}
     <details><summary class="s">anderer Zeitpunkt (Fenster verschieben)</summary><div class="grid3"><div><input type="date" id="bk-d" value="${today()}"></div><div><input type="time" id="bk-t" value="12:30"></div><div><button class="btn small" id="bk-new">Termin anlegen</button></div></div></details>
@@ -2441,7 +2441,7 @@ function rankRender(){ const el=$('#d-rank'); if(!el) return; const rows=rankRow
     <div class="tscroll"><table><tr><th>Location</th><th class="r">Türen</th><th class="r">Leads</th><th class="r">SL</th><th class="r">CHC</th><th class="r">CSA</th><th class="r">CCW</th><th class="r">CCW/100</th><th class="r">CSA-Q.</th><th class="r">Leads/100</th></tr>
     ${rows.map(r=>`<tr class="${r.CCW<3?'grau':''}"><td>${r.loc?`<span class="dot" style="background:${STATUS_FARBE[locStatus(r.loc).k]}"></span> `:''}${esc(r.name)}</td><td class="r">${r.DOR}</td><td class="r">${r.CLD}</td><td class="r">${r.CLI}</td><td class="r">${r.CHC}</td><td class="r">${r.CSA}</td><td class="r">${r.CCW}</td><td class="r">${f(r.ccw100,2)}</td><td class="r">${r.csaQ==null?'':Math.round(r.csaQ*100)+' %'}</td><td class="r">${f(r.l100)}</td></tr>`).join('')}</table></div>`; }
 
-/* ---------- Fenster Daten, Einsatz-Felder, Aktualisierung ---------- */
+/* ---------- Einstellungen und Daten, Einsatz-Felder, Aktualisierung ---------- */
 function kDatenInfo(){ const el=$('#kd-info'); if(!el) return; const n=D.leads.length, geo=D.leads.filter(l=>l.lat!=null).length;
   el.innerHTML=`${n} Leads, ${geo} auf der Karte.${CAL.at?' Kalender gelesen '+fmtDT(CAL.at)+'.':''}<br>${KF.at?'Wochenzahlen an das Wochenblatt übergeben: '+fmtDT(KF.at)+'.':'Wochenzahlen noch nicht übergeben.'}${KF.err==='scope'?' <b>Einmal „Abmelden“ und neu „Bei Google anmelden“, damit die Seite die Datei für das Wochenblatt schreiben darf.</b>':KF.err?' Fehler: '+esc(KF.err):''}`; }
 if($('#kd-kpi')) $('#kd-kpi').onclick=async()=>{ if(!gReady()){ toast('Erst bei Google anmelden'); return; } await kpiFileSync(true); toast(KF.err?'Übergabe fehlgeschlagen':'Wochenzahlen übergeben'); };
@@ -2532,7 +2532,7 @@ legendHtml=function(){ return _legendHtml2(); }; // Haltestellen stehen seit v72
 window.RT={on:false,dest:null,orig:null,origTxt:'',routes:[],sel:0,view:false,lines:[],marks:[],busy:false,zeit:''};
 const rtDestMarker=L.marker([0,0],{icon:L.divIcon({className:'rt-ziel',html:'<span></span>',iconSize:[22,22],iconAnchor:[11,22]}),interactive:false});
 function rtMode(on){ RT.on=on; $('#b-route').classList.toggle('on',on); document.body.classList.toggle('rtmode',on);
-  if(on){ menuOpen(false); show(null); closePanel(); if(!GM.key) toast('Für Routen den Google-Maps-Schlüssel im Fenster Daten eintragen'); else toast('Ziel auf der Karte antippen'); }
+  if(on){ menuOpen(false); show(null); closePanel(); if(!GM.key) toast('Für Routen den Google-Maps-Schlüssel unter Einstellungen und Daten eintragen'); else toast('Ziel auf der Karte antippen'); }
   else rtClose(); }
 $('#b-route').onclick=()=>rtMode(!RT.on);
 map.on('click',e=>{ if(RT.on) rtPick(e.latlng); });
@@ -2541,12 +2541,12 @@ function rtPos(){ return new Promise(res=>{ if(!navigator.geolocation) return re
 const rtDur=s=>{ const m=Math.round((parseInt(s)||0)/60); return m>=60?Math.floor(m/60)+' h '+String(m%60).padStart(2,'0')+' min':m+' min'; };
 const rtHm=iso=>iso?new Date(iso).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}):'';
 function rtDecode(str){ let i=0,lat=0,lng=0; const out=[]; while(i<str.length){ for(const k of [0,1]){ let b,sh=0,r=0; do{ b=str.charCodeAt(i++)-63; r|=(b&31)<<sh; sh+=5; }while(b>=32); const d=(r&1)?~(r>>1):(r>>1); if(k===0) lat+=d; else lng+=d; } out.push({lat:lat/1e5,lng:lng/1e5}); } return out; }
-async function rtSearch(){ if(!RT.dest) return; if(!GM.key){ rtPanel('<div class="s warn">Für Routen im Location Manager den Google-Maps-Schlüssel im Fenster Daten eintragen.</div>'+rtGmLink()); return; }
+async function rtSearch(){ if(!RT.dest) return; if(!GM.key){ rtPanel('<div class="s warn">Für Routen im Location Manager den Google-Maps-Schlüssel unter Einstellungen und Daten eintragen.</div>'+rtGmLink()); return; }
   RT.busy=true; rtPanel('<div class="s">Standort wird bestimmt …</div>');
   let o=null; const st=rtStart();
   if(meOn){ o=meMarker?{lat:+meMarker.getLatLng().lat.toFixed(6),lng:+meMarker.getLatLng().lng.toFixed(6)}:await rtPos(); RT.origTxt='dein Standort'; }
   if(!o&&st){ o={lat:st.lat,lng:st.lng}; RT.origTxt=st.txt+(meOn?' (Standort nicht ermittelt)':''); }
-  if(!o){ rtPanel('<div class="s warn">Keine Startadresse eingetragen: im Fenster Daten unter „ÖPNV-Route“ eintragen oder die Standort-Kachel einschalten.</div>'); RT.busy=false; return; }
+  if(!o){ rtPanel('<div class="s warn">Keine Startadresse eingetragen: unter Einstellungen und Daten unter „ÖPNV-Route“ eintragen oder „Mein Standort“ im Zahnrad-Menü einschalten.</div>'); RT.busy=false; return; }
   RT.orig=o; rtPanel('<div class="s">Verbindungen werden gesucht …</div>');
   const body={origin:{location:{latLng:{latitude:o.lat,longitude:o.lng}}},destination:{location:{latLng:{latitude:RT.dest.lat,longitude:RT.dest.lng}}},travelMode:'TRANSIT',computeAlternativeRoutes:true,languageCode:'de',units:'METRIC'};
   if(RT.zeit) body.departureTime=new Date(RT.zeit).toISOString();
@@ -2598,7 +2598,7 @@ function rtClose(){ $('#rtpanel').style.display='none'; map.removeLayer(rtDestMa
 $('#rt-close').onclick=()=>rtMode(false);
 /* Startadresse für Routen: nur in diesem Browser gespeichert (nicht im Code der Seite) */
 function rtStart(){ try{ const v=JSON.parse(localStorage.getItem('sle_lm_rtstart')||'null'); return v&&v.lat!=null?v:null; }catch(e){ return null; } }
-function rtStartInfo(){ const el=$('#rts-info'); if(!el) return; const v=rtStart(); el.textContent=v?'Start für Routen: '+v.txt+' (gefunden: '+v.found+'). Mit eingeschalteter Standort-Kachel startet die Route am genauen Standort.':'Keine Startadresse eingetragen.'; }
+function rtStartInfo(){ const el=$('#rts-info'); if(!el) return; const v=rtStart(); el.textContent=v?'Start für Routen: '+v.txt+' (gefunden: '+v.found+'). Mit eingeschaltetem „Mein Standort“ startet die Route am genauen Standort.':'Keine Startadresse eingetragen.'; }
 if($('#rts-addr')){ const v=rtStart(); if(v) $('#rts-addr').value=v.txt; rtStartInfo();
   $('#rts-save').onclick=async()=>{ const q=$('#rts-addr').value.trim(); if(!q){ try{ localStorage.removeItem('sle_lm_rtstart'); }catch(e){} rtStartInfo(); return; } $('#rts-info').textContent='Adresse wird gesucht …';
     try{ const r=await fetch('https://photon.komoot.io/api/?lang=de&limit=1&lat=53.55&lon=8.58&q='+encodeURIComponent(q)); const j=await r.json(); const f=j.features&&j.features[0]; if(!f){ $('#rts-info').textContent='Adresse nicht gefunden.'; return; }
