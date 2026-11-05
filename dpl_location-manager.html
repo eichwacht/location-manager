@@ -1244,17 +1244,17 @@ map.on('locationerror',()=>{ if(!meOn) return; toast('Standort nicht verfügbar:
 map.pm.setLang('de');
 map.pm.setGlobalOptions({tooltips:false,cursorMarker:true,snappable:true,allowSelfIntersection:false,templineStyle:{color:'#7a9a1a',weight:3},hintlineStyle:{color:'#7a9a1a',weight:3,dashArray:[6,6]},pathOptions:{color:'#7a9a1a',weight:3,fillColor:'#7a9a1a',fillOpacity:.2}});
 map.pm.addControls({drawMarker:false,drawCircleMarker:false,drawPolyline:false,drawRectangle:false,drawPolygon:false,drawCircle:false,drawText:false,editMode:false,dragMode:false,cutPolygon:false,removalMode:false,rotateMode:false});
-$('#b-draw').onclick=()=>{ if(map.pm.globalDrawModeEnabled()) map.pm.disableDraw(); else { show(null); closePanel(); menuOpen(false); map.pm.enableDraw('Polygon',{snappable:true,finishOn:'dblclick'}); toast('Eckpunkte antippen, Doppeltipp schließt das Gebiet'); } };
+$('#b-draw').onclick=()=>{ if(map.pm.globalDrawModeEnabled()) map.pm.disableDraw(); else { show(null); closePanel(); menuOpen(false); map.pm.enableDraw('Polygon',{snappable:true,finishOn:'dblclick'});  } };
 map.on('pm:globaldrawmodetoggled',e=>{ $('#b-draw').classList.toggle('on',!!e.enabled); });
 $('#map').addEventListener('contextmenu',e=>e.preventDefault());
 /* Neu eingezeichnetes Gebiet, Fenster offen: Linksklick hinein = speichern und Einsatz planen, Rechtsklick hinein = verwerfen und ab dem vorletzten Punkt weiterzeichnen, Klick daneben = verwerfen */
 function neuAktiv(id){ return !!(curNew&&cur&&(!id||cur.id===id)&&$('#panel').classList.contains('active')&&!(layers[cur.id]&&layers[cur.id].pm.enabled())); }
-function neuSpeichern(){ if(!$('#e-name').value.trim()) $('#e-name').value=cur.name; const id=cur.id; $('#e-save').click(); if(cur&&cur.id===id&&!curNew){ $('#b-newshift').click(); setTimeout(()=>{ const f=$('#s-form'); if(f) f.scrollIntoView({block:'start',behavior:'smooth'}); },60); } }
+function neuSpeichern(){ if(!$('#e-name').value.trim()) $('#e-name').value=cur.name; const id=cur.id; window.__lmStill=true; try{ $('#e-save').click(); }finally{ window.__lmStill=false; } if(cur&&cur.id===id&&!curNew){ $('#b-newshift').click(); setTimeout(()=>{ const f=$('#s-form'); if(f) f.scrollIntoView({block:'start',behavior:'smooth'}); },60); } }
 function neuZurueck(){ const pts=(cur.coords||[]).slice(0,-1); $('#e-cancel').click(); map.pm.enableDraw('Polygon',{snappable:true,finishOn:'dblclick'}); const d=map.pm.Draw.Polygon;
-  try{ pts.forEach(c=>{ if(d._hintMarker) d._hintMarker._snapped=false; d._createVertex({latlng:L.latLng(c[0],c[1])}); }); }catch(err){ console.error('Weiterzeichnen',err); } toast('Gebiet nicht gespeichert, weiterzeichnen ab dem vorletzten Punkt'); }
-map.on('click',()=>{ if(neuAktiv()){ closePanel(); toast('Gebiet verworfen'); } });
+  try{ pts.forEach(c=>{ if(d._hintMarker) d._hintMarker._snapped=false; d._createVertex({latlng:L.latLng(c[0],c[1])}); }); }catch(err){ console.error('Weiterzeichnen',err); } }
+map.on('click',()=>{ if(neuAktiv()){ closePanel();  } });
 map.on('contextmenu',e=>{
-  if(neuAktiv()){ closePanel(); toast('Gebiet verworfen'); return; }
+  if(neuAktiv()){ closePanel();  return; }
   if(!map.pm.globalDrawModeEnabled()){ // Rechtsklick in die Karte ohne Zeichenmodus: Radialmenü um den Mauszeiger
     if((window.RT&&RT.on)||fensterOffen()||(cur&&layers[cur.id]&&layers[cur.id].pm.enabled())||!e||!e.latlng) return;
     const oe=e.originalEvent||{}; radOpen(oe.clientX!=null?oe.clientX:e.containerPoint.x, oe.clientY!=null?oe.clientY:e.containerPoint.y, e.latlng); return; }
@@ -1598,7 +1598,7 @@ function closePanel(){ if(!$('#panel').classList.contains('active')) return; $('
 function discardNew(){ Store.tomb(cur.id); D.locations=D.locations.filter(l=>l.id!==cur.id); D.shifts=D.shifts.filter(s=>s.locationId!==cur.id); if(layers[cur.id]){ map.removeLayer(layers[cur.id]); delete layers[cur.id]; } Store.save(); curNew=false; }
 $('#p-close').onclick=closePanel;
 $('#p-edit').onclick=()=>openPanel(cur.id,true);
-$('#e-cancel').onclick=()=>{ if(curNew){ discardNew(); $('#panel').classList.remove('active'); cur=null; toast('Gebiet verworfen'); } else { if(layers[cur.id].pm.enabled()){ layers[cur.id].pm.disable(); render(cur); } openPanel(cur.id); } };
+$('#e-cancel').onclick=()=>{ if(curNew){ discardNew(); $('#panel').classList.remove('active'); cur=null;  } else { if(layers[cur.id].pm.enabled()){ layers[cur.id].pm.disable(); render(cur); } openPanel(cur.id); } };
 $('#e-save').onclick=()=>{ const nm=$('#e-name').value.trim(); if(!nm){ $('#e-name').focus(); toast('Bitte einen Namen eingeben'); return; } cur.name=nm; cur.group=$('#e-group').value.trim(); cur.plz=$('#e-plz').value.trim(); const l=layers[cur.id]; let shapeChanged=false; if(l.pm.enabled()){ cur.coords=l.getLatLngs()[0].map(p=>[+p.lat.toFixed(6),+p.lng.toFixed(6)]); l.pm.disable(); shapeChanged=true; } curNew=false; Store.touch(cur); Store.save(); render(cur); openPanel(cur.id); toast('Gespeichert'); if(shapeChanged) autoFill(cur,false); calSyncAll(); };
 $('#e-auto').onclick=()=>autoFill(cur,true);
 $('#e-shape').onclick=()=>{ layers[cur.id].pm.enable({allowSelfIntersection:false}); toast('Eckpunkte ziehen, dann Speichern'); };
@@ -2734,7 +2734,7 @@ function radClose(){ $('#radial').classList.remove('open'); }
 function locSichtSetzen(an){ locSicht=an; try{ localStorage.setItem('sle_lm_locsicht',an?'1':'0'); }catch(e){} Object.values(layers).forEach(l=>{ if(an) l.addTo(map); else map.removeLayer(l); }); }
 function zeichnenAb(ll){ if(!locSicht) locSichtSetzen(true); map.pm.enableDraw('Polygon',{snappable:true,finishOn:'dblclick'}); const d=map.pm.Draw.Polygon;
   try{ if(d._hintMarker){ d._hintMarker._snapped=false; d._hintMarker.setLatLng(ll); } d._createVertex({latlng:ll}); }catch(err){ console.error('Erster Punkt',err); }
-  toast('Erster Eckpunkt gesetzt: weitere anklicken, Doppelklick schließt, Rechtsklick nimmt den letzten zurück'); }
+   }
 $('#rad-neu').onclick=()=>{ radClose(); const r=map.getContainer().getBoundingClientRect(); const ll=(RAD.x!=null)?map.containerPointToLatLng([RAD.x-r.left,RAD.y-r.top]):RAD.ll; if(ll) zeichnenAb(ll); };
 $('#rad-b2c').onclick=()=>{ radClose(); $('#k-main').click(); };
 $('#rad-such').onclick=()=>{ radClose(); $('#b-search').click(); };
