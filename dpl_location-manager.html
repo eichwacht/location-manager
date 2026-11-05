@@ -1348,7 +1348,22 @@ function overpassQuery(q,signal){
 const HOME=L.latLng(53.54,8.58), RADIUS_M=40000; // Leadgebiet: Bremerhaven und 40 km
 
 /* ---------- Postleitzahlgebiete ---------- */
-const plzLayer=L.geoJSON(null,{style:()=>({color:'#001a4d',weight:3,fillOpacity:0,interactive:false}),onEachFeature:(f,l)=>{ const c=f.properties.postal_code||''; if(c){ try{ l.bindTooltip(c,{permanent:true,direction:'center',className:'plz-label'}); }catch(e){} } }});
+/* PLZ-Grenzen und PLZ-Schilder als gekachelte Canvas-Ebene (je Kachel ein Bild) */
+const KDPR=()=>Math.min(2,window.devicePixelRatio||1); // scharfe Kacheln auf hochauflösenden Bildschirmen
+let plzFc=null, plzIdx=null;
+function plzIndex(){ if(plzIdx&&plzIdx.fc===plzFc) return plzIdx.items; const items=[]; ((plzFc&&plzFc.features)||[]).forEach(ft=>{ const g=ft.geometry; if(!g) return; const polys=g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:[];
+    let w=180,e=-180,so=90,no=-90, gross=null, ga=-1; polys.forEach(pg=>{ let a=0; const r=pg[0]; for(let i=0,j=r.length-1;i<r.length;j=i++) a+=(r[j][0]-r[i][0])*(r[j][1]+r[i][1]); a=Math.abs(a); if(a>ga){ ga=a; gross=r; } r.forEach(q=>{ if(q[0]<w)w=q[0]; if(q[0]>e)e=q[0]; if(q[1]<so)so=q[1]; if(q[1]>no)no=q[1]; }); });
+    const m=gross?polyMitte(gross.map(q=>[q[1],q[0]])):null; items.push({polys,w,e,so,no,code:ft.properties.postal_code||'',mitte:m}); }); plzIdx={fc:plzFc,items}; return items; }
+const PlzGrid=L.GridLayer.extend({ createTile(c){ const t=document.createElement('canvas'), sz=this.getTileSize(), dpr=KDPR(); t.width=sz.x*dpr; t.height=sz.y*dpr; if(!plzFc) return t;
+  const g=t.getContext('2d'); g.scale(dpr,dpr); const z=c.z, ox=c.x*sz.x, oy=c.y*sz.y; const nw=L.CRS.EPSG3857.pointToLatLng(L.point(ox-40,oy-14),z), se=L.CRS.EPSG3857.pointToLatLng(L.point(ox+sz.x+40,oy+sz.y+14),z);
+  const P=(q)=>{ const p=L.CRS.EPSG3857.latLngToPoint(L.latLng(q[1],q[0]),z); return [p.x-ox,p.y-oy]; };
+  const items=plzIndex(), hit=items.filter(o=>o.e>=nw.lng&&o.w<=se.lng&&o.no>=se.lat&&o.so<=nw.lat);
+  g.strokeStyle='#001a4d'; g.lineWidth=3; g.lineJoin='round'; g.beginPath(); hit.forEach(o=>o.polys.forEach(pg=>pg.forEach(r=>{ r.forEach((q,i)=>{ const [x,y]=P(q); if(i) g.lineTo(x,y); else g.moveTo(x,y); }); g.closePath(); }))); g.stroke();
+  if(z>=11&&z<=12){ g.font='700 12px system-ui,sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+    items.forEach(o=>{ if(!o.code||!o.mitte) return; const p=L.CRS.EPSG3857.latLngToPoint(o.mitte,z), x=p.x-ox, y=p.y-oy, w=g.measureText(o.code).width+12, h=18; if(x+w/2<0||x-w/2>sz.x||y+h/2<0||y-h/2>sz.y) return;
+      g.beginPath(); if(g.roundRect) g.roundRect(x-w/2,y-h/2,w,h,6); else g.rect(x-w/2,y-h/2,w,h); g.fillStyle='#001a4d'; g.fill(); g.lineWidth=1; g.strokeStyle='#7a9a1a'; g.stroke(); g.fillStyle='#f2f2f2'; g.fillText(o.code,x,y+.5); }); }
+  return t; } });
+const plzLayer=new PlzGrid({tileSize:256,updateWhenZooming:false,keepBuffer:2,zIndex:3});
 let plzOn=false, plzLoaded=false, plzBusy=false;
 function plzNear(f){ const b=L.geoJSON(f).getBounds(); return HOME.distanceTo(b.getCenter())<=RADIUS_M; }
 async function plzLoad(){
@@ -1362,7 +1377,7 @@ async function plzLoad(){
       fc={type:'FeatureCollection',features:all.features.filter(f=>f.geometry&&/Polygon/.test(f.geometry.type)&&plzNear(f)).map(f=>({type:'Feature',id:f.id,geometry:f.geometry,properties:{postal_code:f.properties.postal_code||''}}))};
       try{ await idb.set('plz_v4_40km',fc); }catch(e){}
     }
-    plzLayer.clearLayers(); plzLayer.addData(fc); plzLoaded=true;
+    plzFc=fc; plzIdx=null; plzLayer.redraw(); plzLoaded=true;
   }catch(e){ toast('PLZ-Gebiete konnten nicht geladen werden'); }
   plzBusy=false; $('#b-plz').classList.remove('busy');
 }
@@ -1730,8 +1745,8 @@ function sperrIndex(){ const f=sperrAktiv(); if(sperrIdx&&sperrIdx.f===f) return
   f.forEach(ft=>{ const g=ft.geometry; if(!g) return; const polys=g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:[]; polys.forEach(pg=>{ let w=180,e=-180,so=90,no=-90; pg[0].forEach(q=>{ if(q[0]<w)w=q[0]; if(q[0]>e)e=q[0]; if(q[1]<so)so=q[1]; if(q[1]>no)no=q[1]; }); items.push({pg,w,e,so,no}); }); });
   sperrIdx={f,items}; return items; }
 const SPERR_ROT='#8b0000', SPERR_P=10;
-const SperrGrid=L.GridLayer.extend({ createTile(c){ const t=document.createElement('canvas'), sz=this.getTileSize(); t.width=sz.x; t.height=sz.y; if(!sperrFc) return t;
-  const g=t.getContext('2d'), z=c.z, ox=c.x*sz.x, oy=c.y*sz.y; const nw=L.CRS.EPSG3857.pointToLatLng(L.point(ox,oy),z), se=L.CRS.EPSG3857.pointToLatLng(L.point(ox+sz.x,oy+sz.y),z);
+const SperrGrid=L.GridLayer.extend({ createTile(c){ const t=document.createElement('canvas'), sz=this.getTileSize(), dpr=KDPR(); t.width=sz.x*dpr; t.height=sz.y*dpr; if(!sperrFc) return t;
+  const g=t.getContext('2d'); g.scale(dpr,dpr); const z=c.z, ox=c.x*sz.x, oy=c.y*sz.y; const nw=L.CRS.EPSG3857.pointToLatLng(L.point(ox,oy),z), se=L.CRS.EPSG3857.pointToLatLng(L.point(ox+sz.x,oy+sz.y),z);
   const pad=(se.lng-nw.lng)*0.02; const hit=sperrIndex().filter(o=>o.e>=nw.lng-pad&&o.w<=se.lng+pad&&o.no>=se.lat-pad&&o.so<=nw.lat+pad); if(!hit.length) return t;
   const P=(q)=>{ const p=L.CRS.EPSG3857.latLngToPoint(L.latLng(q[1],q[0]),z); return [p.x-ox,p.y-oy]; };
   const pc=document.createElement('canvas'); pc.width=pc.height=SPERR_P; const pg=pc.getContext('2d'); pg.fillStyle='rgba(139,0,0,.18)'; pg.fillRect(0,0,SPERR_P,SPERR_P); pg.strokeStyle=SPERR_ROT; pg.lineWidth=2.5; pg.beginPath(); pg.moveTo(-2,SPERR_P+2); pg.lineTo(SPERR_P+2,-2); pg.moveTo(-2,2); pg.lineTo(2,-2); pg.moveTo(SPERR_P-2,SPERR_P+2); pg.lineTo(SPERR_P+2,SPERR_P-2); pg.stroke();
@@ -1841,7 +1856,7 @@ async function countAddresses(loc){
 }
 async function fallbackPlace(loc){ // ohne Adressdaten: PLZ-Gebiet und nächster Ortsname
   const c=L.latLngBounds(loc.coords).getCenter(); let plz='',ort='';
-  try{ if(!plzLoaded) await plzLoad(); plzLayer.eachLayer(l=>{ if(plz) return; const g=l.feature&&l.feature.geometry; if(!g) return; const polys=g.type==='Polygon'?[g.coordinates]:g.coordinates; polys.forEach(p=>{ if(!plz&&inPoly([c.lat,c.lng],p[0].map(([x,y])=>[y,x]))) plz=l.feature.properties.postal_code; }); }); }catch(e){}
+  try{ if(!plzLoaded) await plzLoad(); ((plzFc&&plzFc.features)||[]).forEach(ft=>{ if(plz) return; const g=ft.geometry; if(!g) return; const polys=g.type==='Polygon'?[g.coordinates]:g.coordinates; polys.forEach(p=>{ if(!plz&&inPoly([c.lat,c.lng],p[0].map(([x,y])=>[y,x]))) plz=ft.properties.postal_code; }); }); }catch(e){}
   if(ortPts){ let best=null,bd=1e12; ortPts.forEach(o=>{ const d=c.distanceTo([o.lat,o.lon]); const w=o.s===1?1.6:o.s===2?1:0.8; if(d*w<bd){ bd=d*w; best=o; } }); if(best&&bd<6000) ort=best.n; }
   return {plz,ort};
 }
@@ -2582,8 +2597,8 @@ const hstStil=(p,z)=>{ const bahn=p.a==='bahn', tuerkis=bahn||p.a==='bus'; retur
 let hstIdx=null; const HST_ZELLE=0.02;
 function hstIndex(){ if(hstIdx&&hstIdx.fc===hstFc) return hstIdx.m; const m=new Map(); ((hstFc&&hstFc.pts)||[]).forEach(p=>{ const k=Math.floor(p.lat/HST_ZELLE)+'_'+Math.floor(p.lon/HST_ZELLE); let a=m.get(k); if(!a){ a=[]; m.set(k,a); } a.push(p); }); hstIdx={fc:hstFc,m}; return m; }
 function hstImBereich(s,w,n,e){ const m=hstIndex(), out=[]; for(let a=Math.floor(s/HST_ZELLE);a<=Math.floor(n/HST_ZELLE);a++) for(let b=Math.floor(w/HST_ZELLE);b<=Math.floor(e/HST_ZELLE);b++){ const c=m.get(a+'_'+b); if(c) c.forEach(p=>{ if(p.lat>=s&&p.lat<=n&&p.lon>=w&&p.lon<=e) out.push(p); }); } return out; }
-const HstGrid=L.GridLayer.extend({ createTile(c){ const t=document.createElement('canvas'), sz=this.getTileSize(); t.width=sz.x; t.height=sz.y; if(!hstFc) return t;
-  const g=t.getContext('2d'), z=c.z, ox=c.x*sz.x, oy=c.y*sz.y; const nw=L.CRS.EPSG3857.pointToLatLng(L.point(ox-12,oy-12),z), se=L.CRS.EPSG3857.pointToLatLng(L.point(ox+sz.x+12,oy+sz.y+12),z);
+const HstGrid=L.GridLayer.extend({ createTile(c){ const t=document.createElement('canvas'), sz=this.getTileSize(), dpr=KDPR(); t.width=sz.x*dpr; t.height=sz.y*dpr; if(!hstFc) return t;
+  const g=t.getContext('2d'); g.scale(dpr,dpr); const z=c.z, ox=c.x*sz.x, oy=c.y*sz.y; const nw=L.CRS.EPSG3857.pointToLatLng(L.point(ox-12,oy-12),z), se=L.CRS.EPSG3857.pointToLatLng(L.point(ox+sz.x+12,oy+sz.y+12),z);
   const pts=hstImBereich(se.lat,nw.lng,nw.lat,se.lng).filter(p=>hstSicht(p,z)).sort((a,b)=>(a.a==='bahn')-(b.a==='bahn'));
   pts.forEach(p=>{ const st=hstStil(p,z), q=L.CRS.EPSG3857.latLngToPoint(L.latLng(p.lat,p.lon),z); g.beginPath(); g.arc(q.x-ox,q.y-oy,st.r,0,Math.PI*2); g.fillStyle=st.fill; g.fill(); g.lineWidth=st.w; g.strokeStyle=st.rand; g.stroke(); }); return t; } });
 const hstLayer=new HstGrid({pane:'hstPane',tileSize:256,updateWhenZooming:false,keepBuffer:2});
@@ -2631,8 +2646,8 @@ map.createPane('bahnPane'); map.getPane('bahnPane').style.zIndex=390; map.getPan
 var bahnData=null, bahnBusy=false, bahnIdx=null;
 /* Bahnstrecken als gekachelte Canvas-Ebene (je Kachel ein Bild, wie Sperrzonen und Wärmeplan) */
 function bahnIndex(){ if(bahnIdx&&bahnIdx.d===bahnData) return bahnIdx.items; const items=[]; ((bahnData&&bahnData.lines)||[]).forEach(l=>{ let w=180,e=-180,so=90,no=-90; l.forEach(q=>{ if(q[1]<w)w=q[1]; if(q[1]>e)e=q[1]; if(q[0]<so)so=q[0]; if(q[0]>no)no=q[0]; }); items.push({l,w,e,so,no}); }); bahnIdx={d:bahnData,items}; return items; }
-const BahnGrid=L.GridLayer.extend({ createTile(c){ const t=document.createElement('canvas'), sz=this.getTileSize(); t.width=sz.x; t.height=sz.y; if(!bahnData) return t;
-  const g=t.getContext('2d'), z=c.z, ox=c.x*sz.x, oy=c.y*sz.y; const nw=L.CRS.EPSG3857.pointToLatLng(L.point(ox-8,oy-8),z), se=L.CRS.EPSG3857.pointToLatLng(L.point(ox+sz.x+8,oy+sz.y+8),z);
+const BahnGrid=L.GridLayer.extend({ createTile(c){ const t=document.createElement('canvas'), sz=this.getTileSize(), dpr=KDPR(); t.width=sz.x*dpr; t.height=sz.y*dpr; if(!bahnData) return t;
+  const g=t.getContext('2d'); g.scale(dpr,dpr); const z=c.z, ox=c.x*sz.x, oy=c.y*sz.y; const nw=L.CRS.EPSG3857.pointToLatLng(L.point(ox-8,oy-8),z), se=L.CRS.EPSG3857.pointToLatLng(L.point(ox+sz.x+8,oy+sz.y+8),z);
   const hit=bahnIndex().filter(o=>o.e>=nw.lng&&o.w<=se.lng&&o.no>=se.lat&&o.so<=nw.lat); if(!hit.length) return t;
   g.beginPath(); hit.forEach(o=>o.l.forEach((q,i)=>{ const p=L.CRS.EPSG3857.latLngToPoint(L.latLng(q[0],q[1]),z); if(i) g.lineTo(p.x-ox,p.y-oy); else g.moveTo(p.x-ox,p.y-oy); }));
   g.lineJoin='round'; g.lineCap='round'; g.strokeStyle='rgba(255,255,255,.9)'; g.lineWidth=5; g.stroke(); g.strokeStyle=HST_BAHN_FARBE; g.lineWidth=3; g.stroke(); return t; } });
