@@ -1291,8 +1291,8 @@ function render(loc){
   layers[loc.id]=l;
 }
 D.locations.forEach(render);
-/* Anzahl postalischer Adressen mittig im Gebiet, ab Zoom 15 */
-const LOC_ADR_ZOOM=15; const locLblLayer=L.layerGroup(); let locLblRaf=0;
+/* Anzahl postalischer Adressen mittig im Gebiet, ab Zoom 14 */
+const LOC_ADR_ZOOM=14; const locLblLayer=L.layerGroup(); let locLblRaf=0;
 function polyMitte(c){ let A=0,x=0,y=0; for(let i=0,j=c.length-1;i<c.length;j=i++){ const f=c[j][1]*c[i][0]-c[i][1]*c[j][0]; A+=f; x+=(c[j][1]+c[i][1])*f; y+=(c[j][0]+c[i][0])*f; }
   if(Math.abs(A)<1e-12) return L.latLngBounds(c).getCenter(); const p=[y/(3*A),x/(3*A)];
   let ins=false; for(let i=0,j=c.length-1;i<c.length;j=i++){ const yi=c[i][0],xi=c[i][1],yj=c[j][0],xj=c[j][1]; if(((yi>p[0])!==(yj>p[0]))&&(p[1]<(xj-xi)*(p[0]-yi)/(yj-yi)+xi)) ins=!ins; }
@@ -2112,7 +2112,7 @@ function legendHtml(){
   const T=HST_BAHN_FARBE;
   let h='<div class="row sb" style="margin:0 0 4px"><strong>Legende</strong><button class="w-close" id="leg-close" aria-label="Legende schließen">✕</button></div>';
   h+='<h4>Gebiete</h4>'+sw(STATUS_FARBE.neu,'hellgrün: noch kein Einsatz')+sw(STATUS_FARBE.frei,'dunkelgrün: frei, letzter Einsatz länger als '+SPERRTAGE+' Tage her')+sw(STATUS_FARBE.heute,'orange: heute eingeplant',.7)+sw(STATUS_FARBE.geplant,'gelb: für einen künftigen Tag eingeplant',.7)+sw(STATUS_FARBE.sperre,'rot: Sperrfrist, '+SPERRTAGE+' Tage nach dem letzten Einsatz');
-  h+=tx('font-size:13px;font-weight:800;color:#f2f2f2','18','Zahl im Gebiet: postalische Adressen ab Zoom 15, darüber der Name ab Zoom 16');
+  h+=tx('font-size:13px;font-weight:800;color:#f2f2f2','18','Zahl im Gebiet: postalische Adressen ab Zoom 14, darüber der Name ab Zoom 16');
   h+='<h4>Kunden'+aus(Object.values(klOn).some(Boolean))+'</h4>'
     +ci(`background:${KFARBE.offen};border:2px solid #001a4d`,'Lead, Termin offen')
     +ci(`background:${KFARBE.cas};border:2px solid #001a4d`,'Potenzialanalyse vereinbart oder gehalten')
