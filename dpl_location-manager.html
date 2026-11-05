@@ -2611,11 +2611,17 @@ $('#b-hst').onclick=()=>{ hstOn=!hstOn; $('#b-hst').classList.toggle('on',hstOn)
 if($('#hst-reload')) $('#hst-reload').onclick=()=>{ hstFc=null; hstLoad(true); };
 /* ---------- Bahnstrecken (OSM railway=rail/narrow_gauge ohne Nebengleise), Farbe wie Bahnhöfe, nur Zoom 11 bis 16, ohne Beschriftung ---------- */
 map.createPane('bahnPane'); map.getPane('bahnPane').style.zIndex=390; map.getPane('bahnPane').style.pointerEvents='none';
-const bahnR=L.canvas({pane:'bahnPane',padding:0.3}); const bahnLayer=L.layerGroup(); var bahnData=null, bahnBusy=false;
+var bahnData=null, bahnBusy=false, bahnIdx=null;
+/* Bahnstrecken als gekachelte Canvas-Ebene (je Kachel ein Bild, wie Sperrzonen und Wärmeplan) */
+function bahnIndex(){ if(bahnIdx&&bahnIdx.d===bahnData) return bahnIdx.items; const items=[]; ((bahnData&&bahnData.lines)||[]).forEach(l=>{ let w=180,e=-180,so=90,no=-90; l.forEach(q=>{ if(q[1]<w)w=q[1]; if(q[1]>e)e=q[1]; if(q[0]<so)so=q[0]; if(q[0]>no)no=q[0]; }); items.push({l,w,e,so,no}); }); bahnIdx={d:bahnData,items}; return items; }
+const BahnGrid=L.GridLayer.extend({ createTile(c){ const t=document.createElement('canvas'), sz=this.getTileSize(); t.width=sz.x; t.height=sz.y; if(!bahnData) return t;
+  const g=t.getContext('2d'), z=c.z, ox=c.x*sz.x, oy=c.y*sz.y; const nw=L.CRS.EPSG3857.pointToLatLng(L.point(ox-8,oy-8),z), se=L.CRS.EPSG3857.pointToLatLng(L.point(ox+sz.x+8,oy+sz.y+8),z);
+  const hit=bahnIndex().filter(o=>o.e>=nw.lng&&o.w<=se.lng&&o.no>=se.lat&&o.so<=nw.lat); if(!hit.length) return t;
+  g.beginPath(); hit.forEach(o=>o.l.forEach((q,i)=>{ const p=L.CRS.EPSG3857.latLngToPoint(L.latLng(q[0],q[1]),z); if(i) g.lineTo(p.x-ox,p.y-oy); else g.moveTo(p.x-ox,p.y-oy); }));
+  g.lineJoin='round'; g.lineCap='round'; g.strokeStyle='rgba(255,255,255,.9)'; g.lineWidth=5; g.stroke(); g.strokeStyle=HST_BAHN_FARBE; g.lineWidth=3; g.stroke(); return t; } });
+const bahnLayer=new BahnGrid({pane:'bahnPane',tileSize:256,updateWhenZooming:false,keepBuffer:2});
 const bahnSicht=()=>{ const z=map.getZoom(); return z>=11&&z<=16; };
-function bahnBuild(){ bahnLayer.clearLayers(); if(!bahnData||!bahnData.lines.length) return;
-  bahnLayer.addLayer(L.polyline(bahnData.lines,{renderer:bahnR,pane:'bahnPane',color:'#ffffff',weight:5,opacity:.9,interactive:false}));
-  bahnLayer.addLayer(L.polyline(bahnData.lines,{renderer:bahnR,pane:'bahnPane',color:HST_BAHN_FARBE,weight:3,opacity:1,interactive:false})); }
+function bahnBuild(){ bahnIdx=null; bahnLayer.redraw(); }
 async function bahnLoad(neu=false){ if(bahnBusy||(bahnData&&!neu)) return; bahnBusy=true;
   try{ let d=null; if(!neu){ try{ d=await idb.get('bahn_v1_40km'); }catch(e){} }
     if(!d){ const b=HOME.toBounds(RADIUS_M*2);
@@ -2632,7 +2638,7 @@ map.on('zoomend',bahnZoom);
 idb.get('bahn_v1_40km').then(d=>{ if(d&&!bahnData){ bahnData=d; bahnBuild(); sperrNeu(); if(sperrFc&&(wpbPaket||wpbOn)) wpbBuild(); bahnZoom(); } }).catch(()=>{});
 { const _sp=$('#b-sperr').onclick; $('#b-sperr').onclick=e=>{ _sp(e); if(sperrOn&&!bahnData) bahnLoad(); }; }
 { const _hstClick=$('#b-hst').onclick; $('#b-hst').onclick=e=>{ _hstClick(e); bahnZoom(); }; }
-if($('#hst-reload')){ const _r=$('#hst-reload').onclick; $('#hst-reload').onclick=e=>{ _r(e); bahnData=null; bahnLayer.clearLayers(); bahnLoad(true); }; }
+if($('#hst-reload')){ const _r=$('#hst-reload').onclick; $('#hst-reload').onclick=e=>{ _r(e); bahnData=null; bahnBuild(); bahnLoad(true); }; }
 
 idb.get('hst_v1_40km').then(fc=>{ if(fc&&!hstFc){ hstFc=fc; hstInfo(); if(hstOn) hstRender(true); } }).catch(()=>{}); // Einschalten beim Start: siehe Startblock am Ende
 const _legendHtml2=legendHtml;
