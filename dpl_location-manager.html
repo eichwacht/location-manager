@@ -1455,52 +1455,71 @@ async function adrLoadTile(t,allowNet=true){
   }
   if(d) adrCache.set(k,d); return d||{streets:[],hn:[]};
 }
-// Canvas-Ebene
-const AdrCanvas=L.Layer.extend({
-  onAdd(m){ this._c=L.DomUtil.create('canvas','adr-canvas leaflet-zoom-hide'); m.getPanes().overlayPane.appendChild(this._c); this._ctx=this._c.getContext('2d'); m.on('move zoom viewreset resize',this._draw,this); this._draw(); },
-  onRemove(m){ m.off('move zoom viewreset resize',this._draw,this); L.DomUtil.remove(this._c); },
-  _draw(){ if(this._raf) return; this._raf=requestAnimationFrame(()=>{ this._raf=null; this._paint(); }); },
-  _paint(){
-    const m=this._map, size=m.getSize(), dpr=window.devicePixelRatio||1, c=this._c, ctx=this._ctx;
-    const tl=m.containerPointToLayerPoint([0,0]); L.DomUtil.setPosition(c,tl);
-    if(c.width!==size.x*dpr||c.height!==size.y*dpr){ c.width=size.x*dpr; c.height=size.y*dpr; c.style.width=size.x+'px'; c.style.height=size.y+'px'; }
-    ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,size.x,size.y); this._hits=[];
-    const z=m.getZoom(); if(z<ADR_MINZOOM) return;
-    const b=m.getBounds(), tiles=tilesIn(b,14), data=tiles.map(t=>adrCache.get(adrKey(t))).filter(Boolean);
-    if(!data.length) return;
-    const P=ll=>m.latLngToContainerPoint(ll);
-    const taken=[]; const free=(x,y,w,h)=>{ for(const r of taken){ if(x<r[0]+r[2]&&x+w>r[0]&&y<r[1]+r[3]&&y+h>r[1]) return false; } taken.push([x,y,w,h]); return true; };
-    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.lineJoin='round';
-    // Hausnummern zuerst (kleiner, viele), damit Straßennamen sie überlagern dürfen
-    if(z>=HN_MINZOOM){
-      ctx.font='700 11px system-ui,sans-serif'; ctx.lineWidth=3; ctx.strokeStyle='#001a4d'; ctx.fillStyle='#9fd41f';
-      const pad=b.pad(0.05); const seen=new Set();
-      data.forEach(d=>d.hn.forEach(h=>{ if(seen.has(h.id)||!pad.contains([h.lat,h.lon])) return; seen.add(h.id); const p=P([h.lat,h.lon]); const w=ctx.measureText(h.n).width+4; if(!free(p.x-w/2,p.y-7,w,14)) return; ctx.strokeText(h.n,p.x,p.y); ctx.fillText(h.n,p.x,p.y); this._hits.push({x:p.x,y:p.y,w,h,d}); }));
-    }
-    // Straßennamen: je Name ein Label am Weg mit den meisten sichtbaren Punkten, entlang der Straße gedreht; ab Zoom 18 alle 400 px wiederholen
-    const best=new Map();
-    data.forEach(d=>d.streets.forEach(w=>{ const inside=w.g.filter(p=>b.contains(p)); if(!inside.length) return; const cur=best.get(w.n); if(!cur||inside.length>cur.inside.length) best.set(w.n,{w,inside}); }));
-    ctx.font='italic 600 13px system-ui,sans-serif'; ctx.lineWidth=4; ctx.strokeStyle='#001a4d'; ctx.fillStyle='#f2f2f2';
-    best.forEach(({w,inside},n)=>{
-      const pts=inside.map(P); const spots=[]; const mid=Math.floor(pts.length/2); spots.push(mid);
-      if(z>=18&&pts.length>6){ for(let i=1;i<pts.length-1;i+=1){ if(Math.abs(i-mid)>12&&pts[i].distanceTo(pts[mid])>400) spots.push(i); } }
-      spots.forEach(i=>{ const p=pts[i], a=pts[Math.max(0,i-1)], c=pts[Math.min(pts.length-1,i+1)]; let ang=Math.atan2(c.y-a.y,c.x-a.x); if(ang>Math.PI/2) ang-=Math.PI; if(ang<-Math.PI/2) ang+=Math.PI;
-        const tw=ctx.measureText(n).width+6; if(!free(p.x-tw/2,p.y-8,tw,16)) return;
-        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(ang); ctx.strokeText(n,0,0); ctx.fillText(n,0,0); ctx.restore(); });
-    });
-  }
+/* Straßennamen und Hausnummern als gekachelte Canvas-Ebene (je Kachel ein Bild).
+   Platzierung einmal je Zoomstufe in Weltpixeln: Beschriftungen stehen fest auf der Karte und springen beim Verschieben nicht.
+   Jede Beschriftung gehört zu der Zoom-14-Datenkachel, in der ihr Mittelpunkt liegt; Kollision über ein Raster; jede Bildkachel zeichnet alles, was sie berührt. */
+const ADR_ZELLE=128, ADR_RAND=220, ADR_HN_FONT='700 11px system-ui,sans-serif', ADR_STR_FONT='italic 600 13px system-ui,sans-serif';
+const adrPl=new Map(), adrBr=new Map(); let adrMess=null, adrBaldT=null;
+const adrZk=(cx,cy)=>cx*4194304+cy;
+function adrBreite(f,t){ const k=f+'|'+t; let w=adrBr.get(k); if(w==null){ if(!adrMess) adrMess=document.createElement('canvas').getContext('2d'); adrMess.font=f; w=adrMess.measureText(t).width; adrBr.set(k,w); } return w; }
+function adrWp(lat,lon,sk){ const r=lat*Math.PI/180; return [(lon+180)/360*sk, (1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*sk]; }
+function adrPlz(z){ let P=adrPl.get(z); if(!P){ P={done:new Map(),grid:new Map(),boxes:new Map(),ids:new Set(),names:new Map()}; adrPl.set(z,P); } return P; }
+function adrZellen(b,fn){ const x0=Math.floor(b[0]/ADR_ZELLE), x1=Math.floor(b[2]/ADR_ZELLE), y0=Math.floor(b[1]/ADR_ZELLE), y1=Math.floor(b[3]/ADR_ZELLE); for(let x=x0;x<=x1;x++) for(let y=y0;y<=y1;y++) fn(adrZk(x,y)); }
+function adrFrei(P,bx){ for(const b of bx){ let frei=true; adrZellen(b,k=>{ if(!frei) return; const a=P.boxes.get(k); if(a) for(const r of a){ if(b[0]<r[2]&&b[2]>r[0]&&b[1]<r[3]&&b[3]>r[1]){ frei=false; break; } } }); if(!frei) return false; } return true; }
+function adrBelegen(P,bx){ bx.forEach(b=>adrZellen(b,k=>{ let a=P.boxes.get(k); if(!a) P.boxes.set(k,a=[]); a.push(b); })); }
+function adrEintragen(P,it){ adrZellen(it.bb,k=>{ let a=P.grid.get(k); if(!a) P.grid.set(k,a=[]); a.push(it); }); }
+function adrSetzen(P,z,cx,cy,d){ // Beschriftungen einer Zoom-14-Datenkachel auf Zoomstufe z platzieren
+  const sk=256*2**z, f=256*2**(z-14), X0=cx*f, X1=X0+f, Y0=cy*f, Y1=Y0+f, drin=(x,y)=>x>=X0&&x<X1&&y>=Y0&&y<Y1;
+  if(z>=HN_MINZOOM) d.hn.forEach(h=>{ const [x,y]=adrWp(h.lat,h.lon,sk); if(!drin(x,y)||P.ids.has(h.id)) return; P.ids.add(h.id);
+    const w=adrBreite(ADR_HN_FONT,h.n)+4, bx=[[x-w/2,y-7,x+w/2,y+7]]; if(!adrFrei(P,bx)) return; adrBelegen(P,bx);
+    adrEintragen(P,{t:1,x,y,w,n:h.n,h,d,bb:[x-w/2-4,y-11,x+w/2+4,y+11]}); });
+  const D=z>=18?400:700;
+  const wege=d.streets.map(w=>{ const pts=w.g.map(q=>adrWp(q[0],q[1],sk)), cum=[0]; for(let i=1;i<pts.length;i++) cum.push(cum[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1])); return {w,pts,cum,L:cum[cum.length-1]}; }).sort((a,b)=>b.L-a.L);
+  const bei=(o,a)=>{ a=Math.max(0,Math.min(o.L,a)); let i=1; while(i<o.cum.length-1&&o.cum[i]<a) i++; const s0=o.cum[i-1], s1=o.cum[i]||s0, u=s1>s0?(a-s0)/(s1-s0):0, p=o.pts[i-1], q=o.pts[i]||p; return [p[0]+(q[0]-p[0])*u, p[1]+(q[1]-p[1])*u]; };
+  wege.forEach(o=>{ if(o.pts.length<2) return; const n=o.w.n, tw=adrBreite(ADR_STR_FONT,n)+6; const st=[]; if(o.L<=D) st.push(o.L/2); else for(let a=D/2;a<o.L;a+=D) st.push(a);
+    st.forEach(a=>{ const [x,y]=bei(o,a); if(!drin(x,y)) return;
+      const nb=P.names.get(n); if(nb&&nb.some(q=>Math.hypot(q[0]-x,q[1]-y)<D*0.8)) return;
+      const p1=bei(o,a-tw/2), p2=bei(o,a+tw/2); let ang=Math.atan2(p2[1]-p1[1],p2[0]-p1[0]); if(!isFinite(ang)) ang=0; if(ang>Math.PI/2) ang-=Math.PI; if(ang<-Math.PI/2) ang+=Math.PI;
+      const co=Math.cos(ang), si=Math.sin(ang), k=Math.max(1,Math.ceil(tw/14)), bx=[]; for(let i=0;i<k;i++){ const t=(i+0.5)/k*tw-tw/2, mx=x+co*t, my=y+si*t; bx.push([mx-8,my-8,mx+8,my+8]); }
+      if(!adrFrei(P,bx)) return; adrBelegen(P,bx); if(nb) nb.push([x,y]); else P.names.set(n,[[x,y]]);
+      const ex=Math.abs(co)*(tw/2+3)+Math.abs(si)*10, ey=Math.abs(si)*(tw/2+3)+Math.abs(co)*10;
+      adrEintragen(P,{t:2,x,y,ang,n,bb:[x-ex,y-ey,x+ex,y+ey]}); }); });
+}
+function adrSicher(z,cx0,cx1,cy0,cy1){ let P=adrPlz(z);
+  for(let cx=cx0;cx<=cx1;cx++) for(let cy=cy0;cy<=cy1;cy++){ const k=adrKey({z:14,x:cx,y:cy}), d=adrCache.get(k); if(!d) continue; const alt=P.done.get(k); if(alt===d) continue;
+    if(alt){ adrPl.clear(); adrBald(); return adrSicher(z,cx0,cx1,cy0,cy1); } // Datenkachel ersetzt: Platzierung neu aufbauen
+    P.done.set(k,d); adrSetzen(P,z,cx,cy,d); }
+  return P; }
+const AdrGrid=L.GridLayer.extend({
+  createTile(c){ const t=document.createElement('canvas'); this._malen(t,c); return t; },
+  _malen(t,c){ const sz=this.getTileSize(), dpr=KDPR(); t.width=sz.x*dpr; t.height=sz.y*dpr; if(c.z<ADR_MINZOOM) return;
+    const f=256*2**(c.z-14), X0=c.x*sz.x, Y0=c.y*sz.y, X1=X0+sz.x, Y1=Y0+sz.y;
+    const P=adrSicher(c.z,Math.floor((X0-ADR_RAND)/f),Math.floor((X1+ADR_RAND)/f),Math.floor((Y0-ADR_RAND)/f),Math.floor((Y1+ADR_RAND)/f));
+    const set=new Set(); adrZellen([X0,Y0,X1,Y1],k=>{ const a=P.grid.get(k); if(a) a.forEach(it=>{ const b=it.bb; if(b[0]<X1&&b[2]>X0&&b[1]<Y1&&b[3]>Y0) set.add(it); }); });
+    if(!set.size) return; const g=t.getContext('2d'); g.scale(dpr,dpr); g.translate(-X0,-Y0); g.textAlign='center'; g.textBaseline='middle'; g.lineJoin='round';
+    const its=[...set]; // Hausnummern zuerst, Straßennamen darüber
+    g.font=ADR_HN_FONT; g.lineWidth=3; g.strokeStyle='#001a4d'; g.fillStyle='#9fd41f';
+    its.forEach(it=>{ if(it.t!==1) return; g.strokeText(it.n,it.x,it.y); g.fillText(it.n,it.x,it.y); });
+    g.font=ADR_STR_FONT; g.lineWidth=4; g.strokeStyle='#001a4d'; g.fillStyle='#f2f2f2';
+    its.forEach(it=>{ if(it.t!==2) return; g.save(); g.translate(it.x,it.y); g.rotate(it.ang); g.strokeText(it.n,0,0); g.fillText(it.n,0,0); g.restore(); }); },
+  neuMalen(){ for(const k in this._tiles){ const o=this._tiles[k]; this._malen(o.el,o.coords); } }
 });
-const adrCanvas=new AdrCanvas();
-$('#b-adr').onclick=()=>{ adrOn=!adrOn; $('#b-adr').classList.toggle('on',adrOn); if(adrOn){ adrCanvas.addTo(map); if(map.getZoom()<ADR_MINZOOM) toast('Näher heranzoomen: Straßennamen ab Zoom 17, Hausnummern ab 18'); adrRender(); } else { map.removeLayer(adrCanvas); } };
+map.createPane('adrPane'); map.getPane('adrPane').style.zIndex=410; map.getPane('adrPane').style.pointerEvents='none';
+const adrGrid=new AdrGrid({pane:'adrPane',tileSize:256,minZoom:ADR_MINZOOM,updateWhenZooming:false,keepBuffer:2});
+function adrBald(){ if(adrBaldT) return; adrBaldT=setTimeout(()=>{ adrBaldT=null; if(map.hasLayer(adrGrid)) adrGrid.neuMalen(); },30); } // neue Daten: vorhandene Kacheln an Ort und Stelle neu zeichnen, ohne Flackern
+function adrTreffer(x,y){ const P=adrPl.get(map.getZoom()); if(!P) return null; const w=map.containerPointToLayerPoint([x,y]).add(map.getPixelOrigin());
+  const a=P.grid.get(adrZk(Math.floor(w.x/ADR_ZELLE),Math.floor(w.y/ADR_ZELLE))); if(!a) return null; let hit=null, bd=1e9;
+  a.forEach(q=>{ if(q.t!==1) return; const dx=w.x-q.x, dy=w.y-q.y; if(Math.abs(dx)<=q.w/2+4&&Math.abs(dy)<=11){ const dd=Math.hypot(dx,dy); if(dd<bd){ bd=dd; hit=q; } } }); return hit; }
+$('#b-adr').onclick=()=>{ adrOn=!adrOn; $('#b-adr').classList.toggle('on',adrOn); if(adrOn){ adrGrid.addTo(map); if(map.getZoom()<ADR_MINZOOM) toast('Näher heranzoomen: Straßennamen ab Zoom 17, Hausnummern ab 18'); adrRender(); } else { map.removeLayer(adrGrid); } };
 async function adrRender(){ // fehlende Kacheln laden (erst Speicher, dann Netz), danach zeichnen
   if(!adrOn||map.getZoom()<ADR_MINZOOM) return;
   if(adrBusy){ adrAgain=true; return; } adrBusy=true; $('#b-adr').classList.add('busy');
   try{
     const tiles=tilesIn(map.getBounds(),14).filter(t=>!adrCache.has(adrKey(t)));
-    if(tiles.length){ await Promise.all(tiles.map(t=>adrLoadTile(t,false))); adrCanvas._draw();
+    if(tiles.length){ await Promise.all(tiles.map(t=>adrLoadTile(t,false))); adrBald();
       const missing=tiles.filter(t=>!adrCache.has(adrKey(t)));
-      if(missing.length){ if(!bulk.running) { for(const t of missing){ await adrLoadTile(t,true); adrCanvas._draw(); } } else toast('Adressdaten werden gerade geladen'); } }
-    adrCanvas._draw();
+      if(missing.length){ if(!bulk.running) { for(const t of missing){ await adrLoadTile(t,true); adrBald(); } } else toast('Adressdaten werden gerade geladen'); } }
+    adrBald();
   }catch(e){ console.error('Adressen',e); toast('Adressen konnten nicht geladen werden: '+(e.message||e)); }
   adrBusy=false; $('#b-adr').classList.remove('busy');
   if(adrAgain){ adrAgain=false; adrRender(); }
@@ -1531,13 +1550,12 @@ function gpClose(){ $('#gpanel').classList.remove('open'); $('#gp-frame').src='a
 $('#gp-close').onclick=gpClose;
 (function(){ const box=$('#map'); let down=null;
   box.addEventListener('pointerdown',e=>{ down={x:e.clientX,y:e.clientY}; },true);
-  box.addEventListener('click',e=>{ if(neuAktiv()||!adrOn||map.getZoom()<HN_MINZOOM||!adrCanvas._hits||!adrCanvas._hits.length) return;
+  box.addEventListener('click',e=>{ if(neuAktiv()||!adrOn||map.getZoom()<HN_MINZOOM) return;
     if(down&&Math.hypot(e.clientX-down.x,e.clientY-down.y)>6) return; if(window.RT&&RT.on) return; if(map.pm&&(map.pm.globalDrawModeEnabled()||(map.pm.globalEditModeEnabled&&map.pm.globalEditModeEnabled()))) return;
-    const r=box.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top; let hit=null, bd=1e9;
-    adrCanvas._hits.forEach(q=>{ if(Math.abs(x-q.x)<=q.w/2+4&&Math.abs(y-q.y)<=11){ const dd=Math.hypot(x-q.x,y-q.y); if(dd<bd){ bd=dd; hit=q; } } });
+    const r=box.getBoundingClientRect(), hit=adrTreffer(e.clientX-r.left,e.clientY-r.top);
     if(!hit) return; e.stopPropagation(); e.preventDefault(); gpOpen(hit); },true);
-  box.addEventListener('mousemove',e=>{ if(!adrOn||map.getZoom()<HN_MINZOOM||!adrCanvas._hits){ if(box.style.cursor) box.style.cursor=''; return; } const r=box.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
-    const on=adrCanvas._hits.some(q=>Math.abs(x-q.x)<=q.w/2+4&&Math.abs(y-q.y)<=11); const c=on?'pointer':''; if(box.style.cursor!==c) box.style.cursor=c; }); })();
+  box.addEventListener('mousemove',e=>{ if(!adrOn||map.getZoom()<HN_MINZOOM){ if(box.style.cursor) box.style.cursor=''; return; } const r=box.getBoundingClientRect();
+    const c=adrTreffer(e.clientX-r.left,e.clientY-r.top)?'pointer':''; if(box.style.cursor!==c) box.style.cursor=c; }); })();
 
 /* Zoom 20: Klick auf eine Straße öffnet Google Street View genau dort im Location Manager (Maps Embed API, kostenlos) */
 const SV_KLICK_ZOOM=20, SV_STRASSE_M=9;
@@ -1592,16 +1610,16 @@ async function bulkRun(refresh=false){
       let d; try{ d=parseAdr(await overpassQuery(`[out:json][timeout:180];way["highway"]["name"]${bb};out geom;nwr["addr:housenumber"]${bb};out center;`,bulk.ctrl.signal)); }
       catch(err){ clearInterval(tick); if(bulk.ctrl.signal.aborted) throw err; m.fehler=(m.fehler||0)+1; $('#a-status').textContent='Kachel übersprungen ('+(err.message||err)+'), weiter …'; await new Promise(r=>setTimeout(r,3000)); i++; continue; }
       clearInterval(tick);
-      const parts=splitTo14(d); const pairs=[...parts.entries()];
-      // Zoom-14-Kacheln ohne Daten ebenfalls als leer ablegen, damit später kein Netz nötig ist
+      const parts=splitTo14(d);
+      // nur die Zoom-14-Kacheln dieser großen Kachel ablegen: Wege ragen in Nachbarkacheln, deren eigene Abfrage sie vollständig enthält (vorher überschrieben Teildaten ohne Hausnummern die Nachbarn); leere ebenfalls, damit später kein Netz nötig ist
       const [S,W,N,E]=tileBounds(t); const sub=tilesIn(L.latLngBounds([S,W],[N,E]).pad(-0.001),14);
-      sub.forEach(st=>{ const k=adrKey(st); if(!parts.has(k)) pairs.push([k,{streets:[],hn:[]}]); });
+      const pairs=sub.map(st=>{ const k=adrKey(st); return [k,parts.get(k)||{streets:[],hn:[]}]; });
       pairs.forEach(([k,v])=>adrCache.set(k,v));
       m.streets+=d.streets.length; m.hn+=d.hn.length; m.done[adrKey(t)]=new Date().toISOString();
       await idb.setMany([...pairs,['adr_bulk_v2',m]]);
       i++; const per=(Date.now()-t0)/i, rest=Math.round(per*(todo.length-i)/60000);
       $('#a-status').textContent=`${i} von ${todo.length} Kacheln · noch etwa ${rest} min`; $('#a-bar i').style.width=(100*i/todo.length).toFixed(1)+'%';
-      await bulkInfo(); adrCanvas._draw();
+      await bulkInfo(); adrBald();
       await new Promise(r=>setTimeout(r,800));
     }
     if(Object.keys(m.done).length>=all.length){ m.finished=new Date().toISOString(); await idb.set('adr_bulk_v2',m); $('#a-status').textContent='Fertig. Adressen erscheinen jetzt sofort.'; toast('Adressdaten vollständig'); }
