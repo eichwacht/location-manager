@@ -1386,21 +1386,25 @@ const plzSchild=()=>{ const z=map.getZoom(); document.body.classList.toggle('plz
 map.on('zoomend',plzSchild); plzSchild();
 
 /* ---------- Ortsnamen ---------- */
-const ortLayer=L.layerGroup();
+let ortLayer=L.layerGroup(); // wird unten durch die Kachel-Ebene ersetzt
 let namenOn=false, ortPts=null;
 $('#b-namen').onclick=()=>{ namenOn=!namenOn; $('#b-namen').classList.toggle('on',namenOn); if(namenOn){ ortLayer.addTo(map); ortRender(); } else map.removeLayer(ortLayer); };
 const ORT_STUFE={city:1,town:1,village:2,suburb:2,quarter:3,neighbourhood:3,hamlet:3};
 const ORT_MINZOOM={1:10,2:12,3:13}; const ORT_GROSS_EW=20000; // Zoom 9: nur Großstadt/Mittelstadt (city oder ab 20.000 Einwohner), Zoom 10: alle Städte
 const ortMinZoom=o=>o.s===1&&o.g?9:ORT_MINZOOM[o.s];
-const ortShown=new Map(); let ortTimer=null;
-function ortRender(){
-  if(!namenOn||!ortPts) return;
-  const z=map.getZoom(), b=map.getBounds().pad(0.2), keep=new Set();
-  ortPts.forEach((o,i)=>{ if(z<ortMinZoom(o)||!b.contains([o.lat,o.lon])) return; keep.add(i);
-    if(!ortShown.has(i)){ const m=L.marker([o.lat,o.lon],{opacity:0,interactive:false,keyboard:false}).bindTooltip(o.n,{permanent:true,direction:'center',className:'ort-label ort-'+o.s}); ortShown.set(i,m); m.addTo(ortLayer); } });
-  ortShown.forEach((m,i)=>{ if(!keep.has(i)){ ortLayer.removeLayer(m); ortShown.delete(i); } });
-}
-map.on('moveend',()=>{ clearTimeout(ortTimer); ortTimer=setTimeout(ortRender,80); });
+/* Ortsnamen als gekachelte Canvas-Ebene (je Kachel ein Bild); Namen über Kachelgrenzen werden in jeder berührten Kachel gezeichnet */
+let ortIdx=null, ortGezeichnet=null; const ORT_ZELLE=0.05;
+const ORT_FONT={1:'700 15px system-ui,sans-serif',2:'700 13px system-ui,sans-serif',3:'600 11px system-ui,sans-serif'};
+function ortIndex(){ if(ortIdx&&ortIdx.p===ortPts) return ortIdx.m; const m=new Map(); (ortPts||[]).forEach(o=>{ const k=Math.floor(o.lat/ORT_ZELLE)+'_'+Math.floor(o.lon/ORT_ZELLE); let a=m.get(k); if(!a){ a=[]; m.set(k,a); } a.push(o); }); ortIdx={p:ortPts,m}; return m; }
+const OrtGrid=L.GridLayer.extend({ createTile(c){ const t=document.createElement('canvas'), sz=this.getTileSize(), dpr=KDPR(); t.width=sz.x*dpr; t.height=sz.y*dpr; if(!ortPts) return t;
+  const g=t.getContext('2d'); g.scale(dpr,dpr); const z=c.z, ox=c.x*sz.x, oy=c.y*sz.y; const nw=L.CRS.EPSG3857.pointToLatLng(L.point(ox-160,oy-14),z), se=L.CRS.EPSG3857.pointToLatLng(L.point(ox+sz.x+160,oy+sz.y+14),z);
+  const m=ortIndex(), liste=[]; for(let a=Math.floor(se.lat/ORT_ZELLE);a<=Math.floor(nw.lat/ORT_ZELLE);a++) for(let b=Math.floor(nw.lng/ORT_ZELLE);b<=Math.floor(se.lng/ORT_ZELLE);b++){ const cc=m.get(a+'_'+b); if(cc) cc.forEach(o=>{ if(o.lat>=se.lat&&o.lat<=nw.lat&&o.lon>=nw.lng&&o.lon<=se.lng&&z>=ortMinZoom(o)) liste.push(o); }); }
+  liste.sort((a,b)=>b.s-a.s); g.textAlign='center'; g.textBaseline='middle'; g.lineJoin='round';
+  liste.forEach(o=>{ const p=L.CRS.EPSG3857.latLngToPoint(L.latLng(o.lat,o.lon),z), x=p.x-ox, y=p.y-oy; g.font=ORT_FONT[o.s]||ORT_FONT[3]; const w=g.measureText(o.n).width; if(x+w/2+4<0||x-w/2-4>sz.x||y+12<0||y-12>sz.y) return;
+    g.lineWidth=4; g.strokeStyle='rgba(0,26,77,.95)'; g.strokeText(o.n,x,y); g.fillStyle='#f2f2f2'; g.fillText(o.n,x,y); }); return t; } });
+map.createPane('ortPane'); map.getPane('ortPane').style.zIndex=460; map.getPane('ortPane').style.pointerEvents='none';
+ortLayer=new OrtGrid({pane:'ortPane',tileSize:256,updateWhenZooming:false,keepBuffer:2});
+function ortRender(){ if(!ortPts||ortGezeichnet===ortPts) return; ortGezeichnet=ortPts; ortIdx=null; ortLayer.redraw(); }
 async function orteLoad(){
   try{
     let pts=null; try{ pts=await idb.get('orte_v2_40km'); }catch(e){}
