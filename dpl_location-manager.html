@@ -724,7 +724,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .w-close{width:36px;height:36px;border:2px solid var(--hell);border-radius:10px;background:var(--navy);color:var(--gruen);font-size:16px;font-weight:700;display:grid;place-items:center;flex:none;padding:0}
   .dot{width:12px;height:12px;border-radius:50%;display:inline-block;flex:none}
   /* Kachelreihe */
-  .bottombar{position:absolute;left:auto;right:12px;bottom:calc(12px + var(--sa-b));transform:none;flex-direction:column;z-index:950;display:flex;gap:8px;align-items:flex-end}
+  .bottombar{position:absolute;left:12px;right:auto;bottom:calc(12px + var(--sa-b));transform:none;flex-direction:column;z-index:950;display:flex;gap:8px;align-items:flex-start} /* Dashboard unten links in der Ecke */
   .ltile{position:relative;width:48px;height:48px;padding:0;border:2px solid var(--hell);border-radius:10px;overflow:hidden;background:var(--navy);box-shadow:none;display:flex;align-items:center;justify-content:center;color:var(--gruen);flex:none}
   .ltile svg{width:22px;height:22px;fill:none;stroke:var(--gruen);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
   .ltile.on{background:var(--gruen);border-color:var(--navy)}
@@ -744,8 +744,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #radial .rad.oben span{bottom:54px;left:50%;transform:translateX(-50%)} #radial .rad.unten span{top:54px;left:50%;transform:translateX(-50%)} #radial .rad.mitte span{top:50px;left:50%;transform:translateX(-50%);font-size:10px} #radial .rad-mitte{display:none}
   #radial .rad-mitte{position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;background:#9fd41f;border:2px solid #001a4d}
   #ebleiste{display:none} /* Ebenen-Schalter seit v127 nur im Schnellmenü; die Knöpfe bleiben unsichtbar als Schaltzentrale */
-  #ovbox{position:absolute;right:12px;bottom:calc(68px + var(--sa-b));z-index:950} /* Zahnrad über dem Dashboard */
-  @media (max-width:700px){ #ovbox{bottom:calc(18px + var(--sa-b) + min(40px,calc((100vw - 46px) / 11)))} }
+  #ovbox{position:absolute;right:12px;bottom:calc(12px + var(--sa-b));z-index:950} /* Zahnrad unten rechts in der Ecke */
   #rtpanel{display:none;position:absolute;left:50%;top:12px;transform:translateX(-50%);width:min(560px,calc(100% - 24px));max-height:46%;overflow:auto;background:var(--navy);border:2px solid var(--hell);border-radius:12px;z-index:945;padding:10px 12px;color:var(--hell);-webkit-overflow-scrolling:touch}
   #rtpanel input{background:var(--hell);color:var(--navy)}
   #gpanel{display:none;position:absolute;right:12px;top:12px;bottom:calc(64px + var(--sa-b));width:min(460px,calc(100% - 24px));background:var(--navy);border:2px solid var(--hell);border-radius:12px;z-index:946;padding:10px 12px;color:var(--hell);flex-direction:column}
@@ -932,7 +931,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <button class="ltile" id="t-b2c" aria-label="B2C-Kunden an oder aus"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.6 2.7-6 6-6s6 2.4 6 6"/><path d="M16 4.5a3 3 0 0 1 0 6M18 14c2 .7 3 2.8 3 6"/></svg></button>
       </div>
       <div id="legend"></div>
-      <!-- Einstellungen über dem Dashboard -->
+      <!-- Einstellungen unten rechts in der Ecke -->
       <div id="ovbox">
           <button class="ltile" id="ov-main" aria-label="Einstellungen und Ebenen"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
           <div id="ovmenu" class="flymenu">
