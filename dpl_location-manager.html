@@ -937,7 +937,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
             </div>
           </div>
         </div>
-        <button class="ltile" id="b-sv" aria-label="Google Street View an der Kartenmitte"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><path d="M8 22v-8l-2-5h12l-2 5v8M9 9v13M15 9v13"/></svg></button>
+        <button class="ltile" id="b-sv" style="display:none" aria-label="Google Street View an der Kartenmitte"><!-- Kachel ausgeblendet seit v75: Street View per Klick auf die Straße bei Zoom 20 --><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><path d="M8 22v-8l-2-5h12l-2 5v8M9 9v13M15 9v13"/></svg></button>
         <div id="ovbox">
           <button class="ltile" id="ov-main" aria-label="Einstellungen und Ebenen"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
           <div id="ovmenu" class="flymenu">
@@ -2068,7 +2068,7 @@ function legendHtml(){
     h+='<div class="s" style="opacity:.8">Hausnummern ohne Planfläche gelten als dezentral, im Umkreis von 800 m um Biogasanlagen als unklar. Kommunen mit Plan: '+esc(kom.join(', '))+'. Sperrzonen sind ausgespart. Strategische Planung ohne Rechtswirkung, Quellen im Fenster Einstellungen und Daten.</div>'; }
   if(wpIdx>=0){ h+='<h4>Wärmeplan Bremen: '+WP_STUFEN[wpIdx].t+' (Zoom 10 bis 13)</h4><img src="'+$(wpIdx===0?'#wp-leg1':'#wp-leg2').src+'" alt="Legende Wärmeplan Bremen"><div class="s">Quelle: GeoInformation Bremen, Wärmeplan 2025, nur Stadtgebiet Bremen, ohne Rechtswirkung</div>'; }
   h+='<h4>Punkte</h4>'+ci('background:#7a9a1a;border:2px solid #001a4d','Suchtreffer (mit Adresse beim Drüberfahren)')+ci('background:#7a9a1a;border:2px solid #001a4d','Mein Standort, wenn „Mein Standort“ im Zahnrad-Menü an ist');
-  h+='<h4>Bedienung</h4><div class="s">Street View: Figur aus der Kachel auf eine blaue Linie ziehen und loslassen, ohne blaue Linie springt sie zurück. Bei Zoom 20: Straße anklicken öffnet Street View genau dort, mit Blick auf das nächste Haus. Zoomstufe steht unten rechts.</div>';
+  h+='<h4>Bedienung</h4><div class="s">Street View: bei Zoom 20 eine Straße anklicken, Street View öffnet sich genau dort mit Blick auf das nächste Haus. Zoomstufe steht unten rechts.</div>';
   h+='<h4>Grundkarte</h4><div class="li"><span>'+({sat:'Satellit (Esri)',dop:'Amtliches Luftbild (LGLN, GeoInformation Bremen, Geobasis NRW)',topo:'Geländekarte (OpenTopoMap)'}[base])+'</span></div>';
   return h;
 }
