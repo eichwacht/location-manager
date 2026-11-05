@@ -915,7 +915,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <button class="ltile" id="b-search" aria-label="Adresse suchen"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></svg></button>
         <button class="ltile" data-view="dash" aria-label="Dashboard"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></button>
         <div id="ebbox">
-          <button class="ltile" id="eb-main" aria-label="Ebenen"><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 17.5l9 5 9-5"/></svg></button>
+          <button class="ltile" id="eb-main" aria-label="Alle Ebenen an oder aus"><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 17.5l9 5 9-5"/></svg></button>
           <div id="ebmenu" class="flymenu">
             <div class="col">
               <button class="lt" id="b-plz"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10M15 10v10"/></svg>PLZ-Gebiete</button>
@@ -1206,12 +1206,12 @@ function setBase(k){ base=k; Object.values(bases).forEach(l=>map.removeLayer(l))
 setBase(['sat','dop'].includes(localStorage.getItem('sle_lm_base'))?localStorage.getItem('sle_lm_base'):'sat');
 $$('#ovmenu [data-base]').forEach(b=>b.onclick=()=>{ setBase(b.dataset.base); menuOpen(false); });
 const layerMenu=$('#layermenu'), ovMenu=$('#ovmenu'), kMenu=$('#kmenu'), ebMenu=$('#ebmenu');
-function menuOpen(on,which='layer'){ if(!on){ layerMenu.classList.remove('open'); ovMenu.classList.remove('open'); kMenu.classList.remove('open'); ebMenu.classList.remove('open'); $('#eb-main').classList.remove('on'); $('#layer-main').classList.remove('on'); $('#ov-main').classList.remove('on');  return; }
+function menuOpen(on,which='layer'){ if(!on){ layerMenu.classList.remove('open'); ovMenu.classList.remove('open'); kMenu.classList.remove('open'); ebMenu.classList.remove('open'); $('#layer-main').classList.remove('on'); $('#ov-main').classList.remove('on');  return; }
   const m=which==='ov'?ovMenu:which==='k'?kMenu:which==='eb'?ebMenu:layerMenu, b=which==='ov'?$('#ov-main'):which==='k'?$('#k-main'):which==='eb'?$('#eb-main'):$('#layer-main'); menuOpen(false); m.classList.add('open'); b.classList.add('on'); }
 $('#k-main').onclick=()=>menuOpen(!kMenu.classList.contains('open'),'k');
 $('#layer-main').onclick=()=>menuOpen(!layerMenu.classList.contains('open'),'layer');
 $('#ov-main').onclick=()=>{ ovSeite(false); menuOpen(!ovMenu.classList.contains('open'),'ov'); };
-$('#eb-main').onclick=()=>menuOpen(!ebMenu.classList.contains('open'),'eb');
+
 $('#b-set').onclick=()=>{ menuOpen(false); show('set'); };
 function ovSeite(k){ k=k===true?'ebenen':(k||'haupt'); ['haupt','karte'].forEach(x=>$('#ov-'+x).style.display=x===k?'':'none'); }
 $('#b-karte').onclick=()=>ovSeite('karte'); $('#b-karte-zurueck').onclick=()=>ovSeite('haupt');
@@ -2698,8 +2698,14 @@ document.addEventListener('contextmenu',e=>{ const el=e.target; if(!(el instance
     e.preventDefault(); e.stopPropagation(); fensterAlleZu(); };
   document.addEventListener('click',mapKlick,true); document.addEventListener('contextmenu',mapKlick,true); }
 
+/* Ebenen-Kachel ist ein Schalter: an = alle sieben Ebenen (Wärmeplan Bremen auf Versorgungsgebiete), aus = keine */
+const EB_IDS=['b-plz','b-adr','b-namen','b-wpb','b-sperr','b-hst'];
+const ebAlleAn=()=>EB_IDS.every(id=>$('#'+id).classList.contains('on'))&&wpIdx>=0;
+function ebSchalten(an){ window.__lmStill=true; try{ EB_IDS.forEach(id=>{ const b=$('#'+id); if(b&&b.classList.contains('on')!==an){ try{ b.click(); }catch(e){ console.error('Ebene',id,e); } } }); wpSet(an?(wpIdx>=0?wpIdx:0):-1); }finally{ window.__lmStill=false; } $('#eb-main').classList.toggle('on',ebAlleAn()); }
+$('#eb-main').onclick=()=>{ menuOpen(false); ebSchalten(!ebAlleAn()); };
+
 /* Start: alle Kartenebenen im Ebenen-Menü sind beim Öffnen aktiv (Wärmeplan Bremen auf Versorgungsgebiete) */
-(function(){ window.__lmStill=true; try{ ['b-plz','b-adr','b-namen','b-wpb','b-sperr','b-hst'].forEach(id=>{ const b=$('#'+id); if(b&&!b.classList.contains('on')){ try{ b.click(); }catch(e){ console.error('Start',id,e); } } }); if(wpIdx<0) wpSet(0); }finally{ window.__lmStill=false; } })();
+(function(){ window.__lmStill=true; try{ ['b-plz','b-adr','b-namen','b-wpb','b-sperr','b-hst'].forEach(id=>{ const b=$('#'+id); if(b&&!b.classList.contains('on')){ try{ b.click(); }catch(e){ console.error('Start',id,e); } } }); if(wpIdx<0) wpSet(0); }finally{ window.__lmStill=false; } $('#eb-main').classList.toggle('on',ebAlleAn()); })();
 </script>
 </body>
 </html>
