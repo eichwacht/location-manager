@@ -715,7 +715,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   /* Fenster (Gebiet, Dashboard, Planung, Daten): ein Fenster, zentriert über der Karte */
   .win{display:none;position:absolute;left:50%;top:12px;transform:translateX(-50%);width:min(860px,calc(100% - 24px));height:calc(100% - 84px - var(--sa-b));background:var(--navy);border:2px solid var(--hell);border-radius:12px;z-index:940;overflow:hidden;flex-direction:column}
   .win.active{display:flex}
-  #panel{left:12px;transform:none;width:min(430px,calc(100% - 24px));height:auto;max-height:calc(100% - 84px - var(--sa-b))} #panel .body{min-height:0} #panel.neu #p-dot,#panel.neu #p-sub,#panel.neu #p-edit,#panel.neu #p-close{display:none} /* Gebietsfenster halb so breit, links, nur so hoch wie nötig */
+  #panel{left:12px;transform:none;width:min(430px,calc(100% - 24px));height:auto;max-height:calc(100% - 84px - var(--sa-b))} #panel .body{min-height:0} #panel.neu #p-dot,#panel.neu #p-sub,#panel.neu #p-edit,#panel.neu #p-close,#panel.neu #e-title{display:none} /* Gebietsfenster halb so breit, links, nur so hoch wie nötig */
   .win header{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex:none}
   .win header h2{margin:0;font-size:18px;flex:1;display:flex;align-items:center;gap:8px;min-width:0}
   .win header h2 .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
