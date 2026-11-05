@@ -944,10 +944,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <div id="ovbox">
           <button class="ltile" id="ov-main" aria-label="Einstellungen und Ebenen"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
           <div id="ovmenu" class="flymenu">
-            <div class="col">
+            <div class="col" id="ov-haupt">
               <button class="lt" id="b-set"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Einstellungen und Daten</button>
               <button class="lt" id="b-leg"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="6" height="6" rx="1"/><rect x="3" y="14" width="6" height="6" rx="1"/><path d="M12 7h9M12 17h9"/></svg>Legende</button>
               <button class="lt" id="b-locate"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg>Mein Standort (GPS)</button>
+              <button class="lt" id="b-ebenen"><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 17.5l9 5 9-5"/></svg>Ebenen<span style="margin-left:auto;padding-left:12px;font-size:16px">›</span></button>
+            </div>
+            <div class="col" id="ov-ebenen" style="display:none">
+              <button class="lt" id="b-ebenen-zurueck"><span style="margin-left:12px;font-size:16px">‹</span>Zurück</button>
               <div class="fm-sep">Ebenen</div>
               <button class="lt" id="b-plz"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10M15 10v10"/></svg>PLZ-Gebiete</button>
               <button class="lt" id="b-adr"><svg viewBox="0 0 24 24"><path d="M3 20V9l9-6 9 6v11"/><path d="M9 20v-6h6v6"/><path d="M3 20h18"/></svg>Adressen</button>
@@ -1200,8 +1204,10 @@ function menuOpen(on,which='layer'){ if(!on){ layerMenu.classList.remove('open')
   const m=which==='ov'?ovMenu:which==='k'?kMenu:layerMenu, b=which==='ov'?$('#ov-main'):which==='k'?$('#k-main'):$('#layer-main'); menuOpen(false); m.classList.add('open'); b.classList.add('on'); }
 $('#k-main').onclick=()=>menuOpen(!kMenu.classList.contains('open'),'k');
 $('#layer-main').onclick=()=>menuOpen(!layerMenu.classList.contains('open'),'layer');
-$('#ov-main').onclick=()=>menuOpen(!ovMenu.classList.contains('open'),'ov');
+$('#ov-main').onclick=()=>{ ovSeite(false); menuOpen(!ovMenu.classList.contains('open'),'ov'); };
 $('#b-set').onclick=()=>{ menuOpen(false); show('set'); };
+function ovSeite(e){ $('#ov-haupt').style.display=e?'none':''; $('#ov-ebenen').style.display=e?'':'none'; }
+$('#b-ebenen').onclick=()=>ovSeite(true); $('#b-ebenen-zurueck').onclick=()=>ovSeite(false);
 map.on('mousedown dragstart',()=>menuOpen(false));
 if(D.view) map.setView([D.view.lat,D.view.lng],D.view.zoom);
 map.on('moveend',()=>{ const c=map.getCenter(); D.view={lat:c.lat,lng:c.lng,zoom:map.getZoom()}; Store.save(); });
