@@ -744,7 +744,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #radial .rad-mitte{position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;background:#9fd41f;border:2px solid #001a4d}
   #ebleiste{position:absolute;right:12px;top:12px;bottom:calc(124px + var(--sa-b));z-index:900;display:flex;flex-direction:column;justify-content:center;justify-content:safe center;gap:8px;pointer-events:none} /* Ebenen-Leiste: mittig im freien Bereich rechts oberhalb des Dashboards */
   #ebleiste .ltile{pointer-events:auto}
-  @media (max-height:600px){ #ebleiste{gap:4px} #ebleiste .ltile{width:36px;height:36px} #ebleiste .ltile svg{width:18px;height:18px} }
+  @media (max-height:519px){ #ebleiste{gap:4px} } /* volle Kachelgröße wie Dashboard; erst wenn sieben Kacheln nicht mehr passen, enger und dann kleiner */
+  @media (max-height:495px){ #ebleiste .ltile{width:36px;height:36px} #ebleiste .ltile svg{width:18px;height:18px} }
   @media (max-width:700px){ #ebleiste{gap:6px;bottom:calc(24px + var(--sa-b) + 2 * min(40px, calc((100vw - 46px) / 11)))} }
   #ovbox{position:absolute;right:12px;bottom:calc(12px + var(--sa-b));z-index:950} /* Zahnrad in der Ecke, Zoomstufe links daneben */
   #rtpanel{display:none;position:absolute;left:50%;top:12px;transform:translateX(-50%);width:min(560px,calc(100% - 24px));max-height:46%;overflow:auto;background:var(--navy);border:2px solid var(--hell);border-radius:12px;z-index:945;padding:10px 12px;color:var(--hell);-webkit-overflow-scrolling:touch}
