@@ -929,7 +929,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
           </div>
         </div>
         <div id="kbox">
-          <button class="ltile" id="k-main" aria-label="Kunden: Leads, Potenzialanalysen, Festpreisgespräche, Abschlüsse"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.6 2.7-6 6-6s6 2.4 6 6"/><path d="M16 4.5a3 3 0 0 1 0 6M18 14c2 .7 3 2.8 3 6"/></svg></button>
+          <button class="ltile" id="k-main" aria-label="Kunden auf der Karte an oder aus"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.6 2.7-6 6-6s6 2.4 6 6"/><path d="M16 4.5a3 3 0 0 1 0 6M18 14c2 .7 3 2.8 3 6"/></svg></button>
           <div id="kmenu" class="flymenu">
             <div class="col">
               <button class="lt kunde" id="b-klead"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>Leads</button>
@@ -1206,7 +1206,7 @@ function setBase(k){ base=k; Object.values(bases).forEach(l=>map.removeLayer(l))
 setBase(['sat','dop'].includes(localStorage.getItem('sle_lm_base'))?localStorage.getItem('sle_lm_base'):'sat');
 $$('#ovmenu [data-base]').forEach(b=>b.onclick=()=>{ setBase(b.dataset.base); menuOpen(false); });
 const layerMenu=$('#layermenu'), ovMenu=$('#ovmenu'), kMenu=$('#kmenu'), ebMenu=$('#ebmenu');
-function menuOpen(on,which='layer'){ if(!on){ layerMenu.classList.remove('open'); ovMenu.classList.remove('open'); kMenu.classList.remove('open'); ebMenu.classList.remove('open'); $('#eb-main').classList.remove('on'); $('#layer-main').classList.remove('on'); $('#ov-main').classList.remove('on'); $('#k-main').classList.remove('on'); return; }
+function menuOpen(on,which='layer'){ if(!on){ layerMenu.classList.remove('open'); ovMenu.classList.remove('open'); kMenu.classList.remove('open'); ebMenu.classList.remove('open'); $('#eb-main').classList.remove('on'); $('#layer-main').classList.remove('on'); $('#ov-main').classList.remove('on');  return; }
   const m=which==='ov'?ovMenu:which==='k'?kMenu:which==='eb'?ebMenu:layerMenu, b=which==='ov'?$('#ov-main'):which==='k'?$('#k-main'):which==='eb'?$('#eb-main'):$('#layer-main'); menuOpen(false); m.classList.add('open'); b.classList.add('on'); }
 $('#k-main').onclick=()=>menuOpen(!kMenu.classList.contains('open'),'k');
 $('#layer-main').onclick=()=>menuOpen(!layerMenu.classList.contains('open'),'layer');
@@ -2317,8 +2317,10 @@ function klRender(){ Object.values(KL).forEach(x=>x.g.clearLayers());
   D.leads.forEach(l=>{ if(l.lat==null) return; const st=leadStatus(l); KL.lead.g.addLayer(klMarker(l,KFARBE[st],7,false));
     if(hasEv(l,'CAS')||hasEv(l,'CHC')) KL.chc.g.addLayer(klMarker(l,'#E87373',11,true)); if(hasEv(l,'CSA')||hasEv(l,'CSC')) KL.csc.g.addLayer(klMarker(l,'#E24C4C',15,true));
     if(hasEv(l,'CCW')&&!hasEv(l,'CCR')){ const m=L.circleMarker([l.lat,l.lon],{renderer:kR,pane:'kundenPane',radius:9,color:'#ffffff',weight:3,fillColor:'#D50000',fillOpacity:1}); m.bindTooltip(`${esc(leadKey(l))} · Abschluss`,{className:'ttip',direction:'top'}); m.on('click',()=>leadOpen(l.id)); KL.ccw.g.addLayer(m); } });
-  Object.entries(KL).forEach(([k,x])=>{ const b=$('#b-k'+k); if(b) b.classList.toggle('on',!!klOn[k]); if(klOn[k]) x.g.addTo(map); else map.removeLayer(x.g); }); $('#k-main').classList.toggle('aktiv',Object.values(klOn).some(Boolean)); }
+  Object.entries(KL).forEach(([k,x])=>{ const b=$('#b-k'+k); if(b) b.classList.toggle('on',!!klOn[k]); if(klOn[k]) x.g.addTo(map); else map.removeLayer(x.g); }); $('#k-main').classList.toggle('on',Object.keys(KL).every(k=>klOn[k])); }
 Object.keys(KL).forEach(k=>{ const b=$('#b-k'+k); if(b) b.onclick=()=>{ klOn[k]=!klOn[k]; try{ localStorage.setItem('sle_lm_kl',JSON.stringify(klOn)); }catch(e){} klRender(); if(klOn[k]&&!D.leads.some(l=>l.lat!=null)) toast('Noch keine Kunden mit Adresse auf der Karte'); }; });
+// Kunden-Kachel ist ein Schalter: an = alle vier Kundenebenen, aus = keine (kein Einzelmenü mehr)
+$('#k-main').onclick=()=>{ menuOpen(false); const an=!Object.keys(KL).every(k=>klOn[k]); Object.keys(KL).forEach(k=>klOn[k]=an); try{ localStorage.setItem('sle_lm_kl',JSON.stringify(klOn)); }catch(e){} klRender(); if(an&&!D.leads.some(l=>l.lat!=null)) toast('Noch keine Kunden mit Adresse auf der Karte'); };
 const _legendHtml=legendHtml;
 legendHtml=function(){ return _legendHtml(); }; // Kunden stehen seit v72 in der Grundlegende
 
