@@ -733,11 +733,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #layerbox,#kbox,#ebbox{position:relative}
   .loc-adr{background:none;border:0} .loc-adr span{display:inline-block;text-align:center;transform:translate(-50%,-50%);font-weight:800;font-size:15px;color:#f2f2f2;text-shadow:0 0 3px #001a4d,0 0 3px #001a4d,0 0 6px #001a4d;white-space:nowrap;pointer-events:none} .loc-adr .ln{display:none;font-size:14px;font-weight:800} body.loc-namen .loc-adr .ln{display:block}
   #radial{position:fixed;left:0;top:0;width:0;height:0;z-index:1200;display:none} #radial.open{display:block}
-  #radial{pointer-events:none} #radial .rad{pointer-events:auto;position:absolute;left:calc(var(--x) * 64px - 24px);top:calc(var(--y) * 64px - 24px);width:48px;height:48px;overflow:visible;transform:scale(.6);opacity:0;transition:transform .12s ease-out,opacity .12s ease-out}
+  #radial{pointer-events:none} #radial .rad{pointer-events:auto;position:absolute;left:calc((var(--x) - 1) * 24px);top:calc((var(--y) - 1) * 24px);width:48px;height:48px;overflow:visible;transform:scale(.6);opacity:0;transition:transform .12s ease-out,opacity .12s ease-out}
   #radial.open .rad{transform:scale(1);opacity:1}
   #radial .rad svg{width:24px;height:24px}
   #radial .rad span{position:absolute;white-space:nowrap;font-size:11px;font-weight:700;color:#f2f2f2;text-shadow:0 0 3px #001a4d,0 0 3px #001a4d,0 0 6px #001a4d;pointer-events:none}
   #radial .rad span{display:none !important} /* Schnellmenü ohne Beschriftung */
+  #radial .rad.mitte{left:-18px;top:-18px;width:36px;height:36px;border-radius:50%;z-index:2} #radial .rad.mitte svg{width:20px;height:20px} /* Ecken berühren sich an der Maus, Neue Location als runder Knopf darauf */
   #radial .rad.oben span{bottom:54px;left:50%;transform:translateX(-50%)} #radial .rad.unten span{top:54px;left:50%;transform:translateX(-50%)} #radial .rad.mitte span{top:50px;left:50%;transform:translateX(-50%);font-size:10px} #radial .rad-mitte{display:none}
   #radial .rad-mitte{position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;background:#9fd41f;border:2px solid #001a4d}
   #ovbox{position:absolute;right:12px;bottom:calc(12px + var(--sa-b));z-index:950} /* Zahnrad in der Ecke, Zoomstufe links daneben */
