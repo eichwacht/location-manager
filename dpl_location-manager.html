@@ -742,12 +742,20 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #radial .rad.mitte{left:-18px;top:-18px;width:36px;height:36px;border-radius:50%;z-index:2} #radial .rad.mitte svg{width:20px;height:20px} /* Ecken berühren sich an der Maus, Neue Location als runder Knopf darauf */
   #radial .rad.oben span{bottom:54px;left:50%;transform:translateX(-50%)} #radial .rad.unten span{top:54px;left:50%;transform:translateX(-50%)} #radial .rad.mitte span{top:50px;left:50%;transform:translateX(-50%);font-size:10px} #radial .rad-mitte{display:none}
   #radial .rad-mitte{position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;background:#9fd41f;border:2px solid #001a4d}
-  #ebleiste{position:absolute;right:12px;top:12px;bottom:calc(124px + var(--sa-b));z-index:900;display:flex;flex-direction:column;justify-content:center;justify-content:safe center;gap:8px;pointer-events:none} /* Ebenen-Leiste: mittig im freien Bereich rechts oberhalb des Dashboards */
+  #ebleiste{position:absolute;right:12px;top:12px;bottom:calc(158px + var(--sa-b));z-index:900;display:flex;flex-direction:column;justify-content:flex-end;justify-content:safe flex-end;gap:8px;pointer-events:none} /* Ebenen-Leiste: klappt über dem Zahnrad nach oben aus */
   #ebleiste .ltile{pointer-events:auto}
-  @media (max-height:519px){ #ebleiste{gap:4px} } /* volle Kachelgröße wie Dashboard; erst wenn sieben Kacheln nicht mehr passen, enger und dann kleiner */
-  @media (max-height:495px){ #ebleiste .ltile{width:36px;height:36px} #ebleiste .ltile svg{width:18px;height:18px} }
-  @media (max-width:700px){ #ebleiste{gap:6px;bottom:calc(24px + var(--sa-b) + 2 * min(40px, calc((100vw - 46px) / 11)))} }
-  #ovbox{position:absolute;right:12px;bottom:calc(68px + var(--sa-b));z-index:950} /* Zahnrad über dem Dashboard, Dashboard in der Ecke */
+  @media (max-height:553px){ #ebleiste{gap:4px} } /* volle Kachelgröße wie Dashboard; erst wenn sieben Kacheln nicht mehr passen, enger und dann kleiner */
+  @media (max-height:529px){ #ebleiste .ltile{width:36px;height:36px} #ebleiste .ltile svg{width:18px;height:18px} }
+  @media (max-width:700px){ #ebleiste{gap:6px;bottom:calc(54px + var(--sa-b) + 2 * min(40px,calc((100vw - 46px) / 11)))} }
+  /* Klappe über dem Dashboard (Größe der Zoom-Kachel): Zahnrad und Ebenen-Leiste aus- und einklappen */
+  #kz-btn{position:absolute;right:21px;bottom:calc(68px + var(--sa-b));z-index:950;width:30px;height:26px;box-sizing:border-box;padding:0;background:var(--navy);border:2px solid var(--hell);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  #kz-btn svg{width:16px;height:16px;fill:none;stroke:var(--gruen);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s ease}
+  body:not(.kz) #kz-btn svg{transform:rotate(180deg)}
+  #ovbox,#ebleiste .ltile{transition:transform .22s ease,opacity .18s ease}
+  body.kz #ovbox,body.kz #ebleiste .ltile{opacity:0;transform:translateY(24px) scale(.85);pointer-events:none}
+  body:not(.kz) #ebleiste .ltile:nth-child(7){transition-delay:.03s} body:not(.kz) #ebleiste .ltile:nth-child(6){transition-delay:.06s} body:not(.kz) #ebleiste .ltile:nth-child(5){transition-delay:.09s} body:not(.kz) #ebleiste .ltile:nth-child(4){transition-delay:.12s} body:not(.kz) #ebleiste .ltile:nth-child(3){transition-delay:.15s} body:not(.kz) #ebleiste .ltile:nth-child(2){transition-delay:.18s} body:not(.kz) #ebleiste .ltile:nth-child(1){transition-delay:.21s}
+  @media (max-width:700px){ #kz-btn{width:28px;height:24px;right:calc(12px + (min(40px,calc((100vw - 46px) / 11)) - 28px) / 2);bottom:calc(18px + var(--sa-b) + min(40px,calc((100vw - 46px) / 11)))} }
+  #ovbox{position:absolute;right:12px;bottom:calc(102px + var(--sa-b));z-index:950} /* Zahnrad über der Klappe, Dashboard in der Ecke */
   #rtpanel{display:none;position:absolute;left:50%;top:12px;transform:translateX(-50%);width:min(560px,calc(100% - 24px));max-height:46%;overflow:auto;background:var(--navy);border:2px solid var(--hell);border-radius:12px;z-index:945;padding:10px 12px;color:var(--hell);-webkit-overflow-scrolling:touch}
   #rtpanel input{background:var(--hell);color:var(--navy)}
   #gpanel{display:none;position:absolute;right:12px;top:12px;bottom:calc(64px + var(--sa-b));width:min(460px,calc(100% - 24px));background:var(--navy);border:2px solid var(--hell);border-radius:12px;z-index:946;padding:10px 12px;color:var(--hell);flex-direction:column}
@@ -903,7 +911,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     #panel{left:0;width:100%;height:auto;max-height:calc(100% - 72px - var(--sa-b))}
     .win header{padding:10px 12px}
     .bottombar{gap:3px;bottom:calc(12px + var(--sa-b))}
-    #ovbox{bottom:calc(12px + var(--sa-b) + min(40px,calc((100vw - 46px) / 11)) + 6px)}
+    #ovbox{bottom:calc(48px + var(--sa-b) + min(40px,calc((100vw - 46px) / 11)))}
     .ltile{width:min(40px,calc((100vw - 46px) / 11));height:min(40px,calc((100vw - 46px) / 11));border-radius:9px}
     .ltile svg{width:19px;height:19px}
     .ltile.drawtile svg{width:26px;height:26px}
@@ -916,7 +924,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   }
 </style>
 </head>
-<body>
+<body class="kz">
 <div id="app">
   <main>
     <!-- Karte, immer offen -->
@@ -988,6 +996,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <button class="ltile rad unten" id="rad-loc" style="--x:-1;--y:1" aria-label="Locations anzeigen oder ausblenden"></button>
         <button class="ltile rad unten" id="rad-such" style="--x:1;--y:1" aria-label="Suchen"></button>
       </div>
+      <button id="kz-btn" aria-label="Kacheln ausklappen" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button>
       <!-- Einstellungen unten rechts in der Ecke -->
       <div id="ovbox">
           <button class="ltile" id="ov-main" aria-label="Einstellungen und Ebenen"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
@@ -2881,6 +2890,11 @@ document.addEventListener('contextmenu',e=>{ if(e.target instanceof Element&&e.t
   $('#t-hst').onclick=()=>{ $('#b-hst').click(); sync(); };
   $('#t-wp').onclick=()=>{ const an=!wpAn(); window.__lmStill=true; try{ if(wpbOn!==an) $('#b-wpb').click(); wpSet(an?(wpIdx>=0?wpIdx:0):-1); }finally{ window.__lmStill=false; } sync(); };
   const mo=new MutationObserver(sync); ['b-namen','b-wpb','b-wp','b-adr','b-hst','b-plz','k-main'].forEach(id=>mo.observe($('#'+id),{attributes:true,attributeFilter:['class']})); sync(); })();
+
+/* Klappe über dem Dashboard: klappt Zahnrad und Ebenen-Leiste nach oben aus; beim Start eingeklappt */
+(function(){ const btn=$('#kz-btn'), lst=$('#ebleiste'), ov=$('#ovbox');
+  const setz=zu=>{ document.body.classList.toggle('kz',zu); btn.setAttribute('aria-expanded',zu?'false':'true'); btn.setAttribute('aria-label',zu?'Kacheln ausklappen':'Kacheln einklappen'); lst.inert=zu; ov.inert=zu; if(zu) menuOpen(false); };
+  btn.onclick=()=>setz(!document.body.classList.contains('kz')); setz(true); })();
 </script>
 </body>
 </html>
