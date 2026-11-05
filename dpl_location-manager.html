@@ -715,7 +715,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   /* Fenster (Gebiet, Dashboard, Planung, Daten): ein Fenster, zentriert über der Karte */
   .win{display:none;position:absolute;left:50%;top:12px;transform:translateX(-50%);width:min(860px,calc(100% - 24px));height:calc(100% - 84px - var(--sa-b));background:var(--navy);border:2px solid var(--hell);border-radius:12px;z-index:940;overflow:hidden;flex-direction:column}
   .win.active{display:flex}
-  #panel{left:12px;transform:none;width:min(430px,calc(100% - 24px));height:auto;max-height:calc(100% - 84px - var(--sa-b))} #panel .body{min-height:0} #panel.neu #p-dot,#panel.neu #p-sub,#panel.neu #p-edit,#panel.neu #p-close,#panel.neu #e-title,#panel.neu #e-autorow,#panel.neu #e-btnrow{display:none} #panel.neu #p-editform{border-radius:12px 12px 0 0;margin-bottom:0;padding-bottom:4px} #panel.neu #p-stats{margin-top:0} #panel.neu #p-stats .stat{border-radius:0 0 12px 12px;padding:6px 14px 14px} #panel.neu #p-stats .stat .l{font-size:13px;font-weight:600;margin-bottom:4px} /* neue Location: Formular und Adressen ein Block */ /* Gebietsfenster halb so breit, links, nur so hoch wie nötig */
+  #panel{left:12px;transform:none;width:min(430px,calc(100% - 24px));height:auto;max-height:calc(100% - 84px - var(--sa-b))} #panel .body{min-height:0} #panel.neu #p-dot,#panel.neu #p-sub,#panel.neu #p-edit,#panel.neu #p-close,#panel.neu #e-title,#panel.neu #e-autorow,#panel.neu #e-btnrow,#panel.neu .ort-zusatz{display:none} #panel.neu #p-editform{border-radius:12px 12px 0 0;margin-bottom:0;padding-bottom:4px} #panel.neu #p-stats{margin-top:0} #panel.neu #p-stats .stat{border-radius:0 0 12px 12px;padding:6px 14px 14px} #panel.neu #p-stats .stat .l{font-size:13px;font-weight:600;margin-bottom:4px} /* neue Location: Formular und Adressen ein Block */ /* Gebietsfenster halb so breit, links, nur so hoch wie nötig */
   .win header{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex:none}
   .win header h2{margin:0;font-size:18px;flex:1;display:flex;align-items:center;gap:8px;min-width:0}
   .win header h2 .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1003,7 +1003,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
           <h3 id="e-title">Gebiet bearbeiten</h3>
           <label for="e-name">Name</label><input id="e-name" placeholder="z. B. Lehe Nord, Hafenstraße West" autocomplete="off">
           <div class="grid3">
-            <div style="grid-column:span 2"><label for="e-group">Ort (Stadt oder Stadtteil)</label><input id="e-group" list="groups" placeholder="z. B. Bremerhaven" autocomplete="off"><datalist id="groups"></datalist></div>
+            <div style="grid-column:span 2"><label for="e-group">Ort<span class="ort-zusatz"> (Stadt oder Stadtteil)</span></label><input id="e-group" list="groups" placeholder="z. B. Bremerhaven" autocomplete="off"><datalist id="groups"></datalist></div>
             <div><label for="e-plz">PLZ</label><input id="e-plz" placeholder="27570" inputmode="numeric" autocomplete="off"></div>
           </div>
           <div class="row" id="e-autorow" style="margin:8px 0 0"><button class="btn small" id="e-auto" style="display:none">Ort, PLZ und Adressen automatisch ermitteln</button><span class="s" id="e-autoinfo"></span></div>
