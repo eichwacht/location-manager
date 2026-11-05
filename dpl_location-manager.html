@@ -865,7 +865,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #svghost::after{content:'';position:absolute;left:50%;top:100%;width:2px;height:10px;background:var(--navy);transform:translateX(-50%)}
   body.svdrag,body.svdrag *{cursor:grabbing !important}
   #brbar{position:absolute;left:50%;right:auto;transform:translateX(-50%);bottom:calc(12px + var(--sa-b));z-index:900;display:flex;align-items:center;gap:8px} /* Zoomstufe unten mittig */
-  #zoombadge{background:var(--navy);border:2px solid var(--hell);border-radius:10px;color:var(--gruen);font-weight:700;font-size:13px;padding:0 10px;height:36px;display:flex;align-items:center;gap:6px}
+  #zoombadge{background:var(--navy);border:2px solid var(--hell);border-radius:8px;color:var(--gruen);font-weight:700;font-size:12px;padding:0;height:26px;width:30px;box-sizing:border-box;display:flex;align-items:center;justify-content:center} /* nur die Zahl, kleine Kachel */
   #zoombadge small{color:var(--hell);font-weight:600;font-size:11px}
   #legbtn{background:var(--navy);border:2px solid var(--hell);border-radius:10px;color:var(--gruen);font-weight:700;font-size:13px;padding:0 10px;height:36px;display:flex;align-items:center;gap:6px}
   #legbtn svg{width:16px;height:16px;stroke:var(--gruen);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -893,7 +893,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #sug .it .n b{display:block;font-size:15px}
   #sug .it .n span{font-size:12px;opacity:.85}
   #sug .it button{flex:none}
-  @media (max-width:700px){ #zoombadge{height:32px;font-size:12px} #search{top:8px} }
+  @media (max-width:700px){ #zoombadge{height:24px;width:28px;font-size:11px} #search{top:8px} }
   @media (max-width:700px){
     .win{left:0;top:0;transform:none;width:100%;height:calc(100% - 72px - var(--sa-b));border-radius:0 0 12px 12px;border-width:0 0 2px 0}
     .win .body{padding:12px 12px 24px}
@@ -918,7 +918,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <!-- Karte, immer offen -->
     <section id="v-map">
       <div id="map"></div>
-      <div id="brbar"><div id="zoombadge" aria-label="Zoomstufe">Z <span id="zoomval">12</span></div>
+      <div id="brbar"><div id="zoombadge" aria-label="Zoomstufe"><span id="zoomval">12</span></div>
       </div>
       <!-- Ebenen-Leiste rechts: vier Schalter ohne Beschriftung -->
       <div id="ebleiste" role="group" aria-label="Kartenebenen">
