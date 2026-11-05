@@ -1723,8 +1723,22 @@ function sperrAktiv(){ if(!sperrFc) return []; if(sperrAktivCache&&sperrAktivCac
       for(let x=Math.floor(so*100);x<=Math.floor(no*100);x++) for(let y=Math.floor(w*100);y<=Math.floor(e*100);y++){ const c=G.get(x+'_'+y); if(c&&c.some(p=>p[0]>=w&&p[0]<=e&&p[1]>=so&&p[1]<=no&&inRing(p,r))) return true; } return false; }); };
     f=f.filter(ft=>!(ft.properties&&ft.properties.art==='railway'&&trifft(ft))); }
   sperrAktivCache={fc:sperrFc,bd,f}; return f; }
-function sperrNeu(){ sperrLayer.clearLayers(); if(sperrFc) sperrLayer.addData({type:'FeatureCollection',features:sperrAktiv()}); }
-const sperrLayer=L.geoJSON(null,{renderer:sperrR,style:()=>({color:'#8b0000',weight:1.5,opacity:.9,fillColor:'#8b0000',fillOpacity:.6,interactive:false}),});
+/* Sperrzonen als gekachelte Canvas-Ebene mit Schraffur wie beim Wärmeplan: ein Bild je Kachel statt tausender SVG-Flächen, läuft flüssig */
+let sperrIdx=null;
+function sperrIndex(){ const f=sperrAktiv(); if(sperrIdx&&sperrIdx.f===f) return sperrIdx.items; const items=[];
+  f.forEach(ft=>{ const g=ft.geometry; if(!g) return; const polys=g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:[]; polys.forEach(pg=>{ let w=180,e=-180,so=90,no=-90; pg[0].forEach(q=>{ if(q[0]<w)w=q[0]; if(q[0]>e)e=q[0]; if(q[1]<so)so=q[1]; if(q[1]>no)no=q[1]; }); items.push({pg,w,e,so,no}); }); });
+  sperrIdx={f,items}; return items; }
+const SPERR_ROT='#8b0000', SPERR_P=10;
+const SperrGrid=L.GridLayer.extend({ createTile(c){ const t=document.createElement('canvas'), sz=this.getTileSize(); t.width=sz.x; t.height=sz.y; if(!sperrFc) return t;
+  const g=t.getContext('2d'), z=c.z, ox=c.x*sz.x, oy=c.y*sz.y; const nw=L.CRS.EPSG3857.pointToLatLng(L.point(ox,oy),z), se=L.CRS.EPSG3857.pointToLatLng(L.point(ox+sz.x,oy+sz.y),z);
+  const pad=(se.lng-nw.lng)*0.02; const hit=sperrIndex().filter(o=>o.e>=nw.lng-pad&&o.w<=se.lng+pad&&o.no>=se.lat-pad&&o.so<=nw.lat+pad); if(!hit.length) return t;
+  const P=(q)=>{ const p=L.CRS.EPSG3857.latLngToPoint(L.latLng(q[1],q[0]),z); return [p.x-ox,p.y-oy]; };
+  const pc=document.createElement('canvas'); pc.width=pc.height=SPERR_P; const pg=pc.getContext('2d'); pg.fillStyle='rgba(139,0,0,.18)'; pg.fillRect(0,0,SPERR_P,SPERR_P); pg.strokeStyle=SPERR_ROT; pg.lineWidth=2.5; pg.beginPath(); pg.moveTo(-2,SPERR_P+2); pg.lineTo(SPERR_P+2,-2); pg.moveTo(-2,2); pg.lineTo(2,-2); pg.moveTo(SPERR_P-2,SPERR_P+2); pg.lineTo(SPERR_P+2,SPERR_P-2); pg.stroke();
+  const pat=g.createPattern(pc,'repeat'); try{ pat.setTransform(new DOMMatrix().translate(-(ox%SPERR_P),-(oy%SPERR_P))); }catch(e){}
+  g.fillStyle=pat; g.strokeStyle='rgba(139,0,0,.9)'; g.lineWidth=1.5;
+  hit.forEach(o=>{ g.beginPath(); o.pg.forEach(ring=>{ ring.forEach((q,i)=>{ const [x,y]=P(q); if(i) g.lineTo(x,y); else g.moveTo(x,y); }); g.closePath(); }); g.fill('evenodd'); g.stroke(); }); return t; } }); // je Fläche einzeln, damit Überlappungen keine Löcher ergeben
+const sperrLayer=new SperrGrid({pane:'sperrPane',tileSize:256,updateWhenZooming:false,keepBuffer:2});
+function sperrNeu(){ sperrIdx=null; sperrLayer.redraw(); }
 let sperrOn=false, sperrFc=null, sperrBusy=false;
 function sperrArt(t){ if(!t) return ''; if(t.aeroway) return t.aeroway; if(t.military) return 'military'; if(t.amenity==='prison') return 'prison'; if(t.landuse) return t.landuse; if(t.industrial) return 'industrial'; return ''; }
 async function sperrLoad(force=false){
@@ -2130,7 +2144,7 @@ function legendHtml(){
   h+=tx('font-style:italic;font-size:12px;color:#f2f2f2','Str.','Straßennamen ab Zoom 17'+aus(adrOn));
   h+=tx('color:#9fd41f;font-size:11px','12','Hausnummern ab Zoom 18; anklicken öffnet die Google-Adresse'+aus(adrOn));
   h+=tx('font-size:12px','Ort','Ortsnamen: größere Städte (Großstadt oder ab 20.000 Einwohner) ab Zoom 9, alle Städte ab 10, Ortsteile ab 12, Quartiere ab 13'+aus(namenOn));
-  h+=sw('#8b0000','Sperrzonen bei Zoom 14 bis 17: Industrie, Gewerbe, Handel, Hafen, Flughafen, Militär, Bahngelände (ohne Flächen unter den türkisen Strecken), Steinbruch, Deponie, Depot, Gefängnis (OSM)'+aus(sperrOn),.6);
+  h+=`<div class="li"><span class="sw" style="border-color:#8b0000;background:repeating-linear-gradient(45deg,#8b00002e,#8b00002e 4px,#8b0000 4px,#8b0000 6px)"></span><span>`+'Sperrzonen (schraffiert) bei Zoom 14 bis 17: Industrie, Gewerbe, Handel, Hafen, Flughafen, Militär, Bahngelände (ohne Flächen unter den türkisen Strecken), Steinbruch, Deponie, Depot, Gefängnis (OSM)'+aus(sperrOn)+'</span></div>';
   h+=ci(`background:${T};border:2px solid #fff`,'Bahnhof, Haltepunkt: Zoom 11 bis 16, ohne Namen'+aus(hstOn));
   h+=`<div class="li"><span class="sw" style="height:5px;border-radius:3px;background:${T};border:1px solid #fff"></span><span>Bahnstrecke: Zoom 11 bis 16${aus(hstOn)}</span></div>`;
   h+=ci(`width:10px;height:10px;background:${T};border:1.5px solid #fff`,'Bushaltestelle: ab Zoom 14, Name beim Drüberfahren'+aus(hstOn));
