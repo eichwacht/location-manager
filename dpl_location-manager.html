@@ -731,6 +731,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .ltile.on svg{stroke:var(--navy)}
   .ltile.drawtile svg{width:32px;height:32px;stroke-width:3}
   #layerbox,#kbox,#ebbox{position:relative}
+  #map.hst-hover,#map.hst-hover .leaflet-interactive{cursor:pointer !important}
   .loc-adr{background:none;border:0} .loc-adr span{display:inline-block;text-align:center;transform:translate(-50%,-50%);font-weight:800;font-size:15px;color:#f2f2f2;text-shadow:0 0 3px #001a4d,0 0 3px #001a4d,0 0 6px #001a4d;white-space:nowrap;pointer-events:none} .loc-adr .ln{display:none;font-size:14px;font-weight:800} body.loc-namen .loc-adr .ln{display:block}
   #radial{position:fixed;left:0;top:0;width:0;height:0;z-index:1200;display:none} #radial.open{display:block}
   #radial{pointer-events:none} #radial .rad{pointer-events:auto;position:absolute;left:calc((var(--x) - 1) * 24px);top:calc((var(--y) - 1) * 24px);width:48px;height:48px;overflow:visible;transform:scale(.6);opacity:0;transition:transform .12s ease-out,opacity .12s ease-out}
@@ -2573,7 +2574,22 @@ dlfImport(); klRender(); kDatenInfo(); geoQueue(); if(gReady()) setTimeout(()=>c
 /* ---------- Haltestellen Bus und Bahn (OpenStreetMap), Einblendung im Menü Einblendungen ---------- */
 // Einmal laden (Overpass), danach aus dem Speicher (IndexedDB hst_v1_40km). Bahnhöfe und Haltepunkte immer, Bushaltestellen ab Zoom 13.
 const HST_BAHN_FARBE='#00b4d8'; // Bahnhöfe türkis wie die Street-View-Linien
-let hstOn=false, hstFc=null, hstBusy=false; const hstR=L.canvas({padding:0.3}); const hstLayer=L.layerGroup(); let hstRendered='';
+let hstOn=false, hstFc=null, hstBusy=false; let hstRendered='';
+/* Haltestellen als gekachelte Canvas-Ebene (je Kachel ein Bild); Klick und Drüberfahren über eigene Trefferprüfung */
+map.createPane('hstPane'); map.getPane('hstPane').style.zIndex=450; map.getPane('hstPane').style.pointerEvents='none';
+const hstSicht=(p,z)=>p.a==='bus'?z>=14:p.a==='bahn'?(!!p.n&&z>=11&&z<=16):true;
+const hstStil=(p,z)=>{ const bahn=p.a==='bahn', tuerkis=bahn||p.a==='bus'; return {r:bahn?(z>=13?8:6):(z>=16?6:4), rand:tuerkis?'#ffffff':'#001a4d', w:bahn?3:1.5, fill:tuerkis?HST_BAHN_FARBE:p.a==='tram'?'#1a73e8':'#f2d11a'}; };
+let hstIdx=null; const HST_ZELLE=0.02;
+function hstIndex(){ if(hstIdx&&hstIdx.fc===hstFc) return hstIdx.m; const m=new Map(); ((hstFc&&hstFc.pts)||[]).forEach(p=>{ const k=Math.floor(p.lat/HST_ZELLE)+'_'+Math.floor(p.lon/HST_ZELLE); let a=m.get(k); if(!a){ a=[]; m.set(k,a); } a.push(p); }); hstIdx={fc:hstFc,m}; return m; }
+function hstImBereich(s,w,n,e){ const m=hstIndex(), out=[]; for(let a=Math.floor(s/HST_ZELLE);a<=Math.floor(n/HST_ZELLE);a++) for(let b=Math.floor(w/HST_ZELLE);b<=Math.floor(e/HST_ZELLE);b++){ const c=m.get(a+'_'+b); if(c) c.forEach(p=>{ if(p.lat>=s&&p.lat<=n&&p.lon>=w&&p.lon<=e) out.push(p); }); } return out; }
+const HstGrid=L.GridLayer.extend({ createTile(c){ const t=document.createElement('canvas'), sz=this.getTileSize(); t.width=sz.x; t.height=sz.y; if(!hstFc) return t;
+  const g=t.getContext('2d'), z=c.z, ox=c.x*sz.x, oy=c.y*sz.y; const nw=L.CRS.EPSG3857.pointToLatLng(L.point(ox-12,oy-12),z), se=L.CRS.EPSG3857.pointToLatLng(L.point(ox+sz.x+12,oy+sz.y+12),z);
+  const pts=hstImBereich(se.lat,nw.lng,nw.lat,se.lng).filter(p=>hstSicht(p,z)).sort((a,b)=>(a.a==='bahn')-(b.a==='bahn'));
+  pts.forEach(p=>{ const st=hstStil(p,z), q=L.CRS.EPSG3857.latLngToPoint(L.latLng(p.lat,p.lon),z); g.beginPath(); g.arc(q.x-ox,q.y-oy,st.r,0,Math.PI*2); g.fillStyle=st.fill; g.fill(); g.lineWidth=st.w; g.strokeStyle=st.rand; g.stroke(); }); return t; } });
+const hstLayer=new HstGrid({pane:'hstPane',tileSize:256,updateWhenZooming:false,keepBuffer:2});
+function hstTreffer(cx,cy){ if(!hstOn||!hstFc) return null; const z=map.getZoom(); const a=map.containerPointToLatLng([cx-14,cy+14]), b=map.containerPointToLatLng([cx+14,cy-14]); let best=null,bd=1e9;
+  hstImBereich(a.lat,a.lng,b.lat,b.lng).forEach(p=>{ if(!hstSicht(p,z)) return; const q=map.latLngToContainerPoint([p.lat,p.lon]), d=Math.hypot(q.x-cx,q.y-cy), r=hstStil(p,z).r+4; if(d<=r&&(d<bd||(p.a==='bahn'&&best&&best.a!=='bahn'))){ bd=d; best=p; } }); return best; }
+
 // in vier Teilen laden (kleinere Abfragen, Overpass ist oft ausgelastet); fertige Teile bleiben gespeichert, fehlende lädt der nächste Versuch
 const name0=t=>t.name||t['name:de']||'';
 async function hstLoad(force=false){ if(hstBusy) return; hstBusy=true; $('#b-hst').classList.add('busy');
@@ -2597,7 +2613,8 @@ function hstInfo(){ const el=$('#hst-info'); if(!el) return; if(!hstFc){ el.text
   el.textContent=(fehlt?`${fehlt} von 4 Teilen fehlen noch (Overpass ausgelastet). `:'')+`${n('bahn')} Bahnhöfe und Haltepunkte, ${n('bus')} Bushaltestellen${n('tram')?', '+n('tram')+' Straßenbahnhaltestellen':''}, Stand ${fmtDT(hstFc.loaded)}. Quelle OpenStreetMap.`; }
 // nur Haltestellen im sichtbaren Ausschnitt zeichnen; feste Namensschilder nur, wenn wenige im Bild sind (sonst bremst die Karte)
 let hstTimer=null;
-function hstRender(force=false){ if(!hstOn||!hstFc) return; const z=map.getZoom(), b=map.getBounds().pad(0.25);
+function hstRender(force=false){ if(!hstOn||!hstFc) return; if(force){ hstIdx=null; hstLayer.redraw(); } }
+function hstRenderAlt(force=false){ if(!hstOn||!hstFc) return; const z=map.getZoom(), b=map.getBounds().pad(0.25);
   const sicht=hstFc.pts.filter(p=>(p.a!=='bus'||z>=14)&&(p.a!=='bahn'||(!!p.n&&z>=11&&z<=16))&&b.contains([p.lat,p.lon])); // Bahnhöfe nur Zoom 11 bis 16
   const key=z+'|'+b.toBBoxString().split(',').map(x=>(+x).toFixed(3)).join(','); if(!force&&key===hstRendered) return; hstRendered=key; hstLayer.clearLayers();
   const nBahn=sicht.filter(p=>p.a==='bahn'&&p.n).length, nAlle=sicht.filter(p=>p.n).length;
@@ -2784,6 +2801,17 @@ map.on('dragstart',radClose);
 $('#radial').addEventListener('wheel',e=>{ e.preventDefault(); map.getContainer().dispatchEvent(new WheelEvent('wheel',{deltaX:e.deltaX,deltaY:e.deltaY,deltaMode:e.deltaMode,clientX:e.clientX,clientY:e.clientY,bubbles:true,cancelable:true})); },{passive:false});
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&radOffen()){ radClose(); e.stopImmediatePropagation(); } },true);
 document.addEventListener('contextmenu',e=>{ if(e.target instanceof Element&&e.target.closest('#radial')){ e.preventDefault(); e.stopImmediatePropagation(); radClose(); } },true);
+
+/* Haltestellen-Klick (ÖPNV-Route) und Name beim Drüberfahren, für die gekachelte Ebene */
+(function(){ const box=$('#map'); let dn=null; const tt=L.tooltip({className:'ttip',direction:'top',offset:[0,-8]}); let ttP=null, raf=0, mv=null;
+  box.addEventListener('pointerdown',e=>{ dn={x:e.clientX,y:e.clientY}; },true);
+  box.addEventListener('click',e=>{ if(e.defaultPrevented||neuAktiv()||map.pm.globalDrawModeEnabled()) return; if(dn&&Math.hypot(e.clientX-dn.x,e.clientY-dn.y)>6) return;
+    const r=box.getBoundingClientRect(), p=hstTreffer(e.clientX-r.left,e.clientY-r.top); if(!p) return; e.stopPropagation(); e.preventDefault();
+    if(window.RT&&RT.on){ rtPick(L.latLng(p.lat,p.lon)); return; } hstRoute(p); },true);
+  box.addEventListener('mousemove',e=>{ mv=e; if(raf) return; raf=requestAnimationFrame(()=>{ raf=0; const r=box.getBoundingClientRect(), p=hstTreffer(mv.clientX-r.left,mv.clientY-r.top);
+    box.classList.toggle('hst-hover',!!p);
+    if(p&&p.a!=='bahn'){ if(ttP!==p){ ttP=p; tt.setLatLng([p.lat,p.lon]).setContent(esc(p.n||'Haltestelle')); map.openTooltip(tt); } } else if(ttP){ ttP=null; map.closeTooltip(tt); } }); });
+  map.on('zoomstart movestart',()=>{ if(ttP){ ttP=null; map.closeTooltip(tt); } }); })();
 
 /* Start: alle Kartenebenen im Ebenen-Menü sind beim Öffnen aktiv (Wärmeplan Bremen auf Versorgungsgebiete) */
 (function(){ window.__lmStill=true; try{ ['b-plz','b-adr','b-namen','b-wpb','b-sperr','b-hst'].forEach(id=>{ const b=$('#'+id); if(b&&!b.classList.contains('on')){ try{ b.click(); }catch(e){ console.error('Start',id,e); } } }); if(wpIdx<0) wpSet(0); }finally{ window.__lmStill=false; } $('#eb-main').classList.toggle('on',ebAlleAn()); })();
