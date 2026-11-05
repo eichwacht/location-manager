@@ -731,7 +731,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .ltile.on svg{stroke:var(--navy)}
   .ltile.drawtile svg{width:32px;height:32px;stroke-width:3}
   #layerbox,#kbox,#ebbox{position:relative}
-  .loc-adr{background:none;border:0} .loc-adr span{display:inline-block;transform:translate(-50%,-50%);font-weight:800;font-size:15px;color:#f2f2f2;text-shadow:0 0 3px #001a4d,0 0 3px #001a4d,0 0 6px #001a4d;white-space:nowrap;pointer-events:none}
+  .loc-adr{background:none;border:0} .loc-adr span{display:inline-block;text-align:center;transform:translate(-50%,-50%);font-weight:800;font-size:15px;color:#f2f2f2;text-shadow:0 0 3px #001a4d,0 0 3px #001a4d,0 0 6px #001a4d;white-space:nowrap;pointer-events:none} .loc-adr .ln{display:none;font-size:14px;font-weight:800} body.loc-namen .loc-adr .ln{display:block}
   #radial{position:fixed;left:0;top:0;width:0;height:0;z-index:1200;display:none} #radial.open{display:block}
   #radial{pointer-events:none} #radial .rad{pointer-events:auto;position:absolute;left:calc(var(--x) * 64px - 24px);top:calc(var(--y) * 64px - 24px);width:48px;height:48px;overflow:visible;transform:scale(.6);opacity:0;transition:transform .12s ease-out,opacity .12s ease-out}
   #radial.open .rad{transform:scale(1);opacity:1}
@@ -1297,9 +1297,10 @@ function polyMitte(c){ let A=0,x=0,y=0; for(let i=0,j=c.length-1;i<c.length;j=i+
   let ins=false; for(let i=0,j=c.length-1;i<c.length;j=i++){ const yi=c[i][0],xi=c[i][1],yj=c[j][0],xj=c[j][1]; if(((yi>p[0])!==(yj>p[0]))&&(p[1]<(xj-xi)*(p[0]-yi)/(yj-yi)+xi)) ins=!ins; }
   return ins?L.latLng(p[0],p[1]):L.latLngBounds(c).getCenter(); }
 function locLabelsSync(){ locLblRaf=0; locLblLayer.clearLayers(); D.locations.forEach(loc=>{ if(loc.addr==null||!loc.coords||loc.coords.length<3) return;
-  locLblLayer.addLayer(L.marker(polyMitte(loc.coords),{icon:L.divIcon({className:'loc-adr',html:'<span>'+(+loc.addr)+'</span>',iconSize:null}),interactive:false,keyboard:false})); }); locLabelsSicht(); }
+  locLblLayer.addLayer(L.marker(polyMitte(loc.coords),{icon:L.divIcon({className:'loc-adr',html:'<span><b class="ln">'+esc(loc.name||'')+'</b>'+(+loc.addr)+'</span>',iconSize:null}),interactive:false,keyboard:false})); }); locLabelsSicht(); }
 function locLabelsBald(){ if(!locLblRaf) locLblRaf=requestAnimationFrame(locLabelsSync); }
-function locLabelsSicht(){ if(locSicht&&map.getZoom()>=LOC_ADR_ZOOM) locLblLayer.addTo(map); else map.removeLayer(locLblLayer); }
+const LOC_NAME_ZOOM=16;
+function locLabelsSicht(){ document.body.classList.toggle('loc-namen',map.getZoom()>=LOC_NAME_ZOOM); if(locSicht&&map.getZoom()>=LOC_ADR_ZOOM) locLblLayer.addTo(map); else map.removeLayer(locLblLayer); }
 map.on('zoomend',locLabelsSicht);
 { const _save=Store.save; Store.save=function(){ const r=_save.apply(this,arguments); locLabelsBald(); return r; }; }
 locLabelsSync();
@@ -2110,7 +2111,7 @@ function legendHtml(){
   const T=HST_BAHN_FARBE;
   let h='<div class="row sb" style="margin:0 0 4px"><strong>Legende</strong><button class="w-close" id="leg-close" aria-label="Legende schließen">✕</button></div>';
   h+='<h4>Gebiete</h4>'+sw(STATUS_FARBE.neu,'hellgrün: noch kein Einsatz')+sw(STATUS_FARBE.frei,'dunkelgrün: frei, letzter Einsatz länger als '+SPERRTAGE+' Tage her')+sw(STATUS_FARBE.heute,'orange: heute eingeplant',.7)+sw(STATUS_FARBE.geplant,'gelb: für einen künftigen Tag eingeplant',.7)+sw(STATUS_FARBE.sperre,'rot: Sperrfrist, '+SPERRTAGE+' Tage nach dem letzten Einsatz');
-  h+=tx('font-size:13px;font-weight:800;color:#f2f2f2','18','Zahl im Gebiet: postalische Adressen, ab Zoom 15');
+  h+=tx('font-size:13px;font-weight:800;color:#f2f2f2','18','Zahl im Gebiet: postalische Adressen ab Zoom 15, darüber der Name ab Zoom 16');
   h+='<h4>Kunden'+aus(Object.values(klOn).some(Boolean))+'</h4>'
     +ci(`background:${KFARBE.offen};border:2px solid #001a4d`,'Lead, Termin offen')
     +ci(`background:${KFARBE.cas};border:2px solid #001a4d`,'Potenzialanalyse vereinbart oder gehalten')
