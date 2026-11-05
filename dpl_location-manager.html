@@ -839,6 +839,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .pers{font-size:12px;font-weight:700;letter-spacing:.3px}
   .cal-ok{font-size:11px;color:var(--navy);border:1px solid var(--navy);border-radius:99px;padding:1px 7px;margin-left:6px}
   .stats.four{grid-template-columns:repeat(4,1fr)}
+  #p-stats.nur-adr{grid-template-columns:1fr} #p-stats.nur-adr .p-erfahrung{display:none} /* neues Gebiet ohne Einsatz: nur Adressen */
   .mono{font-family:ui-monospace,monospace;font-size:13px}
   .lt.rot svg{stroke:#e04545}
   #b-sv{touch-action:none}
@@ -977,11 +978,11 @@ svg.leaflet-image-layer.leaflet-interactive path {
           <div class="row" style="margin:8px 0 0"><button class="btn small" id="e-auto">Ort, PLZ und Adressen automatisch ermitteln</button><span class="s" id="e-autoinfo"></span></div>
           <div class="row" style="margin-top:12px"><button class="btn primary" id="e-save">Speichern</button><button class="btn" id="e-shape">Form ändern</button><button class="btn danger" id="e-cancel">Abbrechen</button><button class="btn danger" id="p-del" style="margin-left:auto">Gebiet löschen</button></div>
         </div>
-        <div class="stats four">
-          <div class="stat"><div class="l">Adressen</div><div class="v" id="p-addr">–</div></div>
-          <div class="stat"><div class="l">Einsätze</div><div class="v" id="p-shifts">0</div></div>
-          <div class="stat"><div class="l">Leads gesamt</div><div class="v" id="p-leads">0</div></div>
-          <div class="stat"><div class="l">Ø Leads je Einsatz</div><div class="v" id="p-avg">0</div></div>
+        <div class="stats four" id="p-stats">
+          <div class="stat"><div class="l">Postalische Adressen</div><div class="v" id="p-addr">–</div></div>
+          <div class="stat p-erfahrung"><div class="l">Einsätze</div><div class="v" id="p-shifts">0</div></div>
+          <div class="stat p-erfahrung"><div class="l">Leads gesamt</div><div class="v" id="p-leads">0</div></div>
+          <div class="stat p-erfahrung"><div class="l">Ø Leads je Einsatz</div><div class="v" id="p-avg">0</div></div>
         </div>
         <div class="row sb"><strong>Einsätze</strong><button class="btn primary small" id="b-newshift">+ Neuer Einsatz</button></div>
         <div class="form" id="s-form" style="display:none">
@@ -1539,7 +1540,7 @@ function stats(id){ const s=D.shifts.filter(x=>x.locationId===id); const leads=s
 function openPanel(id,edit=false,isNew=false){
   cur=D.locations.find(l=>l.id===id); if(!cur) return; curNew=isNew;
   $('#p-name').textContent=cur.name; $('#p-dot').style.background=STATUS_FARBE[locStatus(cur).k]; $('#p-dot').title=locStatus(cur).t; $('#p-sub').textContent=[cur.plz,cur.group].filter(Boolean).join(' ');
-  const st=stats(id); $('#p-shifts').textContent=st.n; $('#p-leads').textContent=st.leads; $('#p-avg').textContent=st.avg; $('#p-addr').textContent=cur.addr==null?'–':cur.addr;
+  const st=stats(id); $('#p-shifts').textContent=st.n; $('#p-leads').textContent=st.leads; $('#p-avg').textContent=st.avg; $('#p-addr').textContent=cur.addr==null?'–':cur.addr; $('#p-stats').classList.toggle('nur-adr',isNew||st.n===0);
   $('#p-editform').style.display=edit?'block':'none'; $('#s-form').style.display='none';
   $('#e-title').textContent=isNew?'Neues Gebiet':'Gebiet bearbeiten'; $('#e-cancel').textContent=isNew?'Verwerfen':'Abbrechen'; $('#p-del').style.display=isNew?'none':'';
   if(edit){ $('#e-name').value=isNew?'':cur.name; $('#e-group').value=cur.group||''; $('#e-plz').value=cur.plz||''; $('#e-autoinfo').textContent=''; $('#groups').innerHTML=[...new Set(D.locations.map(l=>l.group).filter(Boolean))].map(g=>`<option value="${esc(g)}">`).join(''); }
