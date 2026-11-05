@@ -1642,8 +1642,10 @@ function shiftAction(b,after){
 }
 function renderShifts(){
   const list=D.shifts.filter(s=>s.locationId===cur.id).sort((a,b)=>b.date.localeCompare(a.date));
-  $('#p-shiftlist').innerHTML=list.length?list.map(s=>shiftRow(s,false)).join(''):'<div class="empty">Noch keine Einsätze. „+ Neuer Einsatz" legt den ersten an.</div>';
+  $('#p-shiftlist').innerHTML=list.length?list.map(s=>shiftRow(s,false)).join(''):'<button class="btn primary" id="b-newshift0" aria-label="Neuen Einsatz planen" style="margin:6px 0 0;width:48px;height:44px;font-size:26px;line-height:1;padding:0;display:grid;place-items:center">+</button>';
+  $('#b-newshift').style.display=list.length?'':'none';
   $$('#p-shiftlist button').forEach(b=>b.onclick=()=>shiftAction(b,()=>openPanel(cur.id)));
+  { const b0=$('#b-newshift0'); if(b0) b0.onclick=()=>$('#b-newshift').click(); }
 }
 
 /* ---------- Dashboard ---------- */
