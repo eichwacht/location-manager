@@ -927,16 +927,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <button class="ltile drawtile" id="b-draw" aria-label="Gebiet zeichnen"><svg viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></svg></button>
         <button class="ltile" id="b-route" style="display:none" aria-label="ÖPNV-Route: Kachel an, Ziel auf der Karte antippen"><!-- Kachel ausgeblendet seit v71: Route per Klick auf Haltestelle; Routensuche aus dem Lead-Fenster nutzt rtMode weiter --><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="15" rx="3"/><path d="M5 11h14M9 3v0M8 21l1-3M16 21l-1-3"/><circle cx="8.5" cy="14.5" r=".9"/><circle cx="15.5" cy="14.5" r=".9"/></svg></button>
         <div id="layerbox">
-          <button class="ltile" id="layer-main" aria-label="Grundkarte: Satellit, Luftbild, Gelände">
+          <button class="ltile" id="layer-main" aria-label="Grundkarte: Satellit, Luftbild">
             <svg data-ic="sat" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>
             <svg data-ic="dop" viewBox="0 0 24 24"><path d="M4 7h3l2-2h6l2 2h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
-            <svg data-ic="topo" viewBox="0 0 24 24"><path d="M3 19l6-10 4 6 2-3 6 7z"/><path d="M3 5h18"/></svg>
           </button>
           <div id="layermenu" class="flymenu">
             <div class="col">
               <button class="lt" data-base="sat"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>Satellit</button>
               <button class="lt" data-base="dop"><svg viewBox="0 0 24 24"><path d="M4 7h3l2-2h6l2 2h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Luftbild amtlich</button>
-              <button class="lt" data-base="topo"><svg viewBox="0 0 24 24"><path d="M3 19l6-10 4 6 2-3 6 7z"/><path d="M3 5h18"/></svg>Gelände</button>
             </div>
           </div>
         </div>
@@ -1134,7 +1132,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
           <strong>Gebiete</strong>
           <table><thead><tr><th>Name</th><th>Ort</th><th>PLZ</th><th class="r">Adressen</th><th class="r">Einsätze</th><th class="r">Leads</th></tr></thead><tbody id="x-table"></tbody></table>
         </div>
-        <div class="s" style="font-size:11px;opacity:.8">Kartenquellen: © OpenStreetMap-Mitwirkende (ODbL) · Esri, Maxar, Earthstar Geographics · DOP20 © LGLN Niedersachsen (CC BY 4.0) · DOP20 2023 © GeoInformation Bremen (CC BY 4.0) · DOP20 © Geobasis NRW (dl-de/zero-2-0) · OpenTopoMap (CC-BY-SA) · Leaflet, Leaflet-Geoman</div>
+        <div class="s" style="font-size:11px;opacity:.8">Kartenquellen: © OpenStreetMap-Mitwirkende (ODbL) · Esri, Maxar, Earthstar Geographics · DOP20 © LGLN Niedersachsen (CC BY 4.0) · DOP20 2023 © GeoInformation Bremen (CC BY 4.0) · DOP20 © Geobasis NRW (dl-de/zero-2-0) · Leaflet, Leaflet-Geoman</div>
       </div>
     </section>
   </main>
@@ -1184,7 +1182,6 @@ const PERSONS=['Alexander','Fabian','Marc','Michael']; const ME='Fabian';
 
 /* ---------- Karte ---------- */
 const map = L.map('map',{zoomControl:false, attributionControl:false, maxZoom:20}).setView([53.55,8.58],12);
-const topo = L.tileLayer('https://tile.opentopomap.org/{z}/{x}/{y}.png',{maxZoom:20,maxNativeZoom:17});
 const esriImg = ()=>L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:20,maxNativeZoom:19});
 const sat = esriImg();
 const wmsOpt = {format:'image/png',transparent:true,maxZoom:20,tileSize:512,detectRetina:false};
@@ -1194,10 +1191,10 @@ const dop = L.layerGroup([
   L.tileLayer.wms('https://opendata.lgln.niedersachsen.de/doorman/noauth/dop_wms',Object.assign({layers:'ni_dop20',version:'1.3.0',bounds:[[51.28,6.60],[53.95,11.65]]},wmsOpt)),
   L.tileLayer.wms('https://geodienste.bremen.de/wms_dop20_2023',Object.assign({layers:'DOP20_2023_HB,DOP20_2023_BHV',bounds:[[52.94,8.45],[53.62,9.00]]},wmsOpt)),
 ]);
-const bases = {sat, dop, topo};
+const bases = {sat, dop}; // Geländekarte seit v87 entfernt
 let base='sat';
 function setBase(k){ base=k; Object.values(bases).forEach(l=>map.removeLayer(l)); bases[k].addTo(map); $$('#layer-main svg').forEach(x=>x.classList.toggle('show',x.dataset.ic===k)); $$('#layermenu [data-base]').forEach(b=>b.classList.toggle('on',b.dataset.base===k)); try{ localStorage.setItem('sle_lm_base',k); }catch(e){} }
-setBase(['sat','dop','topo'].includes(localStorage.getItem('sle_lm_base'))?localStorage.getItem('sle_lm_base'):'sat');
+setBase(['sat','dop'].includes(localStorage.getItem('sle_lm_base'))?localStorage.getItem('sle_lm_base'):'sat');
 $$('#layermenu [data-base]').forEach(b=>b.onclick=()=>{ setBase(b.dataset.base); menuOpen(false); });
 const layerMenu=$('#layermenu'), ovMenu=$('#ovmenu'), kMenu=$('#kmenu');
 function menuOpen(on,which='layer'){ if(!on){ layerMenu.classList.remove('open'); ovMenu.classList.remove('open'); kMenu.classList.remove('open'); $('#layer-main').classList.remove('on'); $('#ov-main').classList.remove('on'); $('#k-main').classList.remove('on'); return; }
@@ -2096,7 +2093,7 @@ function legendHtml(){
   if(wpIdx>=0){ h+='<h4>Wärmeplan Bremen: '+WP_STUFEN[wpIdx].t+' (Zoom 10 bis 13)</h4><img src="'+$(wpIdx===0?'#wp-leg1':'#wp-leg2').src+'" alt="Legende Wärmeplan Bremen"><div class="s">Quelle: GeoInformation Bremen, Wärmeplan 2025, nur Stadtgebiet Bremen, ohne Rechtswirkung</div>'; }
   h+='<h4>Punkte</h4>'+ci('background:#7a9a1a;border:2px solid #001a4d','Suchtreffer (mit Adresse beim Drüberfahren)')+ci('background:#7a9a1a;border:2px solid #001a4d','Mein Standort, wenn „Mein Standort“ im Zahnrad-Menü an ist');
   h+='<h4>Bedienung</h4><div class="s">Street View: bei Zoom 20 eine Straße anklicken, Street View öffnet sich genau dort mit Blick auf das nächste Haus. Zoomstufe steht unten rechts.</div><div class="s">Neues Gebiet eingezeichnet: Linksklick hinein speichert und öffnet die Einsatzplanung, Rechtsklick hinein verwirft und zeichnet ab dem vorletzten Punkt weiter, Klick daneben verwirft.</div><div class="s">Fenster: Rechtsklick ins Fenster geht einen Schritt zurück, bis es sich schließt. Ein Klick in die Karte schließt alle offenen Fenster.</div>';
-  h+='<h4>Grundkarte</h4><div class="li"><span>'+({sat:'Satellit (Esri)',dop:'Amtliches Luftbild (LGLN, GeoInformation Bremen, Geobasis NRW)',topo:'Geländekarte (OpenTopoMap)'}[base])+'</span></div>';
+  h+='<h4>Grundkarte</h4><div class="li"><span>'+({sat:'Satellit (Esri)',dop:'Amtliches Luftbild (LGLN, GeoInformation Bremen, Geobasis NRW)'}[base])+'</span></div>';
   return h;
 }
 function legendOpen(on){ $('#legend').classList.toggle('open',on); if(on){ $('#legend').innerHTML=legendHtml(); const x=$('#leg-close'); if(x) x.onclick=()=>legendOpen(false); } }
