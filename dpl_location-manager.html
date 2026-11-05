@@ -1001,7 +1001,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
             </div>
           </div>
         </div>
-        <button class="ltile" id="b-sv" style="display:none" aria-label="Google Street View an der Kartenmitte"><!-- Kachel ausgeblendet seit v75: Street View per Klick auf die Straße bei Zoom 20 --><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><path d="M8 22v-8l-2-5h12l-2 5v8M9 9v13M15 9v13"/></svg></button>
+        <button class="ltile" id="b-sv" style="display:none" aria-label="Google Street View an der Kartenmitte"><!-- Kachel ausgeblendet seit v75: Street View per Klick auf die Straße, seit v121 ab Zoom 17 --><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><path d="M8 22v-8l-2-5h12l-2 5v8M9 9v13M15 9v13"/></svg></button>
       </div>
       <div id="radial" role="menu" aria-label="Schnellmenü">
         <span class="rad-mitte"></span>
@@ -1533,8 +1533,8 @@ function adrTreffer(x,y){ const P=adrPl.get(map.getZoom()); if(!P) return null; 
   const a=P.grid.get(adrZk(Math.floor(w.x/ADR_ZELLE),Math.floor(w.y/ADR_ZELLE))); if(!a) return null; let hit=null, bd=1e9;
   a.forEach(q=>{ if(q.t!==1) return; const dx=w.x-q.x, dy=w.y-q.y; if(Math.abs(dx)<=q.w/2+4&&Math.abs(dy)<=11){ const dd=Math.hypot(dx,dy); if(dd<bd){ bd=dd; hit=q; } } }); return hit; }
 $('#b-adr').onclick=()=>{ adrOn=!adrOn; $('#b-adr').classList.toggle('on',adrOn); if(adrOn){ adrGrid.addTo(map); if(map.getZoom()<ADR_MINZOOM) toast('Näher heranzoomen: Straßennamen ab Zoom 17, Hausnummern ab 18'); adrRender(); } else { map.removeLayer(adrGrid); } };
-async function adrRender(){ // fehlende Kacheln laden (erst Speicher, dann Netz), danach zeichnen
-  if(!adrOn||map.getZoom()<ADR_MINZOOM) return;
+async function adrRender(){ // fehlende Kacheln laden (erst Speicher, dann Netz), danach zeichnen; ab Zoom 17 auch bei ausgeschalteter Ebene, weil der Street-View-Klick die Straßen braucht
+  if(map.getZoom()<ADR_MINZOOM) return;
   if(adrBusy){ adrAgain=true; return; } adrBusy=true; $('#b-adr').classList.add('busy');
   try{
     const tiles=tilesIn(map.getBounds(),14).filter(t=>!adrCache.has(adrKey(t)));
@@ -1542,7 +1542,7 @@ async function adrRender(){ // fehlende Kacheln laden (erst Speicher, dann Netz)
       const missing=tiles.filter(t=>!adrCache.has(adrKey(t)));
       if(missing.length){ if(!bulk.running) { for(const t of missing){ await adrLoadTile(t,true); adrBald(); } } else toast('Adressdaten werden gerade geladen'); } }
     adrBald();
-  }catch(e){ console.error('Adressen',e); toast('Adressen konnten nicht geladen werden: '+(e.message||e)); }
+  }catch(e){ console.error('Adressen',e); if(adrOn) toast('Adressen konnten nicht geladen werden: '+(e.message||e)); }
   adrBusy=false; $('#b-adr').classList.remove('busy');
   if(adrAgain){ adrAgain=false; adrRender(); }
 }
@@ -1579,8 +1579,8 @@ $('#gp-close').onclick=gpClose;
   box.addEventListener('mousemove',e=>{ if(!adrOn||map.getZoom()<HN_MINZOOM){ if(box.style.cursor) box.style.cursor=''; return; } const r=box.getBoundingClientRect();
     const c=adrTreffer(e.clientX-r.left,e.clientY-r.top)?'pointer':''; if(box.style.cursor!==c) box.style.cursor=c; }); })();
 
-/* Zoom 20: Klick auf eine Straße öffnet Google Street View genau dort im Location Manager (Maps Embed API, kostenlos) */
-const SV_KLICK_ZOOM=20, SV_STRASSE_M=9;
+/* Ab Zoom 17: Klick auf eine Straße öffnet Google Street View genau dort im Location Manager (Maps Embed API, kostenlos) */
+const SV_KLICK_ZOOM=17, SV_STRASSE_M=9;
 function svStrasseNah(ll){ const tiles=tilesIn(map.getBounds(),14), kx=Math.cos(ll.lat*Math.PI/180)*111320, ky=110540; let best=1e9, hn=null, hd=1e9;
   tiles.forEach(t=>{ const d=adrCache.get(adrKey(t)); if(!d) return;
     d.streets.forEach(w=>{ for(let i=1;i<w.g.length;i++){ const ax=(w.g[i-1][1]-ll.lng)*kx, ay=(w.g[i-1][0]-ll.lat)*ky, bx=(w.g[i][1]-ll.lng)*kx, by=(w.g[i][0]-ll.lat)*ky; const dx=bx-ax, dy=by-ay, L2=dx*dx+dy*dy; let u=L2?-(ax*dx+ay*dy)/L2:0; u=Math.max(0,Math.min(1,u)); const px=ax+u*dx, py=ay+u*dy, dd=Math.hypot(px,py); if(dd<best) best=dd; } });
@@ -1596,10 +1596,10 @@ async function svHier(ll,haus){ if(!GM.key){ toast('Kein Google-Schlüssel einge
 (function(){ const box=$('#map'); let down=null;
   box.addEventListener('pointerdown',e=>{ down={x:e.clientX,y:e.clientY}; },true);
   box.addEventListener('click',e=>{ if(neuAktiv()||e.defaultPrevented||map.getZoom()<SV_KLICK_ZOOM) return; if(down&&Math.hypot(e.clientX-down.x,e.clientY-down.y)>6) return;
-    if(window.RT&&RT.on) return; if(map.pm&&(map.pm.globalDrawModeEnabled()||(map.pm.globalEditModeEnabled&&map.pm.globalEditModeEnabled()))) return;
+    if(window.RT&&RT.on) return; if(map.pm&&(map.pm.globalDrawModeEnabled()||(map.pm.globalEditModeEnabled&&map.pm.globalEditModeEnabled()))) return; if(cur&&layers[cur.id]&&layers[cur.id].pm.enabled()) return; // Location wird gerade bearbeitet
     if(e.target.closest('.leaflet-marker-icon,.leaflet-tooltip,.leaflet-popup,.leaflet-control,.leaflet-kundenPane-pane')) return;
     const r=box.getBoundingClientRect(), cx=e.clientX-r.left, cy=e.clientY-r.top, ll=map.containerPointToLatLng([cx,cy]);
-    if(hstOn&&hstFc&&hstFc.pts.some(p=>{ const q=map.latLngToContainerPoint([p.lat,p.lon]); return Math.abs(q.x-cx)<14&&Math.abs(q.y-cy)<14; })) return; /* Haltestelle hat Vorrang */
+    if(hstTreffer(cx,cy)) return; /* sichtbare Haltestelle hat Vorrang */
     const n=svStrasseNah(ll); if(n.dist>SV_STRASSE_M) return;
     e.stopPropagation(); e.preventDefault(); svHier(ll,n.haus); },true); })();
 
@@ -2214,7 +2214,7 @@ function legendHtml(){
     h+='<div class="s" style="opacity:.8">Hausnummern ohne Planfläche gelten als dezentral, im Umkreis von 800 m um Biogasanlagen als unklar. Kommunen mit Plan: '+esc(kom.join(', '))+'. Sperrzonen sind ausgespart. Strategische Planung ohne Rechtswirkung, Quellen im Fenster Einstellungen und Daten.</div>'; }
   if(wpIdx>=0){ h+='<h4>Wärmeplan Bremen: '+WP_STUFEN[wpIdx].t+' (Zoom 10 bis 13)</h4><img src="'+$(wpIdx===0?'#wp-leg1':'#wp-leg2').src+'" alt="Legende Wärmeplan Bremen"><div class="s">Quelle: GeoInformation Bremen, Wärmeplan 2025, nur Stadtgebiet Bremen, ohne Rechtswirkung</div>'; }
   h+='<h4>Punkte</h4>'+ci('background:#7a9a1a;border:2px solid #001a4d','Suchtreffer (mit Adresse beim Drüberfahren)')+ci('background:#7a9a1a;border:2px solid #001a4d','Mein Standort, wenn „Mein Standort“ im Zahnrad-Menü an ist');
-  h+='<h4>Bedienung</h4><div class="s">Street View: bei Zoom 20 eine Straße anklicken, Street View öffnet sich genau dort mit Blick auf das nächste Haus. Zoomstufe steht unten rechts.</div><div class="s">Rechtsklick in die Karte (ohne offenes Fenster) öffnet das Schnellmenü am Mauszeiger: in der Mitte Neue Location (erster Eckpunkt genau dort), an den Ecken Kartenebenen, B2C, Locations, Suchen. Zoomen geht bei offenem Menü weiter.</div><div class="s">Neues Gebiet eingezeichnet: Linksklick hinein speichert und öffnet die Einsatzplanung, Rechtsklick hinein verwirft und zeichnet ab dem vorletzten Punkt weiter, Klick daneben verwirft.</div><div class="s">Fenster: Rechtsklick ins Fenster geht einen Schritt zurück, bis es sich schließt. Ein Klick in die Karte schließt alle offenen Fenster.</div>';
+  h+='<h4>Bedienung</h4><div class="s">Street View: ab Zoom 17 auf eine Straße klicken, Street View öffnet sich genau dort mit Blick auf das nächste Haus. Innerhalb einer Location öffnet ein Klick neben die Straße das Location-Fenster. Zoomstufe steht unten mittig. Die Klappe oben rechts klappt Ebenen-Kacheln und Zahnrad aus.</div><div class="s">Rechtsklick in die Karte (ohne offenes Fenster) öffnet das Schnellmenü am Mauszeiger: in der Mitte Neue Location (erster Eckpunkt genau dort), an den Ecken Kartenebenen, B2C, Locations, Suchen. Zoomen geht bei offenem Menü weiter.</div><div class="s">Neues Gebiet eingezeichnet: Linksklick hinein speichert und öffnet die Einsatzplanung, Rechtsklick hinein verwirft und zeichnet ab dem vorletzten Punkt weiter, Klick daneben verwirft.</div><div class="s">Fenster: Rechtsklick ins Fenster geht einen Schritt zurück, bis es sich schließt. Ein Klick in die Karte schließt alle offenen Fenster.</div>';
   h+='<h4>Grundkarte</h4><div class="li"><span>'+({sat:'Satellit (Esri)',dop:'Amtliches Luftbild (LGLN, GeoInformation Bremen, Geobasis NRW)'}[base])+'</span></div>';
   return h;
 }
