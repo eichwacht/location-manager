@@ -1435,6 +1435,16 @@ function gpOpen(hit){ const t=adrText(hit), h=hit.h; $('#gp-title').textContent=
   if(!GM.key){ toast('Kein Google-Schlüssel eingetragen (Fenster Daten)'); return; }
   $('#gp-frame').src='https://www.google.com/maps/embed/v1/place?key='+encodeURIComponent(GM.key)+'&q='+encodeURIComponent(t)+'&center='+h.lat+','+h.lon+'&zoom=18&maptype=satellite&language=de&region=DE';
   $('#gpanel').classList.add('open'); }
+/* Bahnhof oder Haltestelle anklicken: ÖPNV-Route vom Start (Standort-Kachel an: genauer Standort, sonst Startadresse) bis dorthin, Google Maps im Location Manager (Maps Embed API, kostenlos) */
+async function hstRoute(p){ if(!GM.key){ toast('Kein Google-Schlüssel eingetragen (Fenster Daten)'); return; }
+  let o=null, otxt=''; const st=rtStart();
+  if(typeof meOn!=='undefined'&&meOn){ const ll=meMarker?meMarker.getLatLng():await rtPos(); if(ll){ o=(+ll.lat).toFixed(6)+','+(+ll.lng).toFixed(6); otxt='Standort'; } }
+  if(!o&&st){ o=st.txt; otxt=st.txt; }
+  if(!o){ toast('Keine Startadresse: im Fenster Daten unter „ÖPNV-Route“ eintragen oder Standort-Kachel einschalten'); return; }
+  const d=p.lat.toFixed(6)+','+p.lon.toFixed(6), name=p.n||(p.a==='bahn'?'Bahnhof':'Haltestelle');
+  gpShow('ÖPNV bis '+name,'https://www.google.com/maps/embed/v1/directions?key='+encodeURIComponent(GM.key)+'&origin='+encodeURIComponent(o)+'&destination='+encodeURIComponent(d)+'&mode=transit&language=de&region=DE',
+    'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(o)+'&destination='+encodeURIComponent(d)+'&travelmode=transit'); }
+function gpShow(title,src,ext){ $('#gp-title').textContent=title; $('#gp-ext').href=ext; $('#gp-frame').src=src; $('#gpanel').classList.add('open'); }
 function gpClose(){ $('#gpanel').classList.remove('open'); $('#gp-frame').src='about:blank'; }
 $('#gp-close').onclick=gpClose;
 (function(){ const box=$('#map'); let down=null;
@@ -2460,8 +2470,9 @@ function hstRender(force=false){ if(!hstOn||!hstFc) return; const z=map.getZoom(
   const key=z+'|'+b.toBBoxString().split(',').map(x=>(+x).toFixed(3)).join(','); if(!force&&key===hstRendered) return; hstRendered=key; hstLayer.clearLayers();
   const nBahn=sicht.filter(p=>p.a==='bahn'&&p.n).length, nAlle=sicht.filter(p=>p.n).length;
   sicht.forEach(p=>{ const bahn=p.a==='bahn';
-    const m=L.circleMarker([p.lat,p.lon],{renderer:hstR,radius:bahn?(z>=13?8:6):(z>=16?6:4),color:(bahn||p.a==='bus')?'#ffffff':'#001a4d',weight:bahn?3:1.5,fillColor:(bahn||p.a==='bus')?HST_BAHN_FARBE:p.a==='tram'?'#1a73e8':'#f2d11a',fillOpacity:1,interactive:!bahn}); // Bushaltestellen türkis wie Bahnhöfe
+    const m=L.circleMarker([p.lat,p.lon],{renderer:hstR,radius:bahn?(z>=13?8:6):(z>=16?6:4),color:(bahn||p.a==='bus')?'#ffffff':'#001a4d',weight:bahn?3:1.5,fillColor:(bahn||p.a==='bus')?HST_BAHN_FARBE:p.a==='tram'?'#1a73e8':'#f2d11a',fillOpacity:1,interactive:true}); // Bushaltestellen türkis wie Bahnhöfe
     const fest=false; // Namen nur beim Drüberfahren
+    m.on('click',e=>{ L.DomEvent.stopPropagation(e); if(window.RT&&RT.on){ rtPick(L.latLng(p.lat,p.lon)); return; } hstRoute(p); });
     if(!bahn) m.bindTooltip(esc(p.n||(bahn?'Bahnhof':'Haltestelle')),{className:'ttip',direction:'top',permanent:fest}); hstLayer.addLayer(m); }); }
 map.on('moveend',()=>{ clearTimeout(hstTimer); hstTimer=setTimeout(()=>hstRender(),120); });
 $('#b-hst').onclick=()=>{ hstOn=!hstOn; $('#b-hst').classList.toggle('on',hstOn); try{ localStorage.setItem('sle_lm_hst',hstOn?'1':''); }catch(e){} if(hstOn){ hstLayer.addTo(map); if(!hstFc||(hstFc.teile&&Object.keys(hstFc.teile).length<4)) hstLoad(); if(hstFc) hstRender(true); if(map.getZoom()<14) toast('Bahnhöfe Zoom 11 bis 16, Bushaltestellen ab Zoomstufe 14'); } else { map.removeLayer(hstLayer); hstRendered=''; } };
