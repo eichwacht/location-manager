@@ -730,7 +730,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .ltile.on{background:var(--gruen);border-color:var(--navy)}
   .ltile.on svg{stroke:var(--navy)}
   .ltile.drawtile svg{width:32px;height:32px;stroke-width:3}
-  #layerbox,#ovbox,#kbox,#ebbox{position:relative}
+  #layerbox,#kbox,#ebbox{position:relative}
+  #ovbox{position:absolute;right:12px;bottom:calc(12px + var(--sa-b));z-index:950} /* Zahnrad in der Ecke, Zoomstufe links daneben */
   #rtpanel{display:none;position:absolute;left:50%;top:12px;transform:translateX(-50%);width:min(560px,calc(100% - 24px));max-height:46%;overflow:auto;background:var(--navy);border:2px solid var(--hell);border-radius:12px;z-index:945;padding:10px 12px;color:var(--hell);-webkit-overflow-scrolling:touch}
   #rtpanel input{background:var(--hell);color:var(--navy)}
   #gpanel{display:none;position:absolute;right:12px;top:12px;bottom:calc(64px + var(--sa-b));width:min(460px,calc(100% - 24px));background:var(--navy);border:2px solid var(--hell);border-radius:12px;z-index:946;padding:10px 12px;color:var(--hell);flex-direction:column}
@@ -850,7 +851,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #svghost.sv-no{opacity:.75;filter:grayscale(.6)}
   #svghost::after{content:'';position:absolute;left:50%;top:100%;width:2px;height:10px;background:var(--navy);transform:translateX(-50%)}
   body.svdrag,body.svdrag *{cursor:grabbing !important}
-  #brbar{position:absolute;right:12px;bottom:calc(12px + var(--sa-b));z-index:900;display:flex;align-items:center;gap:8px}
+  #brbar{position:absolute;right:68px;bottom:calc(12px + var(--sa-b));z-index:900;display:flex;align-items:center;gap:8px}
   #zoombadge{background:var(--navy);border:2px solid var(--hell);border-radius:10px;color:var(--gruen);font-weight:700;font-size:13px;padding:0 10px;height:36px;display:flex;align-items:center;gap:6px}
   #zoombadge small{color:var(--hell);font-weight:600;font-size:11px}
   #legbtn{background:var(--navy);border:2px solid var(--hell);border-radius:10px;color:var(--gruen);font-weight:700;font-size:13px;padding:0 10px;height:36px;display:flex;align-items:center;gap:6px}
@@ -865,7 +866,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #legend .ci{width:14px;height:14px;border-radius:50%;flex:none}
   #legend img{max-width:100%;background:#fff;border-radius:8px;padding:4px;margin-top:4px}
   #legend .txt{font-weight:700;color:var(--hell);text-shadow:0 0 3px var(--navy),0 0 3px var(--navy)}
-  @media (min-width:701px) and (max-width:1400px){ #brbar{bottom:auto;top:12px} #legend{bottom:auto;top:60px;max-height:calc(100% - 150px)} } /* mittlere Breiten: Leiste sonst unter der Werkzeugleiste */
+  @media (min-width:701px) and (max-width:1400px){ #brbar{bottom:auto;top:12px;right:12px} #legend{bottom:auto;top:60px;max-height:calc(100% - 150px)} } /* mittlere Breiten: Leiste sonst unter der Werkzeugleiste */
   @media (max-width:700px){ #legbtn{height:32px;font-size:12px} #legend{bottom:auto;top:52px;max-height:calc(100% - 140px)} }
   #search{display:none;position:absolute;left:50%;top:12px;transform:translateX(-50%);width:min(560px,calc(100% - 24px));z-index:960}
   #search.open{display:block}
@@ -879,7 +880,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #sug .it .n b{display:block;font-size:15px}
   #sug .it .n span{font-size:12px;opacity:.85}
   #sug .it button{flex:none}
-  @media (max-width:700px){ #brbar{bottom:auto;top:12px} #zoombadge{height:32px;font-size:12px} #search{top:8px} }
+  @media (max-width:700px){ #brbar{bottom:auto;top:12px;right:12px} #zoombadge{height:32px;font-size:12px} #search{top:8px} }
   @media (max-width:700px){
     .win{left:0;top:0;transform:none;width:100%;height:calc(100% - 72px - var(--sa-b));border-radius:0 0 12px 12px;border-width:0 0 2px 0}
     .win .body{padding:12px 12px 24px}
@@ -951,7 +952,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
           </div>
         </div>
         <button class="ltile" id="b-sv" style="display:none" aria-label="Google Street View an der Kartenmitte"><!-- Kachel ausgeblendet seit v75: Street View per Klick auf die Straße bei Zoom 20 --><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5"/><path d="M8 22v-8l-2-5h12l-2 5v8M9 9v13M15 9v13"/></svg></button>
-        <div id="ovbox">
+      </div>
+      <!-- Einstellungen unten rechts in der Ecke -->
+      <div id="ovbox">
           <button class="ltile" id="ov-main" aria-label="Einstellungen und Ebenen"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
           <div id="ovmenu" class="flymenu">
             <div class="col" id="ov-haupt">
@@ -968,7 +971,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
             </div>
           </div>
         </div>
-      </div>
     </section>
 
     <!-- Gebiet -->
