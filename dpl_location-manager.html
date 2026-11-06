@@ -1088,7 +1088,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <section class="win" id="v-dash">
       <header><h2><span class="t">Dashboard</span></h2><div class="seg" id="d-range"><button data-r="woche">Woche</button><button data-r="monat" class="on">Monat</button><button data-r="jahr">Jahr</button><button data-r="gesamt">Gesamt</button></div></header><!-- seit v132 ohne Untertitel und ohne Schließen-Knopf: schließen per Klick in die Karte, Rechtsklick ins Fenster oder Dashboard-Kachel -->
       <div class="body">
-        <div class="seg tabs" id="d-tabs"><button data-t="einsatz" class="on">Shifts</button><button data-t="woche">Woche</button><button data-t="rank">Ranking</button></div>
+        <div class="seg tabs" id="d-tabs"><button data-t="woche" class="on">Woche</button><button data-t="einsatz">Shifts</button><button data-t="rank">Ranking</button></div>
         <div id="d-einsatz" class="d-pane">
         <div class="cards" id="d-cards"></div>
         <div class="card d-zeile" id="d-vergleich" style="display:none"></div>
@@ -2261,7 +2261,7 @@ map.on('mousedown dragstart',()=>legendOpen(false));
 
 /* ---------- Navigation ---------- */
 let openWin=null;
-function show(v){ if(v===openWin) v=null; openWin=v; if(v){ closePanel(); menuOpen(false); legendOpen(false); if($('#search').classList.contains('open')) searchOpen(false); } $$('.bottombar [data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v)); $$('.win[id^="v-"]').forEach(x=>x.classList.toggle('active',x.id==='v-'+v)); if(v==='dash') renderDash(); if(v==='plan') renderPlan(); if(v==='set') renderData(); }
+function show(v){ if(v===openWin) v=null; openWin=v; if(v){ closePanel(); menuOpen(false); legendOpen(false); if($('#search').classList.contains('open')) searchOpen(false); } $$('.bottombar [data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v)); $$('.win[id^="v-"]').forEach(x=>x.classList.toggle('active',x.id==='v-'+v)); if(v==='dash'){ dTab='woche'; wk=isoWeekOf(today()); renderDash(); } if(v==='plan') renderPlan(); if(v==='set') renderData(); }
 $$('.bottombar [data-view]').forEach(b=>b.onclick=()=>show(b.dataset.view));
 $$('.win [data-close]').forEach(b=>b.onclick=()=>show(null));
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if($('#gpanel').classList.contains('open')) gpClose(); else if($('#legend').classList.contains('open')) legendOpen(false); else if($('#search').classList.contains('open')) searchOpen(false); else if(map.pm.globalDrawModeEnabled()) map.pm.disableDraw(); else if(layerMenu.classList.contains('open')||ovMenu.classList.contains('open')||kMenu.classList.contains('open')) menuOpen(false); else if($('#panel').classList.contains('active')) closePanel(); else show(null); } });
@@ -2633,7 +2633,7 @@ function bookRender(l){ const F=$('#ld-form'), B=LD.book, art=B.art; const {list
   $('#bk-new').onclick=async()=>{ const d=$('#bk-d').value, t=$('#bk-t').value; if(!d||!t) return; try{ const o=opts(); await wechsel(); await calBookNew(l,art,new Date(d+'T'+t).toISOString(),o); LD.book=null; leadRender(); toast('Termin angelegt: '+tagKurz(d)+' '+t); }catch(x){ toast(x.message||String(x)); } }; }
 
 /* ---------- Dashboard: Reiter Woche und Ranking ---------- */
-let dTab='einsatz', wk=isoWeekOf(today());
+let dTab='woche', wk=isoWeekOf(today()); // Dashboard öffnet immer mit der aktuellen KW (seit v133)
 $$('#d-tabs button').forEach(b=>b.onclick=()=>{ dTab=b.dataset.t; kDashTab(); });
 const _renderDash=renderDash; renderDash=function(){ _renderDash(); kDashTab(); };
 function kDashTab(){ $$('#d-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===dTab)); ['einsatz','woche','rank'].forEach(t=>{ const el=$('#d-'+t); if(el) el.style.display=t===dTab?'':'none'; }); $('#d-range').style.display=dTab==='einsatz'?'':'none';
@@ -2642,9 +2642,9 @@ const QKURZ=['Leads je 100 Türen (D2D)','Direkttermine je 100 Türen','Termin-Q
 function wocheRender(){ const el=$('#d-woche'); if(!el) return; const days=kpiWeek(wk.year,wk.week), S=kSum(days), mon=weekMonday(wk.year,wk.week);
   const orte=WTAGE.map(k=>days[k].loc?`<div class="s d-ort">${tagKurz(days[k].date)}: ${esc(days[k].loc)}${days[k].rating?' · Bewertung '+days[k].rating:''}${days[k].back?' · wiederkommen':''}</div>`:'').join('')||'<div class="s d-ort">Keine Shifts in dieser Woche.</div>';
   let h=`<div class="row sb d-wkopf"><button class="btn small" id="wk-prev" aria-label="Vorwoche">‹</button><div class="d-wtitel"><strong>KW ${wk.week} · ${tagKurz(mon)} bis ${tagKurz(addDays(mon,5))}</strong><div class="s">${KF.at?'An das Wochenblatt übergeben: '+fmtDT(KF.at):'Noch nicht an das Wochenblatt übergeben (bei Google anmelden).'}${KF.err==='scope'?' · Für die Übergabe einmal neu bei Google anmelden.':''}</div></div><button class="btn small" id="wk-next" aria-label="Nächste Woche">›</button></div>
-    <div class="d-zwei d-wzwei"><div class="d-box"><table class="kw"><tr><th></th>${WTAGE.map(k=>`<th class="r">${k[0].toUpperCase()+k[1]}</th>`).join('')}<th class="r">Σ</th><th class="r">Ziel</th></tr>`;
+    <div class="d-zwei d-wzwei"><div class="d-box"><table class="kw"><tr><th></th>${WTAGE.map(k=>`<th class="r">${k[0].toUpperCase()+k[1]}</th>`).join('')}<th class="r">Ist</th><th class="r">Ziel</th></tr>`;
   KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td>${WTAGE.map(k=>`<td class="r">${days[k][c]||''}</td>`).join('')}<td class="r"><b>${S[c]}</b></td><td class="r">${KZIEL[c]}</td></tr>`; });
-  h+=`</table></div><div class="d-box"><strong class="d-h">Quoten</strong><table class="d-q"><tr><th></th><th class="r">Ist</th><th class="r">Ziel</th></tr>${kQuoten(S).map((q,i)=>{ const vs=/Vorschlag/.test(q[2]); return `<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${q[1]}</b></td><td class="r${vs?' d-vs':''}">${q[2].replace(/\s*\(Vorschlag\)/,'')}</td></tr>`; }).join('')}</table>${kQuoten(S).some(q=>/Vorschlag/.test(q[2]))?'<div class="s d-vsh">kursiv: Zielvorschlag, noch nicht bestätigt</div>':''}<strong class="d-h d-h2">Location je Tag</strong>${orte}</div></div>`;
+  h+=`</table></div><div class="d-box"><strong class="d-h">Quoten</strong><table class="d-q"><tr><th></th><th class="r">Ist</th><th class="r">Ziel</th></tr>${kQuoten(S).map((q,i)=>{ const vs=/Vorschlag/.test(q[2]); return `<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${q[1]||'–'}</b></td><td class="r${vs?' d-vs':''}">${q[2].replace(/\s*\(Vorschlag\)/,'')}</td></tr>`; }).join('')}</table>${kQuoten(S).some(q=>/Vorschlag/.test(q[2]))?'<div class="s d-vsh">kursiv: Zielvorschlag, noch nicht bestätigt</div>':''}<strong class="d-h d-h2">Location je Tag</strong>${orte}</div></div>`;
   el.innerHTML=h; $('#wk-prev').onclick=()=>{ wk=isoWeekOf(addDays(mon,-7)); wocheRender(); dEinpassen(); }; $('#wk-next').onclick=()=>{ wk=isoWeekOf(addDays(mon,7)); wocheRender(); dEinpassen(); }; }
 function rankRender(){ const el=$('#d-rank'); if(!el) return; const rows=rankRows(); const f=(x,d=1)=>x==null?'':x.toFixed(d);
   el.innerHTML=`<div class="s d-rinfo">Sortiert nach Abschlüssen je 100 Türen (nur D2D), dann CSA je CHC, dann Leads je 100 Türen. Grau: unter 3 Abschlüssen.</div><div id="d-rankt" class="d-fill"></div>`; DSEITE['d-rankt']=0;
