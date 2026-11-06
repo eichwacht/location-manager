@@ -1089,15 +1089,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
     <!-- Dashboard -->
     <section class="win" id="v-dash">
-      <header><h2><span class="t">Dashboard</span></h2><div class="seg" id="d-range"><button data-r="woche">Woche</button><button data-r="monat" class="on">Monat</button><button data-r="jahr">Jahr</button><button data-r="gesamt">Gesamt</button></div></header><!-- seit v132 ohne Untertitel und ohne Schließen-Knopf: schließen per Klick in die Karte, Rechtsklick ins Fenster oder Dashboard-Kachel -->
+      <header><h2><span class="t">Dashboard</span></h2></header><!-- seit v136 ohne Reiter Shifts und ohne Zeitraumwahl --><!-- seit v132 ohne Untertitel und ohne Schließen-Knopf: schließen per Klick in die Karte, Rechtsklick ins Fenster oder Dashboard-Kachel -->
       <div class="body">
-        <div class="seg tabs" id="d-tabs"><button data-t="woche" class="on">Woche</button><button data-t="einsatz">Shifts</button><button data-t="rank">Ranking</button></div>
-        <div id="d-einsatz" class="d-pane">
-        <div class="cards" id="d-cards"></div>
-        <div class="card d-zeile" id="d-vergleich" style="display:none"></div>
-        <div class="d-zwei"><div class="card d-box"><strong>Kalenderwochen</strong><div id="d-weeks" class="d-fill"></div></div><div class="card d-box"><strong>Top Gebiete</strong><div id="d-top" class="d-fill"></div></div></div>
-        </div>
-        <div id="d-woche" class="d-pane" style="display:none"></div>
+        <div class="seg tabs" id="d-tabs"><button data-t="woche" class="on">Woche</button><button data-t="rank">Ranking</button></div>
+        <div id="d-woche" class="d-pane"></div>
         <div id="d-rank" class="d-pane" style="display:none"></div>
       </div>
     </section>
@@ -1768,7 +1763,7 @@ function dEinpassen(blaettern=true){ const v=$('#v-dash'); if(!v.classList.conta
     const hoch=bd.scrollHeight>bd.clientHeight+1, breit=wf<1; if(!hoch&&!breit) break;
     const f=Math.min(hoch?(bd.clientHeight-2)/bd.scrollHeight:1, wf); pane.style.zoom=Math.max(.55,(parseFloat(pane.style.zoom)||1)*f).toFixed(3); } }
 window.addEventListener('resize',()=>{ clearTimeout(dFitT); dFitT=setTimeout(()=>{ if($('#v-dash').classList.contains('active')) renderDash(); },150); });
-function renderDash(){
+function renderDash(){ if(!$('#d-cards')) return; // Reiter Shifts seit v136 entfernt
   const done=D.shifts.filter(x=>x.status==='abgeschlossen'); const s=done.filter(x=>inRange(x,range)); const t=sum(s);
   $('#d-cards').innerHTML=[['Leads',t.leads,''],['Shifts',t.n,''],['Ø Leads je Shift',t.n?(t.leads/t.n).toFixed(1):'0',''],['Türen',t.doors,t.doors?`${(t.leads/t.doors*100).toFixed(1)} % Quote`:''],['Leads je Stunde',t.hours?(t.leads/t.hours).toFixed(2):'0',`${t.hours} h`]].map(([l,v,x])=>`<div class="card"><div class="l">${l}</div><div class="v">${v}${x?`<small>${x}</small>`:''}</div></div>`).join('');
   // Vergleich: Woche gegen Vorwoche, Monat gegen Vormonat
@@ -2644,7 +2639,7 @@ $$('#d-tabs button').forEach(b=>b.onclick=()=>{ dTab=b.dataset.t; kDashTab(); })
 function kwReiter(){ const b=$('#d-tabs [data-t="woche"]'); if(b) b.textContent='KW '+isoWeekOf(today()).week; }
 kwReiter();
 const _renderDash=renderDash; renderDash=function(){ _renderDash(); kDashTab(); };
-function kDashTab(){ kwReiter(); $$('#d-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===dTab)); ['einsatz','woche','rank'].forEach(t=>{ const el=$('#d-'+t); if(el) el.style.display=t===dTab?'':'none'; }); $('#d-range').style.display=dTab==='einsatz'?'':'none';
+function kDashTab(){ kwReiter(); $$('#d-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===dTab)); ['einsatz','woche','rank'].forEach(t=>{ const el=$('#d-'+t); if(el) el.style.display=t===dTab?'':'none'; }); if($('#d-range')) $('#d-range').style.display=dTab==='einsatz'?'':'none';
   if(dTab==='woche') wocheRender(); if(dTab==='rank') rankRender(); dEinpassen(); }
 /* Ziele selbst festlegen (seit v134): je KW gespeichert, gelten ab dieser KW bis zur nächsten KW mit eigenen Zielen; vorher gelten die Startziele */
 const QZIEL0=[[2.0,'x'],[0.3,'x'],[50,'%'],[50,'%'],[80,'%',1],[100,'%'],[90,'%',1],[40,'%',1],[30,'%'],[0,'%'],[1.0,'x']]; // Startwert, Art (x Verhältnis, % Prozent), 1 = Vorschlag
