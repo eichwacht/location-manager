@@ -2640,8 +2640,11 @@ function bookRender(l){ const F=$('#ld-form'), B=LD.book, art=B.art; const {list
 /* ---------- Dashboard: Reiter Woche und Ranking ---------- */
 let dTab='woche', wk=isoWeekOf(today()); // Dashboard öffnet immer mit der aktuellen KW (seit v133)
 $$('#d-tabs button').forEach(b=>b.onclick=()=>{ dTab=b.dataset.t; kDashTab(); });
+// Reiter zeigt die aktuelle KW statt „Woche“ (seit v135)
+function kwReiter(){ const b=$('#d-tabs [data-t="woche"]'); if(b) b.textContent='KW '+isoWeekOf(today()).week; }
+kwReiter();
 const _renderDash=renderDash; renderDash=function(){ _renderDash(); kDashTab(); };
-function kDashTab(){ $$('#d-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===dTab)); ['einsatz','woche','rank'].forEach(t=>{ const el=$('#d-'+t); if(el) el.style.display=t===dTab?'':'none'; }); $('#d-range').style.display=dTab==='einsatz'?'':'none';
+function kDashTab(){ kwReiter(); $$('#d-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===dTab)); ['einsatz','woche','rank'].forEach(t=>{ const el=$('#d-'+t); if(el) el.style.display=t===dTab?'':'none'; }); $('#d-range').style.display=dTab==='einsatz'?'':'none';
   if(dTab==='woche') wocheRender(); if(dTab==='rank') rankRender(); dEinpassen(); }
 /* Ziele selbst festlegen (seit v134): je KW gespeichert, gelten ab dieser KW bis zur nächsten KW mit eigenen Zielen; vorher gelten die Startziele */
 const QZIEL0=[[2.0,'x'],[0.3,'x'],[50,'%'],[50,'%'],[80,'%',1],[100,'%'],[90,'%',1],[40,'%',1],[30,'%'],[0,'%'],[1.0,'x']]; // Startwert, Art (x Verhältnis, % Prozent), 1 = Vorschlag
