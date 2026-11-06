@@ -2928,7 +2928,7 @@ function radLayout(){ const pos={}, w1={such:-90,ebenen:0,b2c:180,set:60,dash:12
   const setz=(k,x,y,d)=>{ const b=$('#rad-'+k); b.style.left=Math.round(x-18)+'px'; b.style.top=Math.round(y-18)+'px'; b.style.transitionDelay=d+'ms'; pos[k]=[x,y]; };
   RAD1.forEach((k,i)=>{ const a=w1[k]*Math.PI/180; setz(k,Math.cos(a)*RAD_R1,Math.sin(a)*RAD_R1,i*15); });
   const lin=(p,q,cls)=>{ const dx=q[0]-p[0], dy=q[1]-p[1], L=Math.hypot(dx,dy)||1, ux=dx/L, uy=dy/L, r=19; return `<line class="${cls}" x1="${(p[0]+ux*r).toFixed(1)}" y1="${(p[1]+uy*r).toFixed(1)}" x2="${(q[0]-ux*r).toFixed(1)}" y2="${(q[1]-uy*r).toFixed(1)}"/>`; };
-  let h=RAD1.map(k=>lin([0,0],pos[k],'haupt')).join('');
+  let h=''; // seit v145: keine Linien von Neue Location zu den Hauptkacheln, nur die Unteräste
   Object.entries(RAD_AESTE).forEach(([ast,kinder])=>{ const [ex,ey]=pos[ast], n=kinder.length, st=180/(n-1), rechts=w1[ast]===0;
     kinder.forEach((k,i)=>{ const d=rechts?-90+i*st:90-i*st, a=(w1[ast]+d)*Math.PI/180; setz(k,ex+Math.cos(a)*RAD_R2,ey+Math.sin(a)*RAD_R2,i*25); h+=lin(pos[ast],pos[k],'kind-'+ast); }); });
   $('#rad-linien').innerHTML=h; }
