@@ -2912,7 +2912,7 @@ function ebSchalten(an){ window.__lmStill=true; try{ EB_IDS.forEach(id=>{ const 
 $('#eb-main').onclick=()=>{ menuOpen(false); ebSchalten(!ebAlleAn()); };
 
 /* Radialmenü (Rechtsklick in die Karte) als Mindmap: Neue Location in der Mitte, Hauptäste Suchen, Kartenebenen und B2C (klappen auf) */
-const RAD={ll:null}, RAD1=['such','ebenen','b2c'], RAD_AESTE={ebenen:['eb','wp','plz','ort','hst','adr'],b2c:['loc','klead','kchc','kcsc','kccw']}, RAD_R1=60, RAD_R2=74;
+const RAD={ll:null}, RAD1=['such','ebenen','b2c'], RAD_AESTE={ebenen:['eb','wp','plz','ort','hst','adr'],b2c:['loc','klead','kchc','kcsc','kccw']}, RAD_R1=82, RAD_R2=74; // Hauptäste seit v139 doppelt so lang (Linie 44 statt 22 px)
 (function(){ const ic=(id)=>{ const el=$(id); const sv=el?el.querySelector('svg'):null; return sv?sv.outerHTML:''; };
   const POLY='<svg viewBox="0 0 24 24"><path d="M5 6l9-3 6 7-3 10-11-2z"/><circle cx="5" cy="6" r="1.4"/><circle cx="14" cy="3" r="1.4"/><circle cx="20" cy="10" r="1.4"/><circle cx="17" cy="20" r="1.4"/><circle cx="6" cy="18" r="1.4"/></svg>';
   const AUGE='<svg viewBox="0 0 24 24"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
@@ -2932,7 +2932,7 @@ function radAst(ast,an){ const r=$('#radial'), b=$('#rad-'+ast); r.classList.tog
 function radAestZu(){ radAst('ebenen',false); radAst('b2c',false); }
 function radAstOffen(){ const r=$('#radial'); return r.classList.contains('ast-ebenen')||r.classList.contains('ast-b2c'); }
 function radOffen(){ return $('#radial').classList.contains('open'); }
-function radOpen(x,y,ll){ RAD.ll=ll; const r=$('#radial'); x=innerWidth>=340?Math.max(170,Math.min(innerWidth-170,x)):innerWidth/2; y=Math.max(100,Math.min(innerHeight-100,y)); RAD.x=x; RAD.y=y; r.style.left=x+'px'; r.style.top=y+'px'; // beide Äste müssen ins Bild passen
+function radOpen(x,y,ll){ RAD.ll=ll; const r=$('#radial'); x=innerWidth>=364?Math.max(182,Math.min(innerWidth-182,x)):innerWidth/2; y=Math.max(108,Math.min(innerHeight-100,y)); RAD.x=x; RAD.y=y; r.style.left=x+'px'; r.style.top=y+'px'; // beide Äste müssen ins Bild passen
   radAestZu(); radSync();
   r.classList.remove('open'); void r.offsetWidth; r.classList.add('open'); }
 function radClose(){ $('#radial').classList.remove('open'); radAestZu(); }
