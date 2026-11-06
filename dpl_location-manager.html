@@ -830,6 +830,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #v-dash table.kw td,#v-dash table.kw th{padding:2px 4px} #v-dash .kw .bez{font-size:11px;opacity:.8;font-weight:400}
   #v-dash .d-q td,#v-dash .d-q th{padding:1px 4px;font-size:11.5px} #v-dash .d-q .d-vs{font-style:italic;opacity:.75} #v-dash .d-vsh{font-size:10.5px;opacity:.75;margin-top:2px} #v-dash .d-q td:first-child{white-space:normal}
   #v-dash .d-h{display:block;font-size:12px;margin:0 0 2px} #v-dash .d-h2{margin-top:6px}
+  #v-dash .d-zin{width:44px;height:18px;padding:0 3px;font:inherit;font-size:12px;text-align:right;border-radius:4px;border:1px solid var(--hell);background:#fff;color:var(--navy);box-sizing:border-box} #v-dash .d-q .d-zin{width:38px}
+  #v-dash .d-zin.fehl{border-color:#e05050;background:#ffe5e5}
+  #v-dash .d-zbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:4px 0 2px} #v-dash .d-zbar .btn{padding:2px 10px;font-size:12px} #v-dash .d-zbar .s{font-size:11px;opacity:.85}
   #v-dash .d-ort{font-size:11.5px} #v-dash .d-rinfo{flex:none;font-size:11.5px;margin:0}
   @media (max-width:700px){ #v-dash header .sub{display:none} #v-dash #d-range button{padding:6px 8px;font-size:13px} #v-dash .card .l{white-space:normal;font-size:11px;line-height:1.2} #v-dash .card .v small{display:block;margin:0} #v-dash .cards{grid-template-columns:repeat(3,minmax(0,1fr))} #v-dash .d-zwei{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr)} #v-dash .d-wzwei{grid-template-rows:auto auto} #v-dash .kw .bez{display:none} }
   th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--navy);font-size:14px}
@@ -2010,6 +2013,7 @@ function mergeData(remote){
   const ids=new Set(D.locations.map(l=>l.id)); D.shifts=D.shifts.filter(s=>ids.has(s.locationId));
   D.deleted=[...del.entries()].map(([id,at])=>({id,at})).slice(-2000);
   const cal=Object.assign({},remote.cal||{}); Object.entries(D.cal||{}).forEach(([k,v])=>{ if(!cal[k]||(v.at||'')>(cal[k].at||'')) cal[k]=v; }); D.cal=cal;
+  const zw=Object.assign({},(remote.ziele&&remote.ziele.wochen)||{}); Object.entries((D.ziele&&D.ziele.wochen)||{}).forEach(([k,v])=>{ if(!zw[k]||(v.at||'')>(zw[k].at||'')) zw[k]=v; }); D.ziele={wochen:zw}; // Ziele je KW, neuere gewinnt
 }
 let gSaveTimer=null, gDirty=false;
 function gQueueSave(){ gDirty=true; if(!gReady()) return; clearTimeout(gSaveTimer); gSaveTimer=setTimeout(()=>gSync(false),2500); }
@@ -2021,7 +2025,7 @@ async function gSync(full=true){
     const before=JSON.stringify({l:D.locations,s:D.shifts,k:D.leads});
     mergeData(remote||{});
     localStorage.setItem(Store.key,JSON.stringify(D));
-    const payload={locations:D.locations,shifts:D.shifts,leads:D.leads||[],deleted:D.deleted,cal:D.cal,savedAt:new Date().toISOString()};
+    const payload={locations:D.locations,shifts:D.shifts,leads:D.leads||[],deleted:D.deleted,cal:D.cal,ziele:D.ziele||{wochen:{}},savedAt:new Date().toISOString()};
     await gFetch('https://www.googleapis.com/upload/drive/v3/files/'+id+'?uploadType=media',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     gDirty=false; G.lastSync=new Date().toISOString(); localStorage.setItem('sle_lm_glast',G.lastSync);
     if(typeof kAfterChange==='function') kAfterChange(); if(JSON.stringify({l:D.locations,s:D.shifts,k:D.leads})!==before){ Object.values(layers).forEach(l=>map.removeLayer(l)); D.locations.forEach(render); if(cur){ const c=D.locations.find(l=>l.id===cur.id); if(c) openPanel(c.id); else closePanel(); } if(openWin){ const w=openWin; show(w); show(w); } }
@@ -2261,7 +2265,7 @@ map.on('mousedown dragstart',()=>legendOpen(false));
 
 /* ---------- Navigation ---------- */
 let openWin=null;
-function show(v){ if(v===openWin) v=null; openWin=v; if(v){ closePanel(); menuOpen(false); legendOpen(false); if($('#search').classList.contains('open')) searchOpen(false); } $$('.bottombar [data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v)); $$('.win[id^="v-"]').forEach(x=>x.classList.toggle('active',x.id==='v-'+v)); if(v==='dash'){ dTab='woche'; wk=isoWeekOf(today()); renderDash(); } if(v==='plan') renderPlan(); if(v==='set') renderData(); }
+function show(v){ if(v===openWin) v=null; openWin=v; if(v){ closePanel(); menuOpen(false); legendOpen(false); if($('#search').classList.contains('open')) searchOpen(false); } $$('.bottombar [data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v)); $$('.win[id^="v-"]').forEach(x=>x.classList.toggle('active',x.id==='v-'+v)); if(v==='dash'){ dTab='woche'; wk=isoWeekOf(today()); zielEdit=false; renderDash(); } if(v==='plan') renderPlan(); if(v==='set') renderData(); }
 $$('.bottombar [data-view]').forEach(b=>b.onclick=()=>show(b.dataset.view));
 $$('.win [data-close]').forEach(b=>b.onclick=()=>show(null));
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if($('#gpanel').classList.contains('open')) gpClose(); else if($('#legend').classList.contains('open')) legendOpen(false); else if($('#search').classList.contains('open')) searchOpen(false); else if(map.pm.globalDrawModeEnabled()) map.pm.disableDraw(); else if(layerMenu.classList.contains('open')||ovMenu.classList.contains('open')||kMenu.classList.contains('open')) menuOpen(false); else if($('#panel').classList.contains('active')) closePanel(); else show(null); } });
@@ -2439,7 +2443,8 @@ function kQuoten(S){ const pct=(a,b)=>b>0?Math.round(a/b*100):null; const P=(a,b
 const KF={name:'location-manager-wochenzahlen.json',id:localStorage.getItem('sle_lm_kpifile')||'',last:localStorage.getItem('sle_lm_kpilast')||'',at:localStorage.getItem('sle_lm_kpiat')||'',err:''};
 function kpiExport(){ const weeks={}, td=today(); for(let i=-10;i<=1;i++){ const {year,week}=isoWeekOf(addDays(td,i*7)); const id=weekId(year,week); if(weeks[id]) continue; const days=kpiWeek(year,week);
     if(!WTAGE.some(k=>KCODES.some(c=>days[k][c])||days[k].loc)) continue; const out={}; WTAGE.forEach(k=>{ const o=days[k], r={}; KCODES.forEach(c=>r[c]=o[c]); r.loc=o.loc; if(o.rating) r.rating=o.rating; if(o.back) r.back=true; if(o.note) r.note=o.note; out[k]=r; }); weeks[id]={days:out}; }
-  return {app:'SLE Location Manager',version:36,hinweis:'Nur Zahlen und Location je Tag, keine Kundendaten',weeks}; }
+  const ziele={}; for(let i=-10;i<=1;i++){ const {year,week}=isoWeekOf(addDays(td,i*7)); const z=zieleFuer(year,week); ziele[weekId(year,week)]={k:z.k,q:z.q,eigen:z.eigen}; }
+  return {app:'SLE Location Manager',version:36,hinweis:'Nur Zahlen und Location je Tag, keine Kundendaten',weeks,ziele}; }
 async function kpiFileSync(force=false){ if(!gReady()) return; const body=JSON.stringify(kpiExport()); if(!force&&body===KF.last&&KF.id) return;
   try{ if(!KF.id){ const j=await gFetch('https://www.googleapis.com/drive/v3/files?fields=files(id,modifiedTime)&orderBy=modifiedTime%20desc&q='+encodeURIComponent(`name='${KF.name}' and trashed=false`));
       if(j.files&&j.files.length) KF.id=j.files[0].id; else { const meta={name:KF.name,mimeType:'application/json',description:'Wochenzahlen aus dem SLE Location Manager für das KPI-Wochenblatt (ohne Kundendaten)'};
@@ -2638,14 +2643,36 @@ $$('#d-tabs button').forEach(b=>b.onclick=()=>{ dTab=b.dataset.t; kDashTab(); })
 const _renderDash=renderDash; renderDash=function(){ _renderDash(); kDashTab(); };
 function kDashTab(){ $$('#d-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===dTab)); ['einsatz','woche','rank'].forEach(t=>{ const el=$('#d-'+t); if(el) el.style.display=t===dTab?'':'none'; }); $('#d-range').style.display=dTab==='einsatz'?'':'none';
   if(dTab==='woche') wocheRender(); if(dTab==='rank') rankRender(); dEinpassen(); }
+/* Ziele selbst festlegen (seit v134): je KW gespeichert, gelten ab dieser KW bis zur nächsten KW mit eigenen Zielen; vorher gelten die Startziele */
+const QZIEL0=[[2.0,'x'],[0.3,'x'],[50,'%'],[50,'%'],[80,'%',1],[100,'%'],[90,'%',1],[40,'%',1],[30,'%'],[0,'%'],[1.0,'x']]; // Startwert, Art (x Verhältnis, % Prozent), 1 = Vorschlag
+let zielEdit=false;
+function zieleFuer(year,week){ const W=(D.ziele&&D.ziele.wochen)||{}, id=weekId(year,week), ks=Object.keys(W).filter(k=>k<=id).sort(), k=ks[ks.length-1];
+  if(k) return {k:Object.assign({},KZIEL,W[k].k||{}), q:QZIEL0.map((z,i)=>W[k].q&&W[k].q[i]!=null?W[k].q[i]:z[0]), eigen:true, ab:k};
+  return {k:Object.assign({},KZIEL), q:QZIEL0.map(z=>z[0]), eigen:false, ab:null}; }
+function qFmt(i,v){ return QZIEL0[i][1]==='%'?Math.round(v)+' %':(Math.round(v*10)/10).toFixed(1).replace('.',','); }
+function zielZahl(x){ const n=parseFloat(String(x).replace(',','.').replace('%','').trim()); return isFinite(n)&&n>=0?n:null; }
+const kwAus=id=>'KW '+(+id.split('-kw')[1])+(id.slice(0,4)!==String(new Date().getFullYear())?' '+id.slice(0,4):'');
 const QKURZ=['Leads je 100 Türen (D2D)','Direkttermine je 100 Türen','Termin-Quote (CAS je Lead)','Show-up CHC (je CAS)','Folgetermin-Quote (CSA je CHC)','Angebotsquote (COF je CSA)','Show-up CSC (je CSA)','Abschlussquote (CCW je CSC)','Abschluss gesamt (CCW je CHC)','Widerrufsquote (CCR je CCW)','Empfehlungen je CCW'];
-function wocheRender(){ const el=$('#d-woche'); if(!el) return; const days=kpiWeek(wk.year,wk.week), S=kSum(days), mon=weekMonday(wk.year,wk.week);
+function wocheRender(){ const el=$('#d-woche'); if(!el) return; const days=kpiWeek(wk.year,wk.week), S=kSum(days), mon=weekMonday(wk.year,wk.week), Z=zieleFuer(wk.year,wk.week), E=zielEdit;
   const orte=WTAGE.map(k=>days[k].loc?`<div class="s d-ort">${tagKurz(days[k].date)}: ${esc(days[k].loc)}${days[k].rating?' · Bewertung '+days[k].rating:''}${days[k].back?' · wiederkommen':''}</div>`:'').join('')||'<div class="s d-ort">Keine Shifts in dieser Woche.</div>';
   let h=`<div class="row sb d-wkopf"><button class="btn small" id="wk-prev" aria-label="Vorwoche">‹</button><div class="d-wtitel"><strong>KW ${wk.week} · ${tagKurz(mon)} bis ${tagKurz(addDays(mon,5))}</strong><div class="s">${KF.at?'An das Wochenblatt übergeben: '+fmtDT(KF.at):'Noch nicht an das Wochenblatt übergeben (bei Google anmelden).'}${KF.err==='scope'?' · Für die Übergabe einmal neu bei Google anmelden.':''}</div></div><button class="btn small" id="wk-next" aria-label="Nächste Woche">›</button></div>
     <div class="d-zwei d-wzwei"><div class="d-box"><table class="kw"><tr><th></th>${WTAGE.map(k=>`<th class="r">${k[0].toUpperCase()+k[1]}</th>`).join('')}<th class="r">Ist</th><th class="r">Ziel</th></tr>`;
-  KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td>${WTAGE.map(k=>`<td class="r">${days[k][c]||''}</td>`).join('')}<td class="r"><b>${S[c]}</b></td><td class="r">${KZIEL[c]}</td></tr>`; });
-  h+=`</table></div><div class="d-box"><strong class="d-h">Quoten</strong><table class="d-q"><tr><th></th><th class="r">Ist</th><th class="r">Ziel</th></tr>${kQuoten(S).map((q,i)=>{ const vs=/Vorschlag/.test(q[2]); return `<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${q[1]||'–'}</b></td><td class="r${vs?' d-vs':''}">${q[2].replace(/\s*\(Vorschlag\)/,'')}</td></tr>`; }).join('')}</table>${kQuoten(S).some(q=>/Vorschlag/.test(q[2]))?'<div class="s d-vsh">kursiv: Zielvorschlag, noch nicht bestätigt</div>':''}<strong class="d-h d-h2">Location je Tag</strong>${orte}</div></div>`;
-  el.innerHTML=h; $('#wk-prev').onclick=()=>{ wk=isoWeekOf(addDays(mon,-7)); wocheRender(); dEinpassen(); }; $('#wk-next').onclick=()=>{ wk=isoWeekOf(addDays(mon,7)); wocheRender(); dEinpassen(); }; }
+  KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td>${WTAGE.map(k=>`<td class="r">${days[k][c]||''}</td>`).join('')}<td class="r"><b>${S[c]}</b></td><td class="r">${E?`<input class="d-zin" data-k="${c}" inputmode="numeric" aria-label="Ziel ${c}" value="${Z.k[c]}">`:Z.k[c]}</td></tr>`; });
+  h+=`</table></div><div class="d-box"><strong class="d-h">Quoten</strong><table class="d-q"><tr><th></th><th class="r">Ist</th><th class="r">Ziel</th></tr>${kQuoten(S).map((q,i)=>{ const vs=!Z.eigen&&QZIEL0[i][2]; const pz=QZIEL0[i][1]==='%';
+      return `<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${q[1]||'–'}</b></td><td class="r${vs&&!E?' d-vs':''}">${E?`<input class="d-zin" data-q="${i}" inputmode="decimal" aria-label="Ziel ${QKURZ[i]}" value="${pz?Math.round(Z.q[i]):(Math.round(Z.q[i]*10)/10).toFixed(1).replace('.',',')}">${pz?' %':''}`:qFmt(i,Z.q[i])}</td></tr>`; }).join('')}</table>
+    ${!E&&!Z.eigen&&QZIEL0.some(z=>z[2])?'<div class="s d-vsh">kursiv: Zielvorschlag, noch nicht bestätigt</div>':''}
+    <div class="d-zbar">${E?`<button class="btn small primary" id="z-save">Speichern</button><button class="btn small" id="z-cancel">Abbrechen</button><span class="s">gilt ab KW ${wk.week}</span>`:`<button class="btn small" id="z-edit">Ziele festlegen</button><span class="s">${Z.eigen?'festgelegt ab '+kwAus(Z.ab):'Startziele'}</span>`}</div><strong class="d-h d-h2">Location je Tag</strong>${orte}</div></div>`;
+  el.innerHTML=h; $('#wk-prev').onclick=()=>{ zielEdit=false; wk=isoWeekOf(addDays(mon,-7)); wocheRender(); dEinpassen(); }; $('#wk-next').onclick=()=>{ zielEdit=false; wk=isoWeekOf(addDays(mon,7)); wocheRender(); dEinpassen(); };
+  if($('#z-edit')) $('#z-edit').onclick=()=>{ zielEdit=true; wocheRender(); dEinpassen(); const f=el.querySelector('.d-zin'); if(f){ f.focus(); f.select(); } };
+  if($('#z-cancel')) $('#z-cancel').onclick=()=>{ zielEdit=false; wocheRender(); dEinpassen(); };
+  if($('#z-save')) $('#z-save').onclick=zieleSpeichern;
+  el.querySelectorAll('.d-zin').forEach(f=>f.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); zieleSpeichern(); } })); }
+function zieleSpeichern(){ const el=$('#d-woche'), Z=zieleFuer(wk.year,wk.week), k={}, q=Z.q.slice(); let fehler='';
+  el.querySelectorAll('.d-zin[data-k]').forEach(f=>{ const n=zielZahl(f.value); if(n===null){ fehler=fehler||f.dataset.k; f.classList.add('fehl'); } else k[f.dataset.k]=Math.round(n); });
+  el.querySelectorAll('.d-zin[data-q]').forEach(f=>{ const i=+f.dataset.q, n=zielZahl(f.value); if(n===null){ fehler=fehler||QKURZ[i]; f.classList.add('fehl'); } else q[i]=QZIEL0[i][1]==='%'?Math.round(n):Math.round(n*10)/10; });
+  if(fehler){ toast('Bitte eine Zahl eintragen: '+fehler); return; }
+  if(!D.ziele) D.ziele={wochen:{}}; if(!D.ziele.wochen) D.ziele.wochen={}; D.ziele.wochen[weekId(wk.year,wk.week)]={k,q,at:new Date().toISOString()}; Store.save();
+  zielEdit=false; wocheRender(); dEinpassen(); toast('Ziele ab KW '+wk.week+' gespeichert'); }
 function rankRender(){ const el=$('#d-rank'); if(!el) return; const rows=rankRows(); const f=(x,d=1)=>x==null?'':x.toFixed(d);
   el.innerHTML=`<div class="s d-rinfo">Sortiert nach Abschlüssen je 100 Türen (nur D2D), dann CSA je CHC, dann Leads je 100 Türen. Grau: unter 3 Abschlüssen.</div><div id="d-rankt" class="d-fill"></div>`; DSEITE['d-rankt']=0;
   dTabelle('d-rankt','<tr><th>Location</th><th class="r">Türen</th><th class="r">Leads</th><th class="r">SL</th><th class="r">CHC</th><th class="r">CSA</th><th class="r">CCW</th><th class="r">CCW/100</th><th class="r">CSA-Q.</th><th class="r">Leads/100</th></tr>',
@@ -2857,6 +2884,7 @@ function fensterZurueck(el){
   if(el.closest('.flymenu')){ menuOpen(false); return; }
   if(el.closest('#panel')){ if(curNew&&cur){ neuZurueck(); return; } if($('#s-form').style.display!=='none'){ $('#s-form').style.display='none'; return; } if($('#p-editform').style.display!=='none'){ $('#e-cancel').click(); return; } closePanel(); return; }
   if(el.closest('#v-lead')){ if(LD.book){ LD.book=null; leadRender(); return; } if(LD.mode==='edit'&&$('#lf-cancel')){ $('#lf-cancel').click(); return; } leadClose(); return; }
+  if(el.closest('#v-dash')&&zielEdit){ zielEdit=false; wocheRender(); dEinpassen(); return; }
   if(el.closest('.win')){ show(null); return; } }
 document.addEventListener('contextmenu',e=>{ const el=e.target; if(!(el instanceof Element)) return; if(el.closest('input,textarea,select,[contenteditable]')) return;
   const w=el.closest('#gpanel,#legend,#search,#rtpanel,.flymenu,.win'); if(!w) return; e.preventDefault(); e.stopPropagation(); fensterZurueck(el); },true);
