@@ -2749,7 +2749,25 @@ function kpiRange(von,bis){ const S={}, P={}, PQ=QZIEL0.map(()=>0), vor=QZIEL0.m
     WTAGE.forEach(k=>{ const o=days[k]; if(o.date<von||o.date>bis) return; KCODES.forEach(c=>S[c]+=o[c]||0); if(o.date<ps||dVb!==ME) return; n++; KCODES.forEach(c=>P[c]+=(Z.k[c]||0)/6); Z.q.forEach((v,i)=>{ PQ[i]+=v; if(!Z.eigen&&QZIEL0[i][2]) vor[i]=true; }); });
     mon=addDays(mon,7); }
   KCODES.forEach(c=>P[c]=Math.round(P[c])); return {S,P,PQ:PQ.map(v=>n?v/n:0),vor,ps,n}; }
-function zeitRender(art){ const el=$('#d-'+art); if(!el) return; const z=zeitraum(art,zr[art]), R=kpiRange(z.von,z.bis), Q=kQuoten(R.S), heute=today(), lfd=z.von<=heute&&heute<=z.bis;
+/* seit v162: Quartal und Jahr im Aufbau des KW-Reiters: links gewählter Zeitraum mit Ist und Geplant, rechts der folgende Zeitraum mit Geplant */
+function zeitRenderWieKW(art,el){ const z=zeitraum(art,zr[art]), zn=zeitraum(art,zr[art]+1), R=kpiRange(z.von,z.bis), RN=kpiRange(zn.von,zn.bis), Q=kQuoten(R.S);
+  const dmy=d=>d.split('-').reverse().join('.'), kopf=(zz,zus)=>`<div class="d-kwk"><div><strong class="d-h">${zz.titel}</strong><div class="s d-kwd">${dmy(zz.von)} - ${dmy(zz.bis)}${zus||''}</div></div></div>`;
+  const gk=(X,c)=>X.n?X.P[c]:'–', gq=(X,i)=>X.n?qFmt(i,X.PQ[i]):'–', it=(X,i)=>X.n&&X.vor[i]?' d-vs':'';
+  let h=`<div class="row sb d-wkopf"><button class="btn small" id="zr-prev-${art}" aria-label="Vorheriger Zeitraum">‹</button><div class="d-wtitel"></div><button class="btn small" id="zr-next-${art}" aria-label="Nächster Zeitraum">›</button></div><div class="d-zwei d-wzwei">`;
+  if(matchMedia(DMOB).matches){
+    h+=`<div class="d-box">${kopf(z,` · Spalte ${zn.titel}: ${dmy(zn.von)} - ${dmy(zn.bis)}`)}<table class="kw d-plan"><tr><th></th><th class="r">Ist</th><th class="r">Geplant</th><th class="r">${zn.titel}</th></tr>`;
+    KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${R.S[c]}</b></td><td class="r">${gk(R,c)}</td><td class="r">${gk(RN,c)}</td></tr>`; });
+    h+=`<tr class="d-sek"><th colspan="4">Quoten</th></tr>`+Q.map((q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${qIst(q)}</b></td><td class="r${it(R,i)}">${gq(R,i)}</td><td class="r${it(RN,i)}">${gq(RN,i)}</td></tr>`).join('')+`</table></div></div>`;
+  } else {
+    h+=`<div class="d-box">${kopf(z)}<table class="kw d-plan"><tr><th></th><th class="r">Ist</th><th class="r">Geplant</th></tr>`;
+    KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${R.S[c]}</b></td><td class="r">${gk(R,c)}</td></tr>`; });
+    h+=`<tr class="d-sek"><th colspan="3">Quoten</th></tr>`+Q.map((q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${qIst(q)}</b></td><td class="r${it(R,i)}">${gq(R,i)}</td></tr>`).join('')+`</table></div>`;
+    h+=`<div class="d-box">${kopf(zn)}<table class="kw d-plan"><tr><th></th><th class="r">Geplant</th></tr>`;
+    KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r">${gk(RN,c)}</td></tr>`; });
+    h+=`<tr class="d-sek"><th colspan="2">Quoten</th></tr>`+QKURZ.map((t,i)=>`<tr><td>${t}</td><td class="r${it(RN,i)}">${gq(RN,i)}</td></tr>`).join('')+`</table></div></div>`;
+  }
+  el.innerHTML=h; $('#zr-prev-'+art).onclick=()=>{ zr[art]--; zeitRender(art); dEinpassen(); }; $('#zr-next-'+art).onclick=()=>{ zr[art]++; zeitRender(art); dEinpassen(); }; }
+function zeitRender(art){ const el=$('#d-'+art); if(!el) return; if(art==='quartal'||art==='jahr') return zeitRenderWieKW(art,el); const z=zeitraum(art,zr[art]), R=kpiRange(z.von,z.bis), Q=kQuoten(R.S), heute=today(), lfd=z.von<=heute&&heute<=z.bis;
   let h=`<div class="row sb d-wkopf"><button class="btn small" id="zr-prev-${art}" aria-label="Vorheriger Zeitraum"${art==='gesamt'?' style="visibility:hidden"':''}>‹</button><div class="d-wtitel"><strong>${z.titel} · ${tagKurz(z.von)} bis ${tagKurz(z.bis)}</strong><div class="s">${art==='gesamt'?'Ist und Geplant seit dem Start bis heute':lfd?'Ist bis heute, Geplant für den ganzen Zeitraum':'Ist und Geplant für den ganzen Zeitraum'} · ${dVb!==ME?'Geplant gibt es nur für '+ME:'Geplant aus der Wochenplanung'+(R.ps>z.von&&R.ps<=z.bis?', ab '+tagKurz(R.ps):'')}</div></div><button class="btn small" id="zr-next-${art}" aria-label="Nächster Zeitraum"${art==='gesamt'?' style="visibility:hidden"':''}>›</button></div><div class="d-zwei d-wzwei">`;
   const kopf='<tr><th></th><th class="r">Ist</th><th class="r">Geplant</th></tr>';
   const kz=c=>`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${R.S[c]}</b></td><td class="r">${R.P[c]}</td></tr>`;
