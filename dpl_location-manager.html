@@ -842,7 +842,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #v-dash .d-wzwei{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   #v-dash .d-plan td:first-child{white-space:normal} #v-dash .d-plan .d-vs{font-style:italic;opacity:.75} #v-dash .d-plan .d-zin[data-q]{width:38px}
   #v-dash .d-plan .d-sek th{padding-top:7px;font-size:11px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--ink2);text-align:left}
-  #v-dash .d-nkw{font-size:11px;font-weight:400;color:var(--ink2)} #v-dash .d-kwk{display:flex;justify-content:space-between;align-items:flex-end;gap:8px} #v-dash .d-kwk .d-h{display:block;font-size:15px} #v-dash .d-kwk .btn{margin:0} #v-dash .d-kwb{display:flex;gap:6px} #v-dash .d-plan .d-zin{height:17px;padding:0 4px;font-size:12.5px;line-height:15px;border-radius:4px;box-sizing:border-box;vertical-align:middle} #v-dash .d-plan td:has(.d-zin){padding-top:1px;padding-bottom:1px} #v-dash .d-kwd{font-size:11.5px;color:var(--ink2);margin-top:1px}
+  #v-dash .d-nkw{font-size:11px;font-weight:400;color:var(--ink2)} #v-dash .d-kwk{display:flex;justify-content:space-between;align-items:flex-end;gap:8px} #v-dash .d-kwk .d-h{display:block;font-size:15px} #v-dash .d-kwk .btn{margin:0} #v-dash .d-kwb{display:flex;gap:6px} #v-dash .d-plan .d-zin{height:17px;padding:0 4px;font-size:12.5px;line-height:15px;border-radius:4px;box-sizing:border-box;vertical-align:middle} #v-dash .d-plan td:has(.d-zin){padding-top:1px;padding-bottom:1px} #v-dash .d-plan .d-zin[data-k]{width:58px} #v-dash .d-kwd{font-size:11.5px;color:var(--ink2);margin-top:1px}
   #v-dash table.kw td,#v-dash table.kw th{padding:2px 4px} #v-dash .kw .bez{font-size:11px;opacity:.8;font-weight:400}
   #v-dash .d-q td,#v-dash .d-q th{padding:1px 4px;font-size:11.5px} #v-dash .d-q .d-vs{font-style:italic;opacity:.75} #v-dash .d-vsh{font-size:10.5px;opacity:.75;margin-top:2px} #v-dash .d-q td:first-child{white-space:normal}
   #v-dash .d-h{display:block;font-size:12px;margin:0 0 2px} #v-dash .d-h2{margin-top:6px}
@@ -2041,7 +2041,7 @@ function mergeData(remote){
   const ids=new Set(D.locations.map(l=>l.id)); D.shifts=D.shifts.filter(s=>ids.has(s.locationId));
   D.deleted=[...del.entries()].map(([id,at])=>({id,at})).slice(-2000);
   const cal=Object.assign({},remote.cal||{}); Object.entries(D.cal||{}).forEach(([k,v])=>{ if(!cal[k]||(v.at||'')>(cal[k].at||'')) cal[k]=v; }); D.cal=cal;
-  const zw=Object.assign({},(remote.ziele&&remote.ziele.wochen)||{}); Object.entries((D.ziele&&D.ziele.wochen)||{}).forEach(([k,v])=>{ if(!zw[k]||(v.at||'')>(zw[k].at||'')) zw[k]=v; }); D.ziele={wochen:zw}; // Ziele je KW, neuere gewinnt
+  const zw=Object.assign({},(remote.ziele&&remote.ziele.wochen)||{}); Object.entries((D.ziele&&D.ziele.wochen)||{}).forEach(([k,v])=>{ if(!zw[k]||(v.at||'')>(zw[k].at||'')) zw[k]=v; }); const zz=Object.assign({},(remote.ziele&&remote.ziele.zeit)||{}); Object.entries((D.ziele&&D.ziele.zeit)||{}).forEach(([k,v])=>{ if(!zz[k]||(v.at||'')>(zz[k].at||'')) zz[k]=v; }); D.ziele={wochen:zw,zeit:zz}; // Ziele je KW, neuere gewinnt
 }
 let gSaveTimer=null, gDirty=false;
 function gQueueSave(){ gDirty=true; if(!gReady()) return; clearTimeout(gSaveTimer); gSaveTimer=setTimeout(()=>gSync(false),2500); }
@@ -2293,7 +2293,7 @@ map.on('mousedown dragstart',()=>legendOpen(false));
 
 /* ---------- Navigation ---------- */
 let openWin=null;
-function show(v){ if(v===openWin) v=null; openWin=v; if(v){ closePanel(); menuOpen(false); legendOpen(false); if($('#search').classList.contains('open')) searchOpen(false); } $$('.bottombar [data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v)); $$('.win[id^="v-"]').forEach(x=>x.classList.toggle('active',x.id==='v-'+v)); if(v==='dash'){ dTab=dModus==='rank'?'rank':'woche'; wk=isoWeekOf(today()); zr={quartal:0,jahr:0,gesamt:0}; zielEdit=false; renderDash(); } if(v==='plan') renderPlan(); if(v==='set') renderData(); }
+function show(v){ if(v===openWin) v=null; openWin=v; if(v){ closePanel(); menuOpen(false); legendOpen(false); if($('#search').classList.contains('open')) searchOpen(false); } $$('.bottombar [data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v)); $$('.win[id^="v-"]').forEach(x=>x.classList.toggle('active',x.id==='v-'+v)); if(v==='dash'){ dTab=dModus==='rank'?'rank':'woche'; wk=isoWeekOf(today()); zr={quartal:0,jahr:0,gesamt:0}; zielEdit=false; zeitEdit=null; renderDash(); } if(v==='plan') renderPlan(); if(v==='set') renderData(); }
 $$('.bottombar [data-view]').forEach(b=>b.onclick=()=>show(b.dataset.view));
 $$('.win [data-close]').forEach(b=>b.onclick=()=>show(null));
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if($('#gpanel').classList.contains('open')) gpClose(); else if($('#legend').classList.contains('open')) legendOpen(false); else if($('#search').classList.contains('open')) searchOpen(false); else if(map.pm.globalDrawModeEnabled()) map.pm.disableDraw(); else if(layerMenu.classList.contains('open')||ovMenu.classList.contains('open')||kMenu.classList.contains('open')) menuOpen(false); else if($('#panel').classList.contains('active')) closePanel(); else show(null); } });
@@ -2668,10 +2668,10 @@ function bookRender(l){ const F=$('#ld-form'), B=LD.book, art=B.art; const {list
 
 /* ---------- Dashboard: Reiter Woche und Ranking ---------- */
 const MONATE=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'], ZART=['quartal','jahr','gesamt']; /* seit v161 ohne Monat */
-let zr={quartal:0,jahr:0,gesamt:0};
+let zr={quartal:0,jahr:0,gesamt:0}, zeitEdit=null;
 let dVb=(()=>{ try{ return localStorage.getItem('sle_lm_vb')||ME; }catch(e){ return ME; } })(); // Vertriebler im KPI-Fenster (seit v154), bleibt gemerkt
 (function(){ const sel=$('#d-vb'); sel.innerHTML='<option value="alle">Alle</option>'+[...PERSONS].sort((a,b)=>a.localeCompare(b,'de')).map(p=>`<option value="${p}">${p}</option>`).join(''); if(dVb!=='alle'&&!PERSONS.includes(dVb)) dVb=ME; sel.value=dVb;
-  sel.onchange=()=>{ dVb=sel.value; try{ localStorage.setItem('sle_lm_vb',dVb); }catch(e){} zielEdit=false; kDashTab(); }; })();
+  sel.onchange=()=>{ dVb=sel.value; try{ localStorage.setItem('sle_lm_vb',dVb); }catch(e){} zielEdit=false; zeitEdit=null; kDashTab(); }; })();
 let dModus='kpi'; function dashOeffnen(m){ dModus=m; if(openWin==='dash') openWin=null; show('dash'); } // seit v153: ein Fenster, als KPIs oder als Ranking geöffnet
 let dTab='woche', wk=isoWeekOf(today()); // Dashboard öffnet immer mit der aktuellen KW (seit v133)
 $$('#d-tabs button').forEach(b=>b.onclick=()=>{ dTab=b.dataset.t; kDashTab(); });
@@ -2749,33 +2749,67 @@ function kpiRange(von,bis){ const S={}, P={}, PQ=QZIEL0.map(()=>0), vor=QZIEL0.m
     WTAGE.forEach(k=>{ const o=days[k]; if(o.date<von||o.date>bis) return; KCODES.forEach(c=>S[c]+=o[c]||0); if(o.date<ps||dVb!==ME) return; n++; KCODES.forEach(c=>P[c]+=(Z.k[c]||0)/6); Z.q.forEach((v,i)=>{ PQ[i]+=v; if(!Z.eigen&&QZIEL0[i][2]) vor[i]=true; }); });
     mon=addDays(mon,7); }
   KCODES.forEach(c=>P[c]=Math.round(P[c])); return {S,P,PQ:PQ.map(v=>n?v/n:0),vor,ps,n}; }
-/* seit v162: Quartal und Jahr im Aufbau des KW-Reiters: links gewählter Zeitraum mit Ist und Geplant, rechts der folgende Zeitraum mit Geplant */
-function zeitRenderWieKW(art,el){ const z=zeitraum(art,zr[art]), zn=zeitraum(art,zr[art]+1), R=kpiRange(z.von,z.bis), RN=kpiRange(zn.von,zn.bis), Q=kQuoten(R.S);
-  const dmy=d=>d.split('-').reverse().join('.'), kopf=(zz,zus)=>`<div class="d-kwk"><div><strong class="d-h">${zz.titel}</strong><div class="s d-kwd">${dmy(zz.von)} - ${dmy(zz.bis)}${zus||''}</div></div></div>`;
-  const gk=(X,c)=>X.n?X.P[c]:'–', gq=(X,i)=>X.n?qFmt(i,X.PQ[i]):'–', it=(X,i)=>X.n&&X.vor[i]?' d-vs':'';
-  let h=`<div class="row sb d-wkopf"><button class="btn small" id="zr-prev-${art}" aria-label="Vorheriger Zeitraum">‹</button><div class="d-wtitel"></div><button class="btn small" id="zr-next-${art}" aria-label="Nächster Zeitraum">›</button></div><div class="d-zwei d-wzwei">`;
+/* seit v162: Quartal und Jahr im Aufbau des KW-Reiters, links gewählter Zeitraum mit Ist und Geplant, rechts der folgende Zeitraum.
+   seit v163: in jedem Reiter ein Knopf Evaluation exportieren (Quartal, Jahr, Insgesamt als PDF) und bei Quartal und Jahr ein Knopf planen.
+   Eigene Quartals- und Jahresziele liegen in D.ziele.zeit, getrennt von der Wochenplanung; ohne eigene Ziele gilt der Wert aus der Wochenplanung. */
+function zDmy(d){ return d.split('-').reverse().join('.'); }
+function zKopf(t,zz,zus,knopf){ return `<div class="d-kwk"><div><strong class="d-h">${t}</strong><div class="s d-kwd">${zz?zDmy(zz.von)+' - '+zDmy(zz.bis):'&nbsp;'}${zus||''}</div></div>${knopf||''}</div>`; }
+function zeitKey(art,z){ return art==='quartal'?'Q'+z.von.slice(0,4)+'-'+(Math.floor((+z.von.slice(5,7)-1)/3)+1):'J'+z.von.slice(0,4); }
+function zPlanAbl(R){ return R.n?{k:R.P,q:R.PQ,vor:R.vor,ok:true}:{ok:false}; }
+function zeitPlan(art,z,R){ const o=dVb===ME&&D.ziele&&D.ziele.zeit&&D.ziele.zeit[zeitKey(art,z)]; return o?{k:o.k||{},q:o.q||[],vor:QZIEL0.map(()=>false),ok:true}:zPlanAbl(R); }
+function zGk(P,c){ return P.ok&&P.k[c]!=null?P.k[c]:'–'; }
+function zGq(P,i){ return P.ok&&P.q[i]!=null?qFmt(i,P.q[i]):'–'; }
+function zIt(P,i){ return P.ok&&P.vor[i]?' d-vs':''; }
+function zExport(art){ return `<button class="btn small primary" id="zr-export-${art}">${{quartal:'Quartal-Evaluation exportieren',jahr:'Jahres-Evaluation exportieren',gesamt:'Gesamt-Evaluation exportieren'}[art]}</button>`; }
+function zeitRenderWieKW(art,el){ const z=zeitraum(art,zr[art]), zn=zeitraum(art,zr[art]+1), R=kpiRange(z.von,z.bis), RN=kpiRange(zn.von,zn.bis), Q=kQuoten(R.S), P=zeitPlan(art,z,R), PN=zeitPlan(art,zn,RN), planOk=dVb===ME, E=planOk&&zeitEdit===art;
+  const qWert=i=>{ const v=PN.ok&&PN.q[i]!=null?PN.q[i]:0; return QZIEL0[i][1]==='%'?Math.round(v):(Math.round(v*10)/10).toFixed(1).replace('.',','); };
+  const nK=c=>E?`<input class="d-zin" data-k="${c}" inputmode="numeric" aria-label="Geplant ${zn.titel} ${c}" value="${PN.ok&&PN.k[c]!=null?PN.k[c]:0}">`:zGk(PN,c);
+  const nQ=i=>E?`<input class="d-zin" data-q="${i}" inputmode="decimal" aria-label="Geplant ${zn.titel} ${QKURZ[i]}" value="${qWert(i)}">${QZIEL0[i][1]==='%'?' %':''}`:zGq(PN,i);
+  const knopf=!planOk?'':E?`<span class="d-kwb"><button class="btn small primary" id="zp-save-${art}">Speichern</button><button class="btn small" id="zp-cancel-${art}">Abbrechen</button></span>`:`<button class="btn small primary" id="zp-edit-${art}">planen</button>`;
+  let h=`<div class="row sb d-wkopf"><button class="btn small" id="zr-prev-${art}" aria-label="Vorheriger Zeitraum">‹</button><div class="d-wtitel">${zExport(art)}</div><button class="btn small" id="zr-next-${art}" aria-label="Nächster Zeitraum">›</button></div><div class="d-zwei d-wzwei">`;
   if(matchMedia(DMOB).matches){
-    h+=`<div class="d-box">${kopf(z,` · Spalte ${zn.titel}: ${dmy(zn.von)} - ${dmy(zn.bis)}`)}<table class="kw d-plan"><tr><th></th><th class="r">Ist</th><th class="r">Geplant</th><th class="r">${zn.titel}</th></tr>`;
-    KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${R.S[c]}</b></td><td class="r">${gk(R,c)}</td><td class="r">${gk(RN,c)}</td></tr>`; });
-    h+=`<tr class="d-sek"><th colspan="4">Quoten</th></tr>`+Q.map((q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${qIst(q)}</b></td><td class="r${it(R,i)}">${gq(R,i)}</td><td class="r${it(RN,i)}">${gq(RN,i)}</td></tr>`).join('')+`</table></div></div>`;
+    h+=`<div class="d-box">${zKopf(z.titel,z,` · Spalte ${zn.titel}: ${zDmy(zn.von)} - ${zDmy(zn.bis)}`,knopf)}<table class="kw d-plan"><tr><th></th><th class="r">Ist</th><th class="r">Geplant</th><th class="r">${zn.titel}</th></tr>`;
+    KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${R.S[c]}</b></td><td class="r">${zGk(P,c)}</td><td class="r">${nK(c)}</td></tr>`; });
+    h+=`<tr class="d-sek"><th colspan="4">Quoten</th></tr>`+Q.map((q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${qIst(q)}</b></td><td class="r${zIt(P,i)}">${zGq(P,i)}</td><td class="r${E?'':zIt(PN,i)}">${nQ(i)}</td></tr>`).join('')+`</table></div></div>`;
   } else {
-    h+=`<div class="d-box">${kopf(z)}<table class="kw d-plan"><tr><th></th><th class="r">Ist</th><th class="r">Geplant</th></tr>`;
-    KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${R.S[c]}</b></td><td class="r">${gk(R,c)}</td></tr>`; });
-    h+=`<tr class="d-sek"><th colspan="3">Quoten</th></tr>`+Q.map((q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${qIst(q)}</b></td><td class="r${it(R,i)}">${gq(R,i)}</td></tr>`).join('')+`</table></div>`;
-    h+=`<div class="d-box">${kopf(zn)}<table class="kw d-plan"><tr><th></th><th class="r">Geplant</th></tr>`;
-    KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r">${gk(RN,c)}</td></tr>`; });
-    h+=`<tr class="d-sek"><th colspan="2">Quoten</th></tr>`+QKURZ.map((t,i)=>`<tr><td>${t}</td><td class="r${it(RN,i)}">${gq(RN,i)}</td></tr>`).join('')+`</table></div></div>`;
+    h+=`<div class="d-box">${zKopf(z.titel,z)}<table class="kw d-plan"><tr><th></th><th class="r">Ist</th><th class="r">Geplant</th></tr>`;
+    KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${R.S[c]}</b></td><td class="r">${zGk(P,c)}</td></tr>`; });
+    h+=`<tr class="d-sek"><th colspan="3">Quoten</th></tr>`+Q.map((q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${qIst(q)}</b></td><td class="r${zIt(P,i)}">${zGq(P,i)}</td></tr>`).join('')+`</table></div>`;
+    h+=`<div class="d-box">${zKopf(zn.titel,zn,'',knopf)}<table class="kw d-plan"><tr><th></th><th class="r">Geplant</th></tr>`;
+    KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r">${nK(c)}</td></tr>`; });
+    h+=`<tr class="d-sek"><th colspan="2">Quoten</th></tr>`+QKURZ.map((t,i)=>`<tr><td>${t}</td><td class="r${E?'':zIt(PN,i)}">${nQ(i)}</td></tr>`).join('')+`</table></div></div>`;
   }
-  el.innerHTML=h; $('#zr-prev-'+art).onclick=()=>{ zr[art]--; zeitRender(art); dEinpassen(); }; $('#zr-next-'+art).onclick=()=>{ zr[art]++; zeitRender(art); dEinpassen(); }; }
-function zeitRender(art){ const el=$('#d-'+art); if(!el) return; if(art==='quartal'||art==='jahr') return zeitRenderWieKW(art,el); const z=zeitraum(art,zr[art]), R=kpiRange(z.von,z.bis), Q=kQuoten(R.S), heute=today(), lfd=z.von<=heute&&heute<=z.bis;
-  let h=`<div class="row sb d-wkopf"><button class="btn small" id="zr-prev-${art}" aria-label="Vorheriger Zeitraum"${art==='gesamt'?' style="visibility:hidden"':''}>‹</button><div class="d-wtitel"><strong>${z.titel} · ${tagKurz(z.von)} bis ${tagKurz(z.bis)}</strong><div class="s">${art==='gesamt'?'Ist und Geplant seit dem Start bis heute':lfd?'Ist bis heute, Geplant für den ganzen Zeitraum':'Ist und Geplant für den ganzen Zeitraum'} · ${dVb!==ME?'Geplant gibt es nur für '+ME:'Geplant aus der Wochenplanung'+(R.ps>z.von&&R.ps<=z.bis?', ab '+tagKurz(R.ps):'')}</div></div><button class="btn small" id="zr-next-${art}" aria-label="Nächster Zeitraum"${art==='gesamt'?' style="visibility:hidden"':''}>›</button></div><div class="d-zwei d-wzwei">`;
+  el.innerHTML=h;
+  $('#zr-prev-'+art).onclick=()=>{ zr[art]--; zeitEdit=null; zeitRender(art); dEinpassen(); }; $('#zr-next-'+art).onclick=()=>{ zr[art]++; zeitEdit=null; zeitRender(art); dEinpassen(); };
+  $('#zr-export-'+art).onclick=()=>evalPdf(art,z);
+  if($('#zp-edit-'+art)) $('#zp-edit-'+art).onclick=()=>{ zeitEdit=art; zeitRender(art); dEinpassen(); const f=el.querySelector('.d-zin'); if(f){ f.focus(); f.select(); } };
+  if($('#zp-cancel-'+art)) $('#zp-cancel-'+art).onclick=()=>{ zeitEdit=null; zeitRender(art); dEinpassen(); };
+  if($('#zp-save-'+art)) $('#zp-save-'+art).onclick=()=>zeitSpeichern(art,el,zn); }
+function zeitSpeichern(art,el,zn){ const k={}, q=[]; let fehler='';
+  el.querySelectorAll('.d-zin[data-k]').forEach(f=>{ const n=zielZahl(f.value); if(n===null){ fehler=fehler||f.dataset.k; f.classList.add('fehl'); } else k[f.dataset.k]=Math.round(n); });
+  el.querySelectorAll('.d-zin[data-q]').forEach(f=>{ const i=+f.dataset.q, n=zielZahl(f.value); if(n===null){ fehler=fehler||QKURZ[i]; f.classList.add('fehl'); } else q[i]=QZIEL0[i][1]==='%'?Math.round(n):Math.round(n*10)/10; });
+  if(fehler){ toast('Bitte eine Zahl eintragen: '+fehler); return; }
+  if(!D.ziele) D.ziele={wochen:{}}; if(!D.ziele.zeit) D.ziele.zeit={}; D.ziele.zeit[zeitKey(art,zn)]={k,q,at:new Date().toISOString()}; Store.save();
+  zeitEdit=null; zeitRender(art); dEinpassen(); toast('Geplant für '+zn.titel+' gespeichert'); }
+function zeitRender(art){ const el=$('#d-'+art); if(!el) return; if(art!=='gesamt') return zeitRenderWieKW(art,el);
+  const z=zeitraum(art,0), R=kpiRange(z.von,z.bis), Q=kQuoten(R.S), P=zPlanAbl(R), leer='<button class="btn small" style="visibility:hidden" aria-hidden="true" tabindex="-1">‹</button>';
+  let h=`<div class="row sb d-wkopf">${leer}<div class="d-wtitel">${zExport(art)}</div>${leer}</div><div class="d-zwei d-wzwei">`;
   const kopf='<tr><th></th><th class="r">Ist</th><th class="r">Geplant</th></tr>';
-  const kz=c=>`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${R.S[c]}</b></td><td class="r">${R.P[c]}</td></tr>`;
-  const qz=(q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${qIst(q)}</b></td><td class="r${R.vor[i]?' d-vs':''}">${R.n?qFmt(i,R.PQ[i]):'–'}</td></tr>`;
-  const fuss=''; if(!R.n) KCODES.forEach(c=>R.P[c]='–');
-  if(matchMedia(DMOB).matches) h+=`<div class="d-box"><table class="kw d-plan">${kopf}${KCODES.map(kz).join('')}<tr class="d-sek"><th colspan="3">Quoten</th></tr>${Q.map(qz).join('')}</table>${fuss}</div></div>`;
-  else h+=`<div class="d-box"><strong class="d-h">Kennzahlen</strong><table class="kw d-plan">${kopf}${KCODES.map(kz).join('')}</table></div><div class="d-box"><strong class="d-h">Quoten</strong><table class="kw d-plan">${kopf}${Q.map(qz).join('')}</table>${fuss}</div></div>`;
-  el.innerHTML=h; $('#zr-prev-'+art).onclick=()=>{ zr[art]--; zeitRender(art); dEinpassen(); }; $('#zr-next-'+art).onclick=()=>{ zr[art]++; zeitRender(art); dEinpassen(); }; }
+  const kz=c=>`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${R.S[c]}</b></td><td class="r">${zGk(P,c)}</td></tr>`;
+  const qz=(q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${qIst(q)}</b></td><td class="r${zIt(P,i)}">${zGq(P,i)}</td></tr>`;
+  if(matchMedia(DMOB).matches) h+=`<div class="d-box">${zKopf(z.titel,z)}<table class="kw d-plan">${kopf}${KCODES.map(kz).join('')}<tr class="d-sek"><th colspan="3">Quoten</th></tr>${Q.map(qz).join('')}</table></div></div>`;
+  else h+=`<div class="d-box">${zKopf(z.titel,z)}<table class="kw d-plan">${kopf}${KCODES.map(kz).join('')}</table></div><div class="d-box">${zKopf('Quoten',null)}<table class="kw d-plan">${kopf}${Q.map(qz).join('')}</table></div></div>`;
+  el.innerHTML=h; $('#zr-export-'+art).onclick=()=>evalPdf(art,z); }
+/* PDF-Export der angezeigten Evaluation über den Druckdialog, Dateiname nach Ablageregel */
+function evalPdf(art,z){ const pane=$('#d-'+art); if(!pane) return; const c=pane.cloneNode(true);
+  c.querySelectorAll('.d-wkopf,button').forEach(x=>x.remove()); c.querySelectorAll('input').forEach(i=>i.replaceWith(document.createTextNode(i.value)));
+  const wer=dVb==='alle'?'Alle Vertriebler':dVb, datei=today()+'_kpi-evaluation_'+z.titel.toLowerCase().replace(/\s+/g,'-')+'_'+(dVb==='alle'?'alle':dVb.toLowerCase());
+  const css='@page{size:A4;margin:14mm}*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#1f2328;margin:0;font-size:10pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}h1{font-size:15pt;margin:0 0 2pt}.meta{color:#667085;font-size:9pt;margin:0 0 10pt}.d-zwei{display:grid;grid-template-columns:1fr 1fr;gap:8mm}.d-box{min-width:0}.d-kwk{margin:0 0 4pt}.d-h{display:block;font-size:11.5pt;font-weight:700}.d-kwd{color:#667085;font-size:8.5pt}table{width:100%;border-collapse:collapse}th,td{padding:2pt 3pt;border-bottom:.5pt solid #d0d5dd;text-align:left;font-size:9pt}th{font-size:8.5pt}.r{text-align:right}.bez{color:#667085;font-size:8pt}.d-sek th{padding-top:6pt;color:#667085;font-size:7.5pt;text-transform:uppercase;letter-spacing:.3pt}.d-vs{font-style:italic;color:#667085}';
+  const html=`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${datei}</title><style>${css}</style></head><body><h1>KPI-Evaluation ${esc(z.titel)}</h1><div class="meta">${esc(wer)} · erstellt ${fmtDT(nowIso())}</div>${c.innerHTML}</body></html>`;
+  const f=document.createElement('iframe'); f.setAttribute('aria-hidden','true'); f.tabIndex=-1; f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0'; document.body.appendChild(f);
+  const d=f.contentWindow.document; d.open(); d.write(html); d.close(); const alt=document.title; let weg=false;
+  const aufraeumen=()=>{ if(weg) return; weg=true; document.title=alt; f.remove(); };
+  setTimeout(()=>{ document.title=datei; try{ f.contentWindow.addEventListener('afterprint',()=>setTimeout(aufraeumen,300)); f.contentWindow.focus(); f.contentWindow.print(); }catch(e){ toast('PDF-Export nicht möglich'); aufraeumen(); } setTimeout(aufraeumen,60000); },150); }
 function rankRender(){ const el=$('#d-rank'); if(!el) return; const rows=rankRows(); const f=(x,d=1)=>x==null?'':x.toFixed(d);
   el.innerHTML=`<div class="s d-rinfo">Sortiert nach Abschlüssen je 100 Türen (nur D2D), dann CSA je CHC, dann Leads je 100 Türen. Grau: unter 3 Abschlüssen.</div><div id="d-rankt" class="d-fill"></div>`; DSEITE['d-rankt']=0;
   dTabelle('d-rankt','<tr><th>Location</th><th class="r">Türen</th><th class="r">Leads</th><th class="r">SL</th><th class="r">CHC</th><th class="r">CSA</th><th class="r">CCW</th><th class="r">CCW/100</th><th class="r">CSA-Q.</th><th class="r">Leads/100</th></tr>',
