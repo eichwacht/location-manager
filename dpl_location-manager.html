@@ -743,10 +743,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
   /* Schnellmenü als Mindmap (seit v135): vier Hauptäste, Kartenebenen klappen als eigener Ast aus */
   #radial .rad-linien{position:absolute;left:-200px;top:-200px;pointer-events:none;overflow:visible;filter:drop-shadow(0 0 1.5px rgba(16,24,40,.7))}
   #radial .rad-linien line{stroke:#fff;stroke-width:2;stroke-linecap:round;opacity:0;transition:opacity .15s}
-  #radial.open .rad-linien line.haupt{opacity:.9} #radial.open.ast-ebenen .rad-linien line.kind-ebenen,#radial.open.ast-b2c .rad-linien line.kind-b2c{opacity:.9}
+  #radial.open .rad-linien line.haupt{opacity:.9} #radial.open.ast-ebenen .rad-linien line.kind-ebenen,#radial.open.ast-b2c .rad-linien line.kind-b2c,#radial.open.ast-dash .rad-linien line.kind-dash{opacity:.9}
   #radial.open .rad.kind{transform:scale(.4);opacity:0;pointer-events:none}
-  #radial.open.ast-ebenen .rad.kind[data-ast="ebenen"],#radial.open.ast-b2c .rad.kind[data-ast="b2c"]{transform:scale(1);opacity:1;pointer-events:auto}
-  #radial.ast-ebenen #rad-ebenen,#radial.ast-b2c #rad-b2c{box-shadow:0 0 0 3px var(--akz),var(--sch)}
+  #radial.open.ast-ebenen .rad.kind[data-ast="ebenen"],#radial.open.ast-b2c .rad.kind[data-ast="b2c"],#radial.open.ast-dash .rad.kind[data-ast="dash"]{transform:scale(1);opacity:1;pointer-events:auto}
+  #radial.ast-ebenen #rad-ebenen,#radial.ast-b2c #rad-b2c,#radial.ast-dash #rad-dash{box-shadow:0 0 0 3px var(--akz),var(--sch)}
   /* seit v142: Dashboard, Zoomstufe und Einstellungen nur noch im Schnellmenü */
   .bottombar [data-view="dash"]{display:none!important} #brbar{display:none!important} #ovbox #ov-main{visibility:hidden} #ovmenu{right:0}
   #radial #rad-zoom{cursor:default;left:11px;top:-40px;width:30px;height:26px;border-radius:8px;padding:0;display:flex;align-items:center;justify-content:center;box-sizing:border-box} #radial #rad-zoom b{font-size:12px;color:var(--ink);font-weight:700} /* seit v143: Zoomstufe wie die frühere Kachel, ohne Ast; seit v144 rechts oben neben Neue Location, der Strich zu Suchen läuft links daran vorbei */
@@ -1046,7 +1046,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <button class="ltile rad ring" id="rad-karte" aria-label="Grundkarte wechseln"></button>
         <button class="ltile rad ring" id="rad-ebenen" aria-label="Kartenebenen aufklappen, Rechtsklick alle an oder aus" aria-expanded="false"></button>
         <button class="ltile rad ring" id="rad-b2c" aria-label="B2C aufklappen, Rechtsklick alle an oder aus" aria-expanded="false"></button>
-        <button class="ltile rad ring" id="rad-dash" aria-label="KPIs öffnen"></button>
+        <button class="ltile rad ring" id="rad-dash" aria-label="Dashboard aufklappen" aria-expanded="false"></button>
         <div class="ltile rad" id="rad-zoom" aria-label="Zoomstufe"><b id="rad-zoomval">12</b></div>
         <button class="ltile rad ring" id="rad-set" aria-label="Einstellungen öffnen"></button>
         <button class="ltile rad ring kind" data-ast="ebenen" id="rad-wp" aria-label="Wärmeplanung an oder aus"></button>
@@ -1059,6 +1059,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <button class="ltile rad ring kind" data-ast="b2c" id="rad-kchc" aria-label="Potenzialanalysen an oder aus"></button>
         <button class="ltile rad ring kind" data-ast="b2c" id="rad-kcsc" aria-label="Festpreisgespräche an oder aus"></button>
         <button class="ltile rad ring kind" data-ast="b2c" id="rad-kccw" aria-label="Abschlüsse an oder aus"></button>
+        <button class="ltile rad ring kind" data-ast="dash" id="rad-kpi" aria-label="KPIs öffnen"></button>
+        <button class="ltile rad ring kind" data-ast="dash" id="rad-rank" aria-label="Ranking öffnen"></button>
       </div>
     </section>
 
@@ -1116,7 +1118,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <section class="win" id="v-dash">
       <header><h2><span class="t">KPIs</span></h2></header><!-- seit v136 ohne Reiter Shifts und ohne Zeitraumwahl --><!-- seit v132 ohne Untertitel und ohne Schließen-Knopf: schließen per Klick in die Karte, Rechtsklick ins Fenster oder Dashboard-Kachel -->
       <div class="body">
-        <div class="seg tabs" id="d-tabs"><button data-t="woche" class="on">Woche</button><button data-t="monat">Monat</button><button data-t="quartal">Quartal</button><button data-t="jahr">Jahr</button><button data-t="rank">Ranking</button></div>
+        <div class="seg tabs" id="d-tabs"><button data-t="woche" class="on">Woche</button><button data-t="monat">Monat</button><button data-t="quartal">Quartal</button><button data-t="jahr">Jahr</button></div><!-- seit v153: Ranking eigenes Fenster über das Schnellmenü -->
         <div id="d-woche" class="d-pane"></div>
         <div id="d-monat" class="d-pane" style="display:none"></div>
         <div id="d-quartal" class="d-pane" style="display:none"></div>
@@ -2278,7 +2280,7 @@ function legendHtml(){
     h+='<div class="s" style="opacity:.8">Hausnummern ohne Planfläche gelten als dezentral, im Umkreis von 800 m um Biogasanlagen als unklar. Kommunen mit Plan: '+esc(kom.join(', '))+'. Sperrzonen sind ausgespart. Strategische Planung ohne Rechtswirkung, Quellen im Fenster Einstellungen und Daten.</div>'; }
   if(wpIdx>=0){ h+='<h4>Wärmeplan Bremen: '+WP_STUFEN[wpIdx].t+' (Zoom 10 bis 13)</h4><img src="'+$(wpIdx===0?'#wp-leg1':'#wp-leg2').src+'" alt="Legende Wärmeplan Bremen"><div class="s">Quelle: GeoInformation Bremen, Wärmeplan 2025, nur Stadtgebiet Bremen, ohne Rechtswirkung</div>'; }
   h+='<h4>Punkte</h4>'+ci('background:#2e5bff;border:2px solid #ffffff','Suchtreffer (mit Adresse beim Drüberfahren)')+ci('background:#2e5bff;border:2px solid #ffffff','Mein Standort, wenn „Mein Standort“ im Zahnrad-Menü an ist');
-  h+='<h4>Bedienung</h4><div class="s">Street View: ab Zoom 17 auf eine Straße klicken, Street View öffnet sich genau dort mit Blick auf das nächste Haus. Innerhalb einer Location öffnet ein Klick neben die Straße das Location-Fenster. KPIs stehen im Schnellmenü oben, Einstellungen unten, Suchen links oben, die Grundkarte links unten (Linksklick wechselt zwischen Satellit und Luftbild amtlich) und die Zoomstufe rechts oben neben Neue Location (Rechtsklick in die Karte, auf dem Handy langes Drücken).</div><div class="s">Rechtsklick in die Karte (ohne offenes Fenster) öffnet das Schnellmenü am Mauszeiger: in der Mitte Neue Location (erster Eckpunkt genau dort), darum wie eine Mindmap KPIs (oben), Kartenebenen (rechts), B2C (links) und Einstellungen (unten), dicht daneben Suchen (links oben), Grundkarte (links unten) und Zoomstufe (rechts oben). Linksklick auf Kartenebenen klappt deren Ast auf (Wärmeplanung, PLZ, Ortsnamen, Bahnhöfe und Haltestellen, Straßennamen und Hausnummern), Rechtsklick darauf schaltet alle Kartenebenen samt Sperrzonen an oder aus. Linksklick auf B2C klappt Locations, Leads, Potenzialanalysen, Festpreisgespräche und Abschlüsse auf, Rechtsklick darauf schaltet alle an oder aus. Grün heißt: alles im Ast ist an. Rechtsklick an anderer Stelle im Menü klappt erst die Äste zu, dann das Menü. Die Ebenen-Schalter und die Grundkarte lassen das Menü offen; es schließt mit Neue Location, Suchen, Rechtsklick oder Klick in die Karte. Zoomen geht bei offenem Menü weiter.</div><div class="s">Neues Gebiet eingezeichnet: Linksklick hinein speichert und öffnet die Shift-Planung, Rechtsklick hinein verwirft und zeichnet ab dem vorletzten Punkt weiter, Klick daneben verwirft.</div><div class="s">Fenster: Rechtsklick ins Fenster geht einen Schritt zurück, bis es sich schließt. Ein Klick in die Karte schließt alle offenen Fenster.</div>';
+  h+='<h4>Bedienung</h4><div class="s">Street View: ab Zoom 17 auf eine Straße klicken, Street View öffnet sich genau dort mit Blick auf das nächste Haus. Innerhalb einer Location öffnet ein Klick neben die Straße das Location-Fenster. Das Dashboard steht im Schnellmenü oben und klappt KPIs und Ranking auf, Einstellungen unten, Suchen links oben, die Grundkarte links unten (Linksklick wechselt zwischen Satellit und Luftbild amtlich) und die Zoomstufe rechts oben neben Neue Location (Rechtsklick in die Karte, auf dem Handy langes Drücken).</div><div class="s">Rechtsklick in die Karte (ohne offenes Fenster) öffnet das Schnellmenü am Mauszeiger: in der Mitte Neue Location (erster Eckpunkt genau dort), darum wie eine Mindmap Dashboard (oben, mit KPIs und Ranking), Kartenebenen (rechts), B2C (links) und Einstellungen (unten), dicht daneben Suchen (links oben), Grundkarte (links unten) und Zoomstufe (rechts oben). Linksklick auf Kartenebenen klappt deren Ast auf (Wärmeplanung, PLZ, Ortsnamen, Bahnhöfe und Haltestellen, Straßennamen und Hausnummern), Rechtsklick darauf schaltet alle Kartenebenen samt Sperrzonen an oder aus. Linksklick auf B2C klappt Locations, Leads, Potenzialanalysen, Festpreisgespräche und Abschlüsse auf, Rechtsklick darauf schaltet alle an oder aus. Grün heißt: alles im Ast ist an. Rechtsklick an anderer Stelle im Menü klappt erst die Äste zu, dann das Menü. Die Ebenen-Schalter und die Grundkarte lassen das Menü offen; es schließt mit Neue Location, Suchen, Rechtsklick oder Klick in die Karte. Zoomen geht bei offenem Menü weiter.</div><div class="s">Neues Gebiet eingezeichnet: Linksklick hinein speichert und öffnet die Shift-Planung, Rechtsklick hinein verwirft und zeichnet ab dem vorletzten Punkt weiter, Klick daneben verwirft.</div><div class="s">Fenster: Rechtsklick ins Fenster geht einen Schritt zurück, bis es sich schließt. Ein Klick in die Karte schließt alle offenen Fenster.</div>';
   h+='<h4>Grundkarte</h4><div class="li"><span>'+({sat:'Satellit (Esri)',dop:'Amtliches Luftbild (LGLN, GeoInformation Bremen, Geobasis NRW)'}[base])+'</span></div>';
   return h;
 }
@@ -2288,7 +2290,7 @@ map.on('mousedown dragstart',()=>legendOpen(false));
 
 /* ---------- Navigation ---------- */
 let openWin=null;
-function show(v){ if(v===openWin) v=null; openWin=v; if(v){ closePanel(); menuOpen(false); legendOpen(false); if($('#search').classList.contains('open')) searchOpen(false); } $$('.bottombar [data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v)); $$('.win[id^="v-"]').forEach(x=>x.classList.toggle('active',x.id==='v-'+v)); if(v==='dash'){ dTab='woche'; wk=isoWeekOf(today()); zr={monat:0,quartal:0,jahr:0}; zielEdit=false; renderDash(); } if(v==='plan') renderPlan(); if(v==='set') renderData(); }
+function show(v){ if(v===openWin) v=null; openWin=v; if(v){ closePanel(); menuOpen(false); legendOpen(false); if($('#search').classList.contains('open')) searchOpen(false); } $$('.bottombar [data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v)); $$('.win[id^="v-"]').forEach(x=>x.classList.toggle('active',x.id==='v-'+v)); if(v==='dash'){ dTab=dModus==='rank'?'rank':'woche'; wk=isoWeekOf(today()); zr={monat:0,quartal:0,jahr:0}; zielEdit=false; renderDash(); } if(v==='plan') renderPlan(); if(v==='set') renderData(); }
 $$('.bottombar [data-view]').forEach(b=>b.onclick=()=>show(b.dataset.view));
 $$('.win [data-close]').forEach(b=>b.onclick=()=>show(null));
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if($('#gpanel').classList.contains('open')) gpClose(); else if($('#legend').classList.contains('open')) legendOpen(false); else if($('#search').classList.contains('open')) searchOpen(false); else if(map.pm.globalDrawModeEnabled()) map.pm.disableDraw(); else if(layerMenu.classList.contains('open')||ovMenu.classList.contains('open')||kMenu.classList.contains('open')) menuOpen(false); else if($('#panel').classList.contains('active')) closePanel(); else show(null); } });
@@ -2663,13 +2665,14 @@ function bookRender(l){ const F=$('#ld-form'), B=LD.book, art=B.art; const {list
 /* ---------- Dashboard: Reiter Woche und Ranking ---------- */
 const MONATE=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'], ZART=['monat','quartal','jahr'];
 let zr={monat:0,quartal:0,jahr:0};
+let dModus='kpi'; function dashOeffnen(m){ dModus=m; if(openWin==='dash') openWin=null; show('dash'); } // seit v153: ein Fenster, als KPIs oder als Ranking geöffnet
 let dTab='woche', wk=isoWeekOf(today()); // Dashboard öffnet immer mit der aktuellen KW (seit v133)
 $$('#d-tabs button').forEach(b=>b.onclick=()=>{ dTab=b.dataset.t; kDashTab(); });
 // Reiter zeigt die aktuelle KW statt „Woche“ (seit v135)
 function kwReiter(){ const b=$('#d-tabs [data-t="woche"]'); if(b) b.textContent='KW '+isoWeekOf(today()).week; const t=new Date(today()+'T00:00'), L={monat:MONATE[t.getMonth()],quartal:'Q'+(Math.floor(t.getMonth()/3)+1),jahr:String(t.getFullYear())}; ZART.forEach(a=>{ const x=$('#d-tabs [data-t="'+a+'"]'); if(x) x.textContent=L[a]; }); } // seit v152 auch Monat, Quartal, Jahr
 kwReiter();
 const _renderDash=renderDash; renderDash=function(){ _renderDash(); kDashTab(); };
-function kDashTab(){ kwReiter(); $$('#d-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===dTab)); ['einsatz','woche','monat','quartal','jahr','rank'].forEach(t=>{ const el=$('#d-'+t); if(el) el.style.display=t===dTab?'':'none'; }); if($('#d-range')) $('#d-range').style.display=dTab==='einsatz'?'':'none';
+function kDashTab(){ kwReiter(); $('#v-dash h2 .t').textContent=dModus==='rank'?'Ranking':'KPIs'; $('#d-tabs').style.display=dModus==='rank'?'none':''; $$('#d-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===dTab)); ['einsatz','woche','monat','quartal','jahr','rank'].forEach(t=>{ const el=$('#d-'+t); if(el) el.style.display=t===dTab?'':'none'; }); if($('#d-range')) $('#d-range').style.display=dTab==='einsatz'?'':'none';
   if(dTab==='woche') wocheRender(); if(ZART.includes(dTab)) zeitRender(dTab); if(dTab==='rank') rankRender(); dEinpassen(); }
 /* Ziele selbst festlegen (seit v134): je KW gespeichert, gelten ab dieser KW bis zur nächsten KW mit eigenen Zielen; vorher gelten die Startziele */
 const QZIEL0=[[2.0,'x'],[0.3,'x'],[50,'%'],[50,'%'],[80,'%',1],[100,'%'],[90,'%',1],[40,'%',1],[30,'%'],[0,'%'],[1.0,'x']]; // Startwert, Art (x Verhältnis, % Prozent), 1 = Vorschlag
@@ -2973,11 +2976,12 @@ function ebSchalten(an){ window.__lmStill=true; try{ EB_IDS.forEach(id=>{ const 
 $('#eb-main').onclick=()=>{ menuOpen(false); ebSchalten(!ebAlleAn()); };
 
 /* Radialmenü (Rechtsklick in die Karte) als Mindmap: Neue Location in der Mitte, Hauptäste Suchen, Kartenebenen und B2C (klappen auf) */
-const RAD={ll:null}, RAD1=['such','ebenen','b2c','set','dash'], RAD_AESTE={ebenen:['wp','plz','ort','hst','adr'],b2c:['loc','klead','kchc','kcsc','kccw']}, RAD_R1=62, RAD_R2=58, RAD_SUCH=[-29,-27], RAD_KARTE=[-29,27]; // seit v147: Grundkarte links unten neben Neue Location, gespiegelt zu Suchen // seit v150: Hauptkacheln dicht an der Mitte (62 px), Unteräste kurz (Linie 20 px)
+const RAD={ll:null}, RAD1=['such','ebenen','b2c','set','dash'], RAD_AESTE={ebenen:['wp','plz','ort','hst','adr'],b2c:['loc','klead','kchc','kcsc','kccw'],dash:['kpi','rank']}, RAD_R1=62, RAD_R2=58, RAD_SUCH=[-29,-27], RAD_KARTE=[-29,27]; // seit v147: Grundkarte links unten neben Neue Location, gespiegelt zu Suchen // seit v150: Hauptkacheln dicht an der Mitte (62 px), Unteräste kurz (Linie 20 px)
 (function(){ const ic=(id)=>{ const el=$(id); const sv=el?el.querySelector('svg'):null; return sv?sv.outerHTML:''; };
   const POLY='<svg viewBox="0 0 24 24"><path d="M5 6l9-3 6 7-3 10-11-2z"/><circle cx="5" cy="6" r="1.4"/><circle cx="14" cy="3" r="1.4"/><circle cx="20" cy="10" r="1.4"/><circle cx="17" cy="20" r="1.4"/><circle cx="6" cy="18" r="1.4"/></svg>';
   $('#rad-neu').innerHTML=ic('#b-draw')+'<span>Neue Location</span>';
-  [...RAD1,...RAD_AESTE.ebenen,...RAD_AESTE.b2c].forEach(k=>{ $('#rad-'+k).innerHTML=k==='dash'?ic('.bottombar [data-view="dash"]'):k==='set'?ic('#ov-main'):k==='such'?ic('#b-search'):k==='ebenen'?ic('#eb-main'):k==='loc'?POLY:k[0]==='k'?ic('#b-'+k):ic('#t-'+k); }); radLayout(); })();
+  const KPI_IC='<svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>', RANK_IC='<svg viewBox="0 0 24 24"><path d="M9 21V8h6v13M3 21v-8h6M15 21v-5h6v5M3 21h18"/></svg>'; // seit v153: KPIs (Trend) und Ranking (Podest)
+  [...RAD1,...RAD_AESTE.ebenen,...RAD_AESTE.b2c,...RAD_AESTE.dash].forEach(k=>{ $('#rad-'+k).innerHTML=k==='kpi'?KPI_IC:k==='rank'?RANK_IC:k==='dash'?ic('.bottombar [data-view="dash"]'):k==='set'?ic('#ov-main'):k==='such'?ic('#b-search'):k==='ebenen'?ic('#eb-main'):k==='loc'?POLY:k[0]==='k'?ic('#b-'+k):ic('#t-'+k); }); radLayout(); })();
 /* Mindmap (seit v138, Anordnung seit v146): Dashboard (12 Uhr), Kartenebenen (rechts), B2C (links), Einstellungen (6 Uhr), Suchen und Zoomstufe dicht an Neue Location. Beide Äste klappen unabhängig auf:
    Kartenebenen: alle an oder aus, Wärmeplanung, PLZ, Ortsnamen, Bahnhöfe und Haltestellen, Straßennamen und Hausnummern; B2C: Locations, Leads, Potenzialanalysen, Festpreisgespräche, Abschlüsse. */
 function radLayout(){ const pos={}, w1={dash:-90,ebenen:0,b2c:180,set:90}; // seit v146: Dashboard oben, Einstellungen unten, Suchen links oben neben Neue Location (gespiegelt zur Zoomstufe)
@@ -2986,14 +2990,15 @@ function radLayout(){ const pos={}, w1={dash:-90,ebenen:0,b2c:180,set:90}; // se
   setz('karte',RAD_KARTE[0],RAD_KARTE[1],0);
   const lin=(p,q,cls)=>{ const dx=q[0]-p[0], dy=q[1]-p[1], L=Math.hypot(dx,dy)||1, ux=dx/L, uy=dy/L, r=19; return `<line class="${cls}" x1="${(p[0]+ux*r).toFixed(1)}" y1="${(p[1]+uy*r).toFixed(1)}" x2="${(q[0]-ux*r).toFixed(1)}" y2="${(q[1]-uy*r).toFixed(1)}"/>`; };
   let h=''; // seit v145: keine Linien von Neue Location zu den Hauptkacheln, nur die Unteräste
+  const FAECHER={dash:[-30,30]}; // Dashboard: KPIs und Ranking nebeneinander über der Kachel
   Object.entries(RAD_AESTE).forEach(([ast,kinder])=>{ const [ex,ey]=pos[ast], n=kinder.length, st=180/(n-1), rechts=w1[ast]===0;
-    kinder.forEach((k,i)=>{ const d=rechts?-90+i*st:90-i*st, a=(w1[ast]+d)*Math.PI/180; setz(k,ex+Math.cos(a)*RAD_R2,ey+Math.sin(a)*RAD_R2,i*25); h+=lin(pos[ast],pos[k],'kind-'+ast); }); });
+    kinder.forEach((k,i)=>{ const d=FAECHER[ast]?FAECHER[ast][i]:rechts?-90+i*st:90-i*st, a=(w1[ast]+d)*Math.PI/180; setz(k,ex+Math.cos(a)*RAD_R2,ey+Math.sin(a)*RAD_R2,i*25); h+=lin(pos[ast],pos[k],'kind-'+ast); }); });
   $('#rad-linien').innerHTML=h; }
-function radAst(ast,an){ const r=$('#radial'), b=$('#rad-'+ast); r.classList.toggle('ast-'+ast,an); b.setAttribute('aria-expanded',an?'true':'false'); b.setAttribute('aria-label',(ast==='b2c'?'B2C':'Kartenebenen')+(an?' zuklappen':' aufklappen')); }
-function radAestZu(){ radAst('ebenen',false); radAst('b2c',false); }
-function radAstOffen(){ const r=$('#radial'); return r.classList.contains('ast-ebenen')||r.classList.contains('ast-b2c'); }
+function radAst(ast,an){ const r=$('#radial'), b=$('#rad-'+ast); r.classList.toggle('ast-'+ast,an); b.setAttribute('aria-expanded',an?'true':'false'); b.setAttribute('aria-label',(ast==='b2c'?'B2C':ast==='dash'?'Dashboard':'Kartenebenen')+(an?' zuklappen':' aufklappen')); }
+function radAestZu(){ radAst('ebenen',false); radAst('b2c',false); radAst('dash',false); }
+function radAstOffen(){ const r=$('#radial'); return r.classList.contains('ast-ebenen')||r.classList.contains('ast-b2c')||r.classList.contains('ast-dash'); }
 function radOffen(){ return $('#radial').classList.contains('open'); }
-function radOpen(x,y,ll){ RAD.ll=ll; const r=$('#radial'); const hx=RAD_R1+RAD_R2+26, hy=RAD_R1+26; x=innerWidth>=2*hx?Math.max(hx,Math.min(innerWidth-hx,x)):innerWidth/2; y=Math.max(hy,Math.min(innerHeight-hy,y)); RAD.x=x; RAD.y=y; r.style.left=x+'px'; r.style.top=y+'px'; // beide Äste müssen ins Bild passen
+function radOpen(x,y,ll){ RAD.ll=ll; const r=$('#radial'); const hx=RAD_R1+RAD_R2+26, hyO=RAD_R1+Math.round(RAD_R2*.87)+26, hyU=RAD_R1+26; x=innerWidth>=2*hx?Math.max(hx,Math.min(innerWidth-hx,x)):innerWidth/2; y=Math.max(hyO,Math.min(innerHeight-hyU,y)); RAD.x=x; RAD.y=y; r.style.left=x+'px'; r.style.top=y+'px'; // alle Äste müssen ins Bild passen, oben auch KPIs und Ranking
   radAestZu(); radSync(); $('#rad-zoomval').textContent=map.getZoom();
   r.classList.remove('open'); void r.offsetWidth; r.classList.add('open'); }
 function radClose(){ $('#radial').classList.remove('open'); radAestZu(); }
@@ -3010,7 +3015,8 @@ $('#rad-neu').onclick=()=>{ radClose(); const r=map.getContainer().getBoundingCl
 Object.keys(KL).forEach(k=>{ $('#rad-k'+k).onclick=()=>{ $('#b-k'+k).click(); radSync(); }; }); // Leads, Potenzialanalysen, Festpreisgespräche, Abschlüsse einzeln // gleiche Schalter wie die Ebenen-Leiste; Menü bleibt offen, schließt nur über Neue Location, Suchen, Rechtsklick oder Klick in die Karte
 $('#rad-such').onclick=()=>{ radClose(); $('#b-search').click(); };
 $('#rad-karte').onclick=()=>{ setBase(base==='sat'?'dop':'sat'); radSync(); }; // Satellit und Luftbild amtlich im Wechsel, Menü bleibt offen
-$('#rad-dash').onclick=()=>{ radClose(); show('dash'); };
+$('#rad-dash').onclick=()=>radAst('dash',!$('#radial').classList.contains('ast-dash')); // seit v153: Dashboard klappt KPIs und Ranking auf
+$('#rad-kpi').onclick=()=>{ radClose(); dashOeffnen('kpi'); }; $('#rad-rank').onclick=()=>{ radClose(); dashOeffnen('rank'); };
 $('#rad-set').onclick=()=>{ radClose(); ovSeite(false); menuOpen(true,'ov'); };
 $('#rad-ebenen').onclick=()=>radAst('ebenen',!$('#radial').classList.contains('ast-ebenen')); $('#rad-b2c').onclick=()=>radAst('b2c',!$('#radial').classList.contains('ast-b2c')); // Äste auf- und zuklappen
 map.on('pm:drawstart',()=>{ if(!locSicht) locSichtSetzen(true); });
