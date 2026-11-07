@@ -839,7 +839,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #v-dash .d-nav{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:auto;padding-top:4px;font-size:12px}
   #v-dash .d-nav .btn{padding:1px 10px;font-size:13px}
   #v-dash .d-wkopf{flex:none;margin:0} #v-dash .d-wtitel{text-align:center;min-width:0} #v-dash .d-wtitel .s{font-size:11px;opacity:.85}
-  #v-dash .d-wzwei{grid-template-columns:minmax(0,55fr) minmax(0,45fr)}
+  #v-dash .d-wzwei{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  #v-dash .d-plan td:first-child{white-space:normal} #v-dash .d-plan .d-vs{font-style:italic;opacity:.75} #v-dash .d-plan .d-zin[data-q]{width:38px}
+  #v-dash .d-plan .d-sek th{padding-top:7px;font-size:11px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--ink2);text-align:left}
+  #v-dash .d-nkw{font-size:11px;font-weight:400;color:var(--ink2)}
   #v-dash table.kw td,#v-dash table.kw th{padding:2px 4px} #v-dash .kw .bez{font-size:11px;opacity:.8;font-weight:400}
   #v-dash .d-q td,#v-dash .d-q th{padding:1px 4px;font-size:11.5px} #v-dash .d-q .d-vs{font-style:italic;opacity:.75} #v-dash .d-vsh{font-size:10.5px;opacity:.75;margin-top:2px} #v-dash .d-q td:first-child{white-space:normal}
   #v-dash .d-h{display:block;font-size:12px;margin:0 0 2px} #v-dash .d-h2{margin-top:6px}
@@ -2665,7 +2668,8 @@ function kDashTab(){ kwReiter(); $$('#d-tabs button').forEach(b=>b.classList.tog
   if(dTab==='woche') wocheRender(); if(dTab==='rank') rankRender(); dEinpassen(); }
 /* Ziele selbst festlegen (seit v134): je KW gespeichert, gelten ab dieser KW bis zur nächsten KW mit eigenen Zielen; vorher gelten die Startziele */
 const QZIEL0=[[2.0,'x'],[0.3,'x'],[50,'%'],[50,'%'],[80,'%',1],[100,'%'],[90,'%',1],[40,'%',1],[30,'%'],[0,'%'],[1.0,'x']]; // Startwert, Art (x Verhältnis, % Prozent), 1 = Vorschlag
-let zielEdit=false;
+let zielEdit=false; const DMOB='(max-width:700px)'; // Handy-Ansicht des KW-Reiters (seit v151)
+matchMedia(DMOB).addEventListener('change',()=>{ if(dTab==='woche'&&$('#v-dash').classList.contains('active')){ wocheRender(); dEinpassen(); } });
 function zieleFuer(year,week){ const W=(D.ziele&&D.ziele.wochen)||{}, id=weekId(year,week), ks=Object.keys(W).filter(k=>k<=id).sort(), k=ks[ks.length-1];
   if(k) return {k:Object.assign({},KZIEL,W[k].k||{}), q:QZIEL0.map((z,i)=>W[k].q&&W[k].q[i]!=null?W[k].q[i]:z[0]), eigen:true, ab:k};
   return {k:Object.assign({},KZIEL), q:QZIEL0.map(z=>z[0]), eigen:false, ab:null}; }
@@ -2673,26 +2677,44 @@ function qFmt(i,v){ return QZIEL0[i][1]==='%'?Math.round(v)+' %':(Math.round(v*1
 function zielZahl(x){ const n=parseFloat(String(x).replace(',','.').replace('%','').trim()); return isFinite(n)&&n>=0?n:null; }
 const kwAus=id=>'KW '+(+id.split('-kw')[1])+(id.slice(0,4)!==String(new Date().getFullYear())?' '+id.slice(0,4):'');
 const QKURZ=['Leads je 100 Türen (D2D)','Direkttermine je 100 Türen','Termin-Quote (CAS je Lead)','Show-up CHC (je CAS)','Folgetermin-Quote (CSA je CHC)','Angebotsquote (COF je CSA)','Show-up CSC (je CSA)','Abschlussquote (CCW je CSC)','Abschluss gesamt (CCW je CHC)','Widerrufsquote (CCR je CCW)','Empfehlungen je CCW'];
-function wocheRender(){ const el=$('#d-woche'); if(!el) return; const days=kpiWeek(wk.year,wk.week), S=kSum(days), mon=weekMonday(wk.year,wk.week), Z=zieleFuer(wk.year,wk.week), E=zielEdit;
+/* KW-Reiter (seit v151): links die aktuelle KW untereinander mit Ist und Geplant, rechts geplant für die nächste KW; was rechts gespeichert wird, steht ab Montag links unter Geplant */
+function wocheRender(){ const el=$('#d-woche'); if(!el) return; const days=kpiWeek(wk.year,wk.week), S=kSum(days), mon=weekMonday(wk.year,wk.week), nmon=addDays(mon,7), nw=isoWeekOf(nmon), Z=zieleFuer(wk.year,wk.week), N=zieleFuer(nw.year,nw.week), E=zielEdit;
   const orte=WTAGE.map(k=>days[k].loc?`<div class="s d-ort">${tagKurz(days[k].date)}: ${esc(days[k].loc)}${days[k].rating?' · Bewertung '+days[k].rating:''}${days[k].back?' · wiederkommen':''}</div>`:'').join('')||'<div class="s d-ort">Keine Shifts in dieser Woche.</div>';
+  const vs=(X,i)=>!X.eigen&&QZIEL0[i][2], qWert=(X,i)=>QZIEL0[i][1]==='%'?Math.round(X.q[i]):(Math.round(X.q[i]*10)/10).toFixed(1).replace('.',',');
+  const quelle=(X,w)=>X.eigen&&X.ab===weekId(w.year,w.week)?'festgelegt':X.eigen?'übernommen aus '+kwAus(X.ab):'Startziele';
   let h=`<div class="row sb d-wkopf"><button class="btn small" id="wk-prev" aria-label="Vorwoche">‹</button><div class="d-wtitel"><strong>KW ${wk.week} · ${tagKurz(mon)} bis ${tagKurz(addDays(mon,5))}</strong><div class="s">${KF.at?'An das Wochenblatt übergeben: '+fmtDT(KF.at):'Noch nicht an das Wochenblatt übergeben (bei Google anmelden).'}${KF.err==='scope'?' · Für die Übergabe einmal neu bei Google anmelden.':''}</div></div><button class="btn small" id="wk-next" aria-label="Nächste Woche">›</button></div>
-    <div class="d-zwei d-wzwei"><div class="d-box"><table class="kw"><tr><th></th>${WTAGE.map(k=>`<th class="r">${k[0].toUpperCase()+k[1]}</th>`).join('')}<th class="r">Ist</th><th class="r">Ziel</th></tr>`;
-  KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td>${WTAGE.map(k=>`<td class="r">${days[k][c]||''}</td>`).join('')}<td class="r"><b>${S[c]}</b></td><td class="r">${E?`<input class="d-zin" data-k="${c}" inputmode="numeric" aria-label="Ziel ${c}" value="${Z.k[c]}">`:Z.k[c]}</td></tr>`; });
-  h+=`</table></div><div class="d-box"><strong class="d-h">Quoten</strong><table class="d-q"><tr><th></th><th class="r">Ist</th><th class="r">Ziel</th></tr>${kQuoten(S).map((q,i)=>{ const vs=!Z.eigen&&QZIEL0[i][2]; const pz=QZIEL0[i][1]==='%';
-      return `<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${q[1]||'–'}</b></td><td class="r${vs&&!E?' d-vs':''}">${E?`<input class="d-zin" data-q="${i}" inputmode="decimal" aria-label="Ziel ${QKURZ[i]}" value="${pz?Math.round(Z.q[i]):(Math.round(Z.q[i]*10)/10).toFixed(1).replace('.',',')}">${pz?' %':''}`:qFmt(i,Z.q[i])}</td></tr>`; }).join('')}</table>
-    ${!E&&!Z.eigen&&QZIEL0.some(z=>z[2])?'<div class="s d-vsh">kursiv: Zielvorschlag, noch nicht bestätigt</div>':''}
-    <div class="d-zbar">${E?`<button class="btn small primary" id="z-save">Speichern</button><button class="btn small" id="z-cancel">Abbrechen</button><span class="s">gilt ab KW ${wk.week}</span>`:`<button class="btn small" id="z-edit">Ziele festlegen</button><span class="s">${Z.eigen?'festgelegt ab '+kwAus(Z.ab):'Startziele'}</span>`}</div><strong class="d-h d-h2">Location je Tag</strong>${orte}</div></div>`;
+    <div class="d-zwei d-wzwei">`;
+  const nK=c=>E?`<input class="d-zin" data-k="${c}" inputmode="numeric" aria-label="Geplant KW ${nw.week} ${c}" value="${N.k[c]}">`:N.k[c];
+  const nQ=i=>E?`<input class="d-zin" data-q="${i}" inputmode="decimal" aria-label="Geplant KW ${nw.week} ${QKURZ[i]}" value="${qWert(N,i)}">${QZIEL0[i][1]==='%'?' %':''}`:qFmt(i,N.q[i]);
+  const stZ=`<div class="s d-vsh">Geplant KW ${wk.week}: ${quelle(Z,wk)}${QZIEL0.some((z,i)=>vs(Z,i)||(!E&&vs(N,i)))?' · kursiv: Vorschlag, noch nicht bestätigt':''}</div>`;
+  const zbar=`<div class="d-zbar">${E?`<button class="btn small primary" id="z-save">Speichern</button><button class="btn small" id="z-cancel">Abbrechen</button><span class="s">gilt ab KW ${nw.week}</span>`:`<button class="btn small" id="z-edit">KW ${nw.week} planen</button><span class="s">${quelle(N,nw)}</span>`}</div>`;
+  const lage=`<strong class="d-h d-h2">Location je Tag</strong>${orte}`;
+  if(matchMedia(DMOB).matches){ // Handy: eine Tabelle, damit beide KW ohne Scrollen passen
+    h+=`<div class="d-box"><strong class="d-h">KW ${wk.week}: Ist und geplant <span class="d-nkw">· rechts KW ${nw.week} geplant</span></strong><table class="kw d-plan"><tr><th></th><th class="r">Ist</th><th class="r">Geplant</th><th class="r">KW ${nw.week}</th></tr>`;
+    KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${S[c]}</b></td><td class="r">${Z.k[c]}</td><td class="r">${nK(c)}</td></tr>`; });
+    h+=`<tr class="d-sek"><th colspan="4">Quoten</th></tr>`+kQuoten(S).map((q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${q[1]||'–'}</b></td><td class="r${vs(Z,i)?' d-vs':''}">${qFmt(i,Z.q[i])}</td><td class="r${vs(N,i)&&!E?' d-vs':''}">${nQ(i)}</td></tr>`).join('');
+    h+=`</table>${stZ}${zbar}${lage}</div></div>`;
+  } else {
+    h+=`<div class="d-box"><strong class="d-h">KW ${wk.week}: Ist und geplant</strong><table class="kw d-plan"><tr><th></th><th class="r">Ist</th><th class="r">Geplant</th></tr>`;
+    KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${S[c]}</b></td><td class="r">${Z.k[c]}</td></tr>`; });
+    h+=`<tr class="d-sek"><th colspan="3">Quoten</th></tr>`+kQuoten(S).map((q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${q[1]||'–'}</b></td><td class="r${vs(Z,i)?' d-vs':''}">${qFmt(i,Z.q[i])}</td></tr>`).join('');
+    h+=`</table><div class="s d-vsh">Geplant: ${quelle(Z,wk)}${QZIEL0.some((z,i)=>vs(Z,i))?' · kursiv: Vorschlag, noch nicht bestätigt':''}</div>${lage}</div>`;
+    h+=`<div class="d-box"><strong class="d-h">KW ${nw.week}: geplant <span class="d-nkw">· ${tagKurz(nmon)} bis ${tagKurz(addDays(nmon,5))}</span></strong><table class="kw d-plan"><tr><th></th><th class="r">Geplant</th></tr>`;
+    KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r">${nK(c)}</td></tr>`; });
+    h+=`<tr class="d-sek"><th colspan="2">Quoten</th></tr>`+QKURZ.map((t,i)=>`<tr><td>${t}</td><td class="r${vs(N,i)&&!E?' d-vs':''}">${nQ(i)}</td></tr>`).join('');
+    h+=`</table>${!E&&QZIEL0.some((z,i)=>vs(N,i))?'<div class="s d-vsh">kursiv: Vorschlag, noch nicht bestätigt</div>':''}${zbar}</div></div>`;
+  }
   el.innerHTML=h; $('#wk-prev').onclick=()=>{ zielEdit=false; wk=isoWeekOf(addDays(mon,-7)); wocheRender(); dEinpassen(); }; $('#wk-next').onclick=()=>{ zielEdit=false; wk=isoWeekOf(addDays(mon,7)); wocheRender(); dEinpassen(); };
   if($('#z-edit')) $('#z-edit').onclick=()=>{ zielEdit=true; wocheRender(); dEinpassen(); const f=el.querySelector('.d-zin'); if(f){ f.focus(); f.select(); } };
   if($('#z-cancel')) $('#z-cancel').onclick=()=>{ zielEdit=false; wocheRender(); dEinpassen(); };
   if($('#z-save')) $('#z-save').onclick=zieleSpeichern;
   el.querySelectorAll('.d-zin').forEach(f=>f.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); zieleSpeichern(); } })); }
-function zieleSpeichern(){ const el=$('#d-woche'), Z=zieleFuer(wk.year,wk.week), k={}, q=Z.q.slice(); let fehler='';
+function zieleSpeichern(){ const el=$('#d-woche'), nw=isoWeekOf(addDays(weekMonday(wk.year,wk.week),7)), Z=zieleFuer(nw.year,nw.week), k={}, q=Z.q.slice(); let fehler=''; // seit v151: gespeichert wird die Planung der nächsten KW
   el.querySelectorAll('.d-zin[data-k]').forEach(f=>{ const n=zielZahl(f.value); if(n===null){ fehler=fehler||f.dataset.k; f.classList.add('fehl'); } else k[f.dataset.k]=Math.round(n); });
   el.querySelectorAll('.d-zin[data-q]').forEach(f=>{ const i=+f.dataset.q, n=zielZahl(f.value); if(n===null){ fehler=fehler||QKURZ[i]; f.classList.add('fehl'); } else q[i]=QZIEL0[i][1]==='%'?Math.round(n):Math.round(n*10)/10; });
   if(fehler){ toast('Bitte eine Zahl eintragen: '+fehler); return; }
-  if(!D.ziele) D.ziele={wochen:{}}; if(!D.ziele.wochen) D.ziele.wochen={}; D.ziele.wochen[weekId(wk.year,wk.week)]={k,q,at:new Date().toISOString()}; Store.save();
-  zielEdit=false; wocheRender(); dEinpassen(); toast('Ziele ab KW '+wk.week+' gespeichert'); }
+  if(!D.ziele) D.ziele={wochen:{}}; if(!D.ziele.wochen) D.ziele.wochen={}; D.ziele.wochen[weekId(nw.year,nw.week)]={k,q,at:new Date().toISOString()}; Store.save();
+  zielEdit=false; wocheRender(); dEinpassen(); toast('Geplant für KW '+nw.week+' gespeichert'); }
 function rankRender(){ const el=$('#d-rank'); if(!el) return; const rows=rankRows(); const f=(x,d=1)=>x==null?'':x.toFixed(d);
   el.innerHTML=`<div class="s d-rinfo">Sortiert nach Abschlüssen je 100 Türen (nur D2D), dann CSA je CHC, dann Leads je 100 Türen. Grau: unter 3 Abschlüssen.</div><div id="d-rankt" class="d-fill"></div>`; DSEITE['d-rankt']=0;
   dTabelle('d-rankt','<tr><th>Location</th><th class="r">Türen</th><th class="r">Leads</th><th class="r">SL</th><th class="r">CHC</th><th class="r">CSA</th><th class="r">CCW</th><th class="r">CCW/100</th><th class="r">CSA-Q.</th><th class="r">Leads/100</th></tr>',
