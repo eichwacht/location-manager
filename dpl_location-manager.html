@@ -2695,12 +2695,14 @@ function zielZahl(x){ const n=parseFloat(String(x).replace(',','.').replace('%',
 const kwAus=id=>'KW '+(+id.split('-kw')[1])+(id.slice(0,4)!==String(new Date().getFullYear())?' '+id.slice(0,4):'');
 const QKURZ=['Leads je 100 Türen (D2D)','Direkttermine je 100 Türen','Termin-Quote (CAS je Lead)','Show-up CHC (je CAS)','Folgetermin-Quote (CSA je CHC)','Angebotsquote (COF je CSA)','Show-up CSC (je CSA)','Abschlussquote (CCW je CSC)','Abschluss gesamt (CCW je CHC)','Widerrufsquote (CCR je CCW)','Empfehlungen je CCW'];
 /* KW-Reiter (seit v151): links die aktuelle KW untereinander mit Ist und Geplant, rechts geplant für die nächste KW; was rechts gespeichert wird, steht ab Montag links unter Geplant */
+/* seit v159: Knopf im KPI-Fenster übergibt die Wochenzahlen sofort an das KPI-Wochenblatt (Google Drive) */
+async function kpiEvalExport(){ if(!gReady()){ toast('Erst bei Google anmelden'); return; } const b=$('#kpi-export'); if(b){ b.disabled=true; b.textContent='Wird exportiert …'; } await kpiFileSync(true); toast(KF.err==='scope'?'Für den Export einmal neu bei Google anmelden':KF.err?'Export fehlgeschlagen':'KPI-Evaluation exportiert, '+fmtDT(KF.at)); if(b){ b.disabled=false; b.textContent='KPI-Evaluation exportieren'; } }
 function wocheRender(){ const el=$('#d-woche'); if(!el) return; const days=kpiWeek(wk.year,wk.week,dVb), S=kSum(days), mon=weekMonday(wk.year,wk.week), nmon=addDays(mon,7), nw=isoWeekOf(nmon), Z=zieleFuer(wk.year,wk.week), N=zieleFuer(nw.year,nw.week), E=zielEdit, planOk=dVb===ME; // Geplant gibt es nur für ME
   const orte=WTAGE.map(k=>days[k].loc?`<div class="s d-ort">${tagKurz(days[k].date)}: ${esc(days[k].loc)}${days[k].rating?' · Bewertung '+days[k].rating:''}${days[k].back?' · wiederkommen':''}</div>`:'').join('')||'<div class="s d-ort">Keine Shifts in dieser Woche.</div>';
   const dmy=d=>d.split('-').reverse().join('.'), kwKopf=(n,m,zus,knopf)=>`<div class="d-kwk"><div><strong class="d-h">KW ${n}</strong><div class="s d-kwd">${dmy(m)} - ${dmy(addDays(m,5))}${zus||''}</div></div>${knopf||''}</div>`; /* seit v157: Kopf je Seite KW und Datum */
   const vs=(X,i)=>!X.eigen&&QZIEL0[i][2], qWert=(X,i)=>QZIEL0[i][1]==='%'?Math.round(X.q[i]):(Math.round(X.q[i]*10)/10).toFixed(1).replace('.',',');
   const quelle=(X,w)=>X.eigen&&X.ab===weekId(w.year,w.week)?'festgelegt':X.eigen?'übernommen aus '+kwAus(X.ab):'Startziele';
-  let h=`<div class="row sb d-wkopf"><button class="btn small" id="wk-prev" aria-label="Vorwoche">‹</button><div class="d-wtitel"><div class="s">${KF.at?'An das Wochenblatt übergeben: '+fmtDT(KF.at):'Noch nicht an das Wochenblatt übergeben (bei Google anmelden).'}${KF.err==='scope'?' · Für die Übergabe einmal neu bei Google anmelden.':''}</div></div><button class="btn small" id="wk-next" aria-label="Nächste Woche">›</button></div>
+  let h=`<div class="row sb d-wkopf"><button class="btn small" id="wk-prev" aria-label="Vorwoche">‹</button><div class="d-wtitel"><button class="btn small" id="kpi-export">KPI-Evaluation exportieren</button></div><button class="btn small" id="wk-next" aria-label="Nächste Woche">›</button></div>
     <div class="d-zwei d-wzwei">`;
   const nK=c=>E?`<input class="d-zin" data-k="${c}" inputmode="numeric" aria-label="Geplant KW ${nw.week} ${c}" value="${N.k[c]}">`:N.k[c];
   const nQ=i=>E?`<input class="d-zin" data-q="${i}" inputmode="decimal" aria-label="Geplant KW ${nw.week} ${QKURZ[i]}" value="${qWert(N,i)}">${QZIEL0[i][1]==='%'?' %':''}`:qFmt(i,N.q[i]);
@@ -2722,7 +2724,7 @@ function wocheRender(){ const el=$('#d-woche'); if(!el) return; const days=kpiWe
     h+=`<tr class="d-sek"><th colspan="2">Quoten</th></tr>`+QKURZ.map((t,i)=>`<tr><td>${t}</td><td class="r${planOk&&vs(N,i)&&!E?' d-vs':''}">${planOk?nQ(i):'–'}</td></tr>`).join('');
     h+=`</table></div></div>`;
   }
-  el.innerHTML=h; $('#wk-prev').onclick=()=>{ zielEdit=false; wk=isoWeekOf(addDays(mon,-7)); wocheRender(); dEinpassen(); }; $('#wk-next').onclick=()=>{ zielEdit=false; wk=isoWeekOf(addDays(mon,7)); wocheRender(); dEinpassen(); };
+  el.innerHTML=h; $('#kpi-export').onclick=kpiEvalExport; $('#wk-prev').onclick=()=>{ zielEdit=false; wk=isoWeekOf(addDays(mon,-7)); wocheRender(); dEinpassen(); }; $('#wk-next').onclick=()=>{ zielEdit=false; wk=isoWeekOf(addDays(mon,7)); wocheRender(); dEinpassen(); };
   if($('#z-edit')) $('#z-edit').onclick=()=>{ zielEdit=true; wocheRender(); dEinpassen(); const f=el.querySelector('.d-zin'); if(f){ f.focus(); f.select(); } };
   if($('#z-cancel')) $('#z-cancel').onclick=()=>{ zielEdit=false; wocheRender(); dEinpassen(); };
   if($('#z-save')) $('#z-save').onclick=zieleSpeichern;
