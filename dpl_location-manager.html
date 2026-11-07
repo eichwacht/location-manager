@@ -2760,7 +2760,7 @@ function zeitPlan(art,z,R){ const o=dVb===ME&&D.ziele&&D.ziele.zeit&&D.ziele.zei
 function zGk(P,c){ return P.ok&&P.k[c]!=null?P.k[c]:'–'; }
 function zGq(P,i){ return P.ok&&P.q[i]!=null?qFmt(i,P.q[i]):'–'; }
 function zIt(P,i){ return P.ok&&P.vor[i]?' d-vs':''; }
-function zExport(art){ return `<button class="btn small primary" id="zr-export-${art}">${{quartal:'Quartal-Evaluation exportieren',jahr:'Jahres-Evaluation exportieren',gesamt:'Gesamt-Evaluation exportieren'}[art]}</button>`; }
+function zExport(art){ return `<button class="btn small primary" id="zr-export-${art}">${{quartal:'Quartals-Evaluation exportieren',jahr:'Jahres-Evaluation exportieren',gesamt:'Gesamt-Evaluation exportieren'}[art]}</button>`; }
 function zeitRenderWieKW(art,el){ const z=zeitraum(art,zr[art]), zn=zeitraum(art,zr[art]+1), R=kpiRange(z.von,z.bis), RN=kpiRange(zn.von,zn.bis), Q=kQuoten(R.S), P=zeitPlan(art,z,R), PN=zeitPlan(art,zn,RN), planOk=dVb===ME, E=planOk&&zeitEdit===art;
   const qWert=i=>{ const v=PN.ok&&PN.q[i]!=null?PN.q[i]:0; return QZIEL0[i][1]==='%'?Math.round(v):(Math.round(v*10)/10).toFixed(1).replace('.',','); };
   const nK=c=>E?`<input class="d-zin" data-k="${c}" inputmode="numeric" aria-label="Geplant ${zn.titel} ${c}" value="${PN.ok&&PN.k[c]!=null?PN.k[c]:0}">`:zGk(PN,c);
