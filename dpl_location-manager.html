@@ -855,6 +855,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
   th{font-weight:600;font-size:12px}
   td.r,th.r{text-align:right}
   .seg{display:inline-flex;background:var(--fl2);border-radius:10px;overflow:hidden}
+  #d-tabs select{width:auto;flex:none;margin:3px;padding:5px 28px 5px 10px;border:1px solid var(--rand2);border-radius:8px;background:var(--fl) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%231f2328' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 9px center;-webkit-appearance:none;appearance:none;font:inherit;font-size:13.333px;font-weight:600;color:var(--ink);cursor:pointer} /* Vertriebler (seit v154), Schrift wie die Reiter */
+  @media (max-width:700px){ #v-dash #d-tabs{flex-wrap:wrap} }
   .seg button{border:0;background:transparent;color:var(--ink);padding:8px 12px;font-weight:600}
   .seg button.on{background:var(--akz);color:var(--auf)}
   /* Shift-Zeile */
@@ -1118,11 +1120,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <section class="win" id="v-dash">
       <header><h2><span class="t">KPIs</span></h2></header><!-- seit v136 ohne Reiter Shifts und ohne Zeitraumwahl --><!-- seit v132 ohne Untertitel und ohne Schließen-Knopf: schließen per Klick in die Karte, Rechtsklick ins Fenster oder Dashboard-Kachel -->
       <div class="body">
-        <div class="seg tabs" id="d-tabs"><button data-t="woche" class="on">Woche</button><button data-t="monat">Monat</button><button data-t="quartal">Quartal</button><button data-t="jahr">Jahr</button></div><!-- seit v153: Ranking eigenes Fenster über das Schnellmenü -->
+        <div class="seg tabs" id="d-tabs"><select id="d-vb" aria-label="Vertriebler"></select><button data-t="woche" class="on">Woche</button><button data-t="monat">Monat</button><button data-t="quartal">Quartal</button><button data-t="jahr">Jahr</button><button data-t="gesamt">Insgesamt</button></div><!-- seit v153: Ranking eigenes Fenster über das Schnellmenü -->
         <div id="d-woche" class="d-pane"></div>
         <div id="d-monat" class="d-pane" style="display:none"></div>
         <div id="d-quartal" class="d-pane" style="display:none"></div>
         <div id="d-jahr" class="d-pane" style="display:none"></div>
+        <div id="d-gesamt" class="d-pane" style="display:none"></div>
         <div id="d-rank" class="d-pane" style="display:none"></div>
       </div>
     </section>
@@ -2290,7 +2293,7 @@ map.on('mousedown dragstart',()=>legendOpen(false));
 
 /* ---------- Navigation ---------- */
 let openWin=null;
-function show(v){ if(v===openWin) v=null; openWin=v; if(v){ closePanel(); menuOpen(false); legendOpen(false); if($('#search').classList.contains('open')) searchOpen(false); } $$('.bottombar [data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v)); $$('.win[id^="v-"]').forEach(x=>x.classList.toggle('active',x.id==='v-'+v)); if(v==='dash'){ dTab=dModus==='rank'?'rank':'woche'; wk=isoWeekOf(today()); zr={monat:0,quartal:0,jahr:0}; zielEdit=false; renderDash(); } if(v==='plan') renderPlan(); if(v==='set') renderData(); }
+function show(v){ if(v===openWin) v=null; openWin=v; if(v){ closePanel(); menuOpen(false); legendOpen(false); if($('#search').classList.contains('open')) searchOpen(false); } $$('.bottombar [data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v)); $$('.win[id^="v-"]').forEach(x=>x.classList.toggle('active',x.id==='v-'+v)); if(v==='dash'){ dTab=dModus==='rank'?'rank':'woche'; wk=isoWeekOf(today()); zr={monat:0,quartal:0,jahr:0,gesamt:0}; zielEdit=false; renderDash(); } if(v==='plan') renderPlan(); if(v==='set') renderData(); }
 $$('.bottombar [data-view]').forEach(b=>b.onclick=()=>show(b.dataset.view));
 $$('.win [data-close]').forEach(b=>b.onclick=()=>show(null));
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if($('#gpanel').classList.contains('open')) gpClose(); else if($('#legend').classList.contains('open')) legendOpen(false); else if($('#search').classList.contains('open')) searchOpen(false); else if(map.pm.globalDrawModeEnabled()) map.pm.disableDraw(); else if(layerMenu.classList.contains('open')||ovMenu.classList.contains('open')||kMenu.classList.contains('open')) menuOpen(false); else if($('#panel').classList.contains('active')) closePanel(); else show(null); } });
@@ -2449,10 +2452,11 @@ async function calPlanWrite(){ if(!gReady()) return; let mem={}; try{ mem=JSON.p
   try{ localStorage.setItem('sle_lm_calplan',JSON.stringify(mem)); }catch(e){} }
 
 /* ---------- Kennzahlen je Woche, Quoten wie im Wochenblatt ---------- */
-function kpiWeek(y,w){ const mon=weekMonday(y,w); const days={}, by={}; WTAGE.forEach((k,i)=>{ const o={date:addDays(mon,i),loc:'',rating:0,back:false,note:''}; KCODES.forEach(c=>o[c]=0); days[k]=o; by[o.date]=o; });
-  D.shifts.forEach(s=>{ const o=by[s.date]; if(!o||s.status!=='abgeschlossen'||!(s.persons||[]).includes(ME)) return; o.DOR+=+s.doors||0; if((+s.hours||0)>=3) o.DSH=1;
+/* seit v154: vb = Vertriebler oder 'alle'; Leads haben keinen Vertriebler und zählen bei ME */
+function kpiWeek(y,w,vb=ME){ const mon=weekMonday(y,w), dsh={}; const days={}, by={}; WTAGE.forEach((k,i)=>{ const o={date:addDays(mon,i),loc:'',rating:0,back:false,note:''}; KCODES.forEach(c=>o[c]=0); days[k]=o; by[o.date]=o; });
+  D.shifts.forEach(s=>{ const o=by[s.date]; const ps=s.persons||[]; if(!o||s.status!=='abgeschlossen'||(vb!=='alle'&&!ps.includes(vb))) return; o.DOR+=+s.doors||0; if((+s.hours||0)>=3){ const m=dsh[o.date]||(dsh[o.date]=new Set()); (vb==='alle'?(ps.length?ps:['?']):[vb]).forEach(x=>m.add(x)); o.DSH=m.size; }
     const n=(D.locations.find(x=>x.id===s.locationId)||{}).name||''; if(n&&!o.loc.split(' + ').includes(n)) o.loc=o.loc?o.loc+' + '+n:n; if(s.rating&&!o.rating) o.rating=+s.rating; if(s.back==='ja') o.back=true; if(s.note&&!o.note) o.note=s.note; });
-  D.leads.forEach(l=>(l.verlauf||[]).forEach(e=>{ const o=by[isoDay(e.at)]; if(!o) return; switch(e.c){ case 'CLD': o.CLD++; break; case 'CLI': o.CLI++; break; case 'CRF': o.CRF++; break;
+  if(vb==='alle'||vb===ME) D.leads.forEach(l=>(l.verlauf||[]).forEach(e=>{ const o=by[isoDay(e.at)]; if(!o) return; switch(e.c){ case 'CLD': o.CLD++; break; case 'CLI': o.CLI++; break; case 'CRF': o.CRF++; break;
     case 'CAS': if(e.ok!==false){ o.CAS++; if(e.dda) o.DDA++; } break; case 'CHC': o.CHC++; break; case 'CSA': if(e.ok!==false) o.CSA++; break; case 'COF': o.COF++; break; case 'CSC': o.CSC++; break; case 'CCW': o.CCW++; break; case 'CCR': o.CCR++; break; } }));
   return days; }
 function kSum(days){ const S={}; KCODES.forEach(c=>S[c]=WTAGE.reduce((a,k)=>a+(days[k][c]||0),0)); return S; }
@@ -2663,16 +2667,19 @@ function bookRender(l){ const F=$('#ld-form'), B=LD.book, art=B.art; const {list
   $('#bk-new').onclick=async()=>{ const d=$('#bk-d').value, t=$('#bk-t').value; if(!d||!t) return; try{ const o=opts(); await wechsel(); await calBookNew(l,art,new Date(d+'T'+t).toISOString(),o); LD.book=null; leadRender(); toast('Termin angelegt: '+tagKurz(d)+' '+t); }catch(x){ toast(x.message||String(x)); } }; }
 
 /* ---------- Dashboard: Reiter Woche und Ranking ---------- */
-const MONATE=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'], ZART=['monat','quartal','jahr'];
-let zr={monat:0,quartal:0,jahr:0};
+const MONATE=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'], ZART=['monat','quartal','jahr','gesamt'];
+let zr={monat:0,quartal:0,jahr:0,gesamt:0};
+let dVb=(()=>{ try{ return localStorage.getItem('sle_lm_vb')||ME; }catch(e){ return ME; } })(); // Vertriebler im KPI-Fenster (seit v154), bleibt gemerkt
+(function(){ const sel=$('#d-vb'); sel.innerHTML='<option value="alle">Alle</option>'+[...PERSONS].sort((a,b)=>a.localeCompare(b,'de')).map(p=>`<option value="${p}">${p}</option>`).join(''); if(dVb!=='alle'&&!PERSONS.includes(dVb)) dVb=ME; sel.value=dVb;
+  sel.onchange=()=>{ dVb=sel.value; try{ localStorage.setItem('sle_lm_vb',dVb); }catch(e){} zielEdit=false; kDashTab(); }; })();
 let dModus='kpi'; function dashOeffnen(m){ dModus=m; if(openWin==='dash') openWin=null; show('dash'); } // seit v153: ein Fenster, als KPIs oder als Ranking geöffnet
 let dTab='woche', wk=isoWeekOf(today()); // Dashboard öffnet immer mit der aktuellen KW (seit v133)
 $$('#d-tabs button').forEach(b=>b.onclick=()=>{ dTab=b.dataset.t; kDashTab(); });
 // Reiter zeigt die aktuelle KW statt „Woche“ (seit v135)
-function kwReiter(){ const b=$('#d-tabs [data-t="woche"]'); if(b) b.textContent='KW '+isoWeekOf(today()).week; const t=new Date(today()+'T00:00'), L={monat:MONATE[t.getMonth()],quartal:'Q'+(Math.floor(t.getMonth()/3)+1),jahr:String(t.getFullYear())}; ZART.forEach(a=>{ const x=$('#d-tabs [data-t="'+a+'"]'); if(x) x.textContent=L[a]; }); } // seit v152 auch Monat, Quartal, Jahr
+function kwReiter(){ const b=$('#d-tabs [data-t="woche"]'); if(b) b.textContent='KW '+isoWeekOf(today()).week; const t=new Date(today()+'T00:00'), L={monat:MONATE[t.getMonth()],quartal:'Q'+(Math.floor(t.getMonth()/3)+1),jahr:String(t.getFullYear()),gesamt:'Insgesamt'}; ZART.forEach(a=>{ const x=$('#d-tabs [data-t="'+a+'"]'); if(x) x.textContent=L[a]; }); } // seit v152 auch Monat, Quartal, Jahr
 kwReiter();
 const _renderDash=renderDash; renderDash=function(){ _renderDash(); kDashTab(); };
-function kDashTab(){ kwReiter(); $('#v-dash h2 .t').textContent=dModus==='rank'?'Ranking':'KPIs'; $('#d-tabs').style.display=dModus==='rank'?'none':''; $$('#d-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===dTab)); ['einsatz','woche','monat','quartal','jahr','rank'].forEach(t=>{ const el=$('#d-'+t); if(el) el.style.display=t===dTab?'':'none'; }); if($('#d-range')) $('#d-range').style.display=dTab==='einsatz'?'':'none';
+function kDashTab(){ kwReiter(); $('#v-dash h2 .t').textContent=dModus==='rank'?'Ranking':'KPIs'; $('#d-tabs').style.display=dModus==='rank'?'none':''; $$('#d-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===dTab)); ['einsatz','woche','monat','quartal','jahr','gesamt','rank'].forEach(t=>{ const el=$('#d-'+t); if(el) el.style.display=t===dTab?'':'none'; }); if($('#d-range')) $('#d-range').style.display=dTab==='einsatz'?'':'none';
   if(dTab==='woche') wocheRender(); if(ZART.includes(dTab)) zeitRender(dTab); if(dTab==='rank') rankRender(); dEinpassen(); }
 /* Ziele selbst festlegen (seit v134): je KW gespeichert, gelten ab dieser KW bis zur nächsten KW mit eigenen Zielen; vorher gelten die Startziele */
 const QZIEL0=[[2.0,'x'],[0.3,'x'],[50,'%'],[50,'%'],[80,'%',1],[100,'%'],[90,'%',1],[40,'%',1],[30,'%'],[0,'%'],[1.0,'x']]; // Startwert, Art (x Verhältnis, % Prozent), 1 = Vorschlag
@@ -2687,7 +2694,7 @@ function zielZahl(x){ const n=parseFloat(String(x).replace(',','.').replace('%',
 const kwAus=id=>'KW '+(+id.split('-kw')[1])+(id.slice(0,4)!==String(new Date().getFullYear())?' '+id.slice(0,4):'');
 const QKURZ=['Leads je 100 Türen (D2D)','Direkttermine je 100 Türen','Termin-Quote (CAS je Lead)','Show-up CHC (je CAS)','Folgetermin-Quote (CSA je CHC)','Angebotsquote (COF je CSA)','Show-up CSC (je CSA)','Abschlussquote (CCW je CSC)','Abschluss gesamt (CCW je CHC)','Widerrufsquote (CCR je CCW)','Empfehlungen je CCW'];
 /* KW-Reiter (seit v151): links die aktuelle KW untereinander mit Ist und Geplant, rechts geplant für die nächste KW; was rechts gespeichert wird, steht ab Montag links unter Geplant */
-function wocheRender(){ const el=$('#d-woche'); if(!el) return; const days=kpiWeek(wk.year,wk.week), S=kSum(days), mon=weekMonday(wk.year,wk.week), nmon=addDays(mon,7), nw=isoWeekOf(nmon), Z=zieleFuer(wk.year,wk.week), N=zieleFuer(nw.year,nw.week), E=zielEdit;
+function wocheRender(){ const el=$('#d-woche'); if(!el) return; const days=kpiWeek(wk.year,wk.week,dVb), S=kSum(days), mon=weekMonday(wk.year,wk.week), nmon=addDays(mon,7), nw=isoWeekOf(nmon), Z=zieleFuer(wk.year,wk.week), N=zieleFuer(nw.year,nw.week), E=zielEdit, planOk=dVb===ME; // Geplant gibt es nur für ME
   const orte=WTAGE.map(k=>days[k].loc?`<div class="s d-ort">${tagKurz(days[k].date)}: ${esc(days[k].loc)}${days[k].rating?' · Bewertung '+days[k].rating:''}${days[k].back?' · wiederkommen':''}</div>`:'').join('')||'<div class="s d-ort">Keine Shifts in dieser Woche.</div>';
   const vs=(X,i)=>!X.eigen&&QZIEL0[i][2], qWert=(X,i)=>QZIEL0[i][1]==='%'?Math.round(X.q[i]):(Math.round(X.q[i]*10)/10).toFixed(1).replace('.',',');
   const quelle=(X,w)=>X.eigen&&X.ab===weekId(w.year,w.week)?'festgelegt':X.eigen?'übernommen aus '+kwAus(X.ab):'Startziele';
@@ -2695,23 +2702,23 @@ function wocheRender(){ const el=$('#d-woche'); if(!el) return; const days=kpiWe
     <div class="d-zwei d-wzwei">`;
   const nK=c=>E?`<input class="d-zin" data-k="${c}" inputmode="numeric" aria-label="Geplant KW ${nw.week} ${c}" value="${N.k[c]}">`:N.k[c];
   const nQ=i=>E?`<input class="d-zin" data-q="${i}" inputmode="decimal" aria-label="Geplant KW ${nw.week} ${QKURZ[i]}" value="${qWert(N,i)}">${QZIEL0[i][1]==='%'?' %':''}`:qFmt(i,N.q[i]);
-  const stZ=`<div class="s d-vsh">Geplant KW ${wk.week}: ${quelle(Z,wk)}${QZIEL0.some((z,i)=>vs(Z,i)||(!E&&vs(N,i)))?' · kursiv: Vorschlag, noch nicht bestätigt':''}</div>`;
-  const zbar=`<div class="d-zbar">${E?`<button class="btn small primary" id="z-save">Speichern</button><button class="btn small" id="z-cancel">Abbrechen</button><span class="s">gilt ab KW ${nw.week}</span>`:`<button class="btn small" id="z-edit">KW ${nw.week} planen</button><span class="s">${quelle(N,nw)}</span>`}</div>`;
+  const stZ=!planOk?`<div class="s d-vsh">Geplant gibt es nur für ${ME}.</div>`:`<div class="s d-vsh">Geplant KW ${wk.week}: ${quelle(Z,wk)}${QZIEL0.some((z,i)=>planOk&&vs(Z,i)||(!E&&planOk&&vs(N,i)))?' · kursiv: Vorschlag, noch nicht bestätigt':''}</div>`;
+  const zbar=!planOk?'':`<div class="d-zbar">${E?`<button class="btn small primary" id="z-save">Speichern</button><button class="btn small" id="z-cancel">Abbrechen</button><span class="s">gilt ab KW ${nw.week}</span>`:`<button class="btn small" id="z-edit">KW ${nw.week} planen</button><span class="s">${quelle(N,nw)}</span>`}</div>`;
   const lage=`<strong class="d-h d-h2">Location je Tag</strong>${orte}`;
   if(matchMedia(DMOB).matches){ // Handy: eine Tabelle, damit beide KW ohne Scrollen passen
     h+=`<div class="d-box"><strong class="d-h">KW ${wk.week}: Ist und geplant <span class="d-nkw">· rechts KW ${nw.week} geplant</span></strong><table class="kw d-plan"><tr><th></th><th class="r">Ist</th><th class="r">Geplant</th><th class="r">KW ${nw.week}</th></tr>`;
-    KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${S[c]}</b></td><td class="r">${Z.k[c]}</td><td class="r">${nK(c)}</td></tr>`; });
-    h+=`<tr class="d-sek"><th colspan="4">Quoten</th></tr>`+kQuoten(S).map((q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${qIst(q)}</b></td><td class="r${vs(Z,i)?' d-vs':''}">${qFmt(i,Z.q[i])}</td><td class="r${vs(N,i)&&!E?' d-vs':''}">${nQ(i)}</td></tr>`).join('');
+    KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${S[c]}</b></td><td class="r">${planOk?Z.k[c]:'–'}</td><td class="r">${planOk?nK(c):'–'}</td></tr>`; });
+    h+=`<tr class="d-sek"><th colspan="4">Quoten</th></tr>`+kQuoten(S).map((q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${qIst(q)}</b></td><td class="r${planOk&&vs(Z,i)?' d-vs':''}">${planOk?qFmt(i,Z.q[i]):'–'}</td><td class="r${planOk&&vs(N,i)&&!E?' d-vs':''}">${planOk?nQ(i):'–'}</td></tr>`).join('');
     h+=`</table>${stZ}${zbar}${lage}</div></div>`;
   } else {
     h+=`<div class="d-box"><strong class="d-h">KW ${wk.week}: Ist und geplant</strong><table class="kw d-plan"><tr><th></th><th class="r">Ist</th><th class="r">Geplant</th></tr>`;
-    KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${S[c]}</b></td><td class="r">${Z.k[c]}</td></tr>`; });
-    h+=`<tr class="d-sek"><th colspan="3">Quoten</th></tr>`+kQuoten(S).map((q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${qIst(q)}</b></td><td class="r${vs(Z,i)?' d-vs':''}">${qFmt(i,Z.q[i])}</td></tr>`).join('');
-    h+=`</table><div class="s d-vsh">Geplant: ${quelle(Z,wk)}${QZIEL0.some((z,i)=>vs(Z,i))?' · kursiv: Vorschlag, noch nicht bestätigt':''}</div>${lage}</div>`;
+    KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${S[c]}</b></td><td class="r">${planOk?Z.k[c]:'–'}</td></tr>`; });
+    h+=`<tr class="d-sek"><th colspan="3">Quoten</th></tr>`+kQuoten(S).map((q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${qIst(q)}</b></td><td class="r${planOk&&vs(Z,i)?' d-vs':''}">${planOk?qFmt(i,Z.q[i]):'–'}</td></tr>`).join('');
+    h+=`</table><div class="s d-vsh">${planOk?'Geplant: '+quelle(Z,wk):'Geplant gibt es nur für '+ME}${QZIEL0.some((z,i)=>planOk&&vs(Z,i))?' · kursiv: Vorschlag, noch nicht bestätigt':''}</div>${lage}</div>`;
     h+=`<div class="d-box"><strong class="d-h">KW ${nw.week}: geplant <span class="d-nkw">· ${tagKurz(nmon)} bis ${tagKurz(addDays(nmon,5))}</span></strong><table class="kw d-plan"><tr><th></th><th class="r">Geplant</th></tr>`;
-    KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r">${nK(c)}</td></tr>`; });
-    h+=`<tr class="d-sek"><th colspan="2">Quoten</th></tr>`+QKURZ.map((t,i)=>`<tr><td>${t}</td><td class="r${vs(N,i)&&!E?' d-vs':''}">${nQ(i)}</td></tr>`).join('');
-    h+=`</table>${!E&&QZIEL0.some((z,i)=>vs(N,i))?'<div class="s d-vsh">kursiv: Vorschlag, noch nicht bestätigt</div>':''}${zbar}</div></div>`;
+    KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r">${planOk?nK(c):'–'}</td></tr>`; });
+    h+=`<tr class="d-sek"><th colspan="2">Quoten</th></tr>`+QKURZ.map((t,i)=>`<tr><td>${t}</td><td class="r${planOk&&vs(N,i)&&!E?' d-vs':''}">${planOk?nQ(i):'–'}</td></tr>`).join('');
+    h+=`</table>${!E&&QZIEL0.some((z,i)=>planOk&&vs(N,i))?'<div class="s d-vsh">kursiv: Vorschlag, noch nicht bestätigt</div>':''}${zbar}</div></div>`;
   }
   el.innerHTML=h; $('#wk-prev').onclick=()=>{ zielEdit=false; wk=isoWeekOf(addDays(mon,-7)); wocheRender(); dEinpassen(); }; $('#wk-next').onclick=()=>{ zielEdit=false; wk=isoWeekOf(addDays(mon,7)); wocheRender(); dEinpassen(); };
   if($('#z-edit')) $('#z-edit').onclick=()=>{ zielEdit=true; wocheRender(); dEinpassen(); const f=el.querySelector('.d-zin'); if(f){ f.focus(); f.select(); } };
@@ -2729,18 +2736,19 @@ function zeitraum(art,off){ const t=new Date(today()+'T00:00'); let y=t.getFullY
   const iso=(Y,M,T)=>{ const d=new Date(Y,M,T); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
   if(art==='monat'){ const d=new Date(y,m+off,1); y=d.getFullYear(); m=d.getMonth(); von=iso(y,m,1); bis=iso(y,m+1,0); titel=MONATE[m]+' '+y; }
   else if(art==='quartal'){ const d=new Date(y,(Math.floor(m/3)+off)*3,1); y=d.getFullYear(); const q=Math.floor(d.getMonth()/3); von=iso(y,q*3,1); bis=iso(y,q*3+3,0); titel='Q'+(q+1)+' '+y; }
+  else if(art==='gesamt'){ von=planStart(); bis=today(); titel='Insgesamt'; }
   else { y+=off; von=iso(y,0,1); bis=iso(y,11,31); titel=String(y); }
   return {von,bis,titel}; }
 // Geplant zählt erst ab der ersten Woche mit Daten (Shift, Lead-Eintrag oder eigene Planung), damit Wochen vor dem Start nicht als Soll erscheinen
 function planStart(){ let m=null; const n=d=>{ if(d&&(!m||d<m)) m=d; }; D.shifts.forEach(s=>n(s.date)); D.leads.forEach(l=>(l.verlauf||[]).forEach(e=>n(isoDay(e.at)))); Object.keys((D.ziele&&D.ziele.wochen)||{}).forEach(k=>{ const y=+k.slice(0,4), w=+k.split('-kw')[1]; if(y&&w) n(weekMonday(y,w)); }); const w=isoWeekOf(m||today()); return weekMonday(w.year,w.week); }
 function kpiRange(von,bis){ const S={}, P={}, PQ=QZIEL0.map(()=>0), vor=QZIEL0.map(()=>false), ps=planStart(); KCODES.forEach(c=>{ S[c]=0; P[c]=0; }); let n=0;
   const w0=isoWeekOf(von); let mon=weekMonday(w0.year,w0.week);
-  while(mon<=bis){ const w=isoWeekOf(mon), days=kpiWeek(w.year,w.week), Z=zieleFuer(w.year,w.week);
-    WTAGE.forEach(k=>{ const o=days[k]; if(o.date<von||o.date>bis) return; KCODES.forEach(c=>S[c]+=o[c]||0); if(o.date<ps) return; n++; KCODES.forEach(c=>P[c]+=(Z.k[c]||0)/6); Z.q.forEach((v,i)=>{ PQ[i]+=v; if(!Z.eigen&&QZIEL0[i][2]) vor[i]=true; }); });
+  while(mon<=bis){ const w=isoWeekOf(mon), days=kpiWeek(w.year,w.week,dVb), Z=zieleFuer(w.year,w.week);
+    WTAGE.forEach(k=>{ const o=days[k]; if(o.date<von||o.date>bis) return; KCODES.forEach(c=>S[c]+=o[c]||0); if(o.date<ps||dVb!==ME) return; n++; KCODES.forEach(c=>P[c]+=(Z.k[c]||0)/6); Z.q.forEach((v,i)=>{ PQ[i]+=v; if(!Z.eigen&&QZIEL0[i][2]) vor[i]=true; }); });
     mon=addDays(mon,7); }
   KCODES.forEach(c=>P[c]=Math.round(P[c])); return {S,P,PQ:PQ.map(v=>n?v/n:0),vor,ps,n}; }
 function zeitRender(art){ const el=$('#d-'+art); if(!el) return; const z=zeitraum(art,zr[art]), R=kpiRange(z.von,z.bis), Q=kQuoten(R.S), heute=today(), lfd=z.von<=heute&&heute<=z.bis;
-  let h=`<div class="row sb d-wkopf"><button class="btn small" id="zr-prev-${art}" aria-label="Vorheriger Zeitraum">‹</button><div class="d-wtitel"><strong>${z.titel} · ${tagKurz(z.von)} bis ${tagKurz(z.bis)}</strong><div class="s">${lfd?'Ist bis heute, Geplant für den ganzen Zeitraum':'Ist und Geplant für den ganzen Zeitraum'} · Geplant aus der Wochenplanung${R.ps>z.von&&R.ps<=z.bis?', ab '+tagKurz(R.ps):''}</div></div><button class="btn small" id="zr-next-${art}" aria-label="Nächster Zeitraum">›</button></div><div class="d-zwei d-wzwei">`;
+  let h=`<div class="row sb d-wkopf"><button class="btn small" id="zr-prev-${art}" aria-label="Vorheriger Zeitraum"${art==='gesamt'?' style="visibility:hidden"':''}>‹</button><div class="d-wtitel"><strong>${z.titel} · ${tagKurz(z.von)} bis ${tagKurz(z.bis)}</strong><div class="s">${art==='gesamt'?'Ist und Geplant seit dem Start bis heute':lfd?'Ist bis heute, Geplant für den ganzen Zeitraum':'Ist und Geplant für den ganzen Zeitraum'} · ${dVb!==ME?'Geplant gibt es nur für '+ME:'Geplant aus der Wochenplanung'+(R.ps>z.von&&R.ps<=z.bis?', ab '+tagKurz(R.ps):'')}</div></div><button class="btn small" id="zr-next-${art}" aria-label="Nächster Zeitraum"${art==='gesamt'?' style="visibility:hidden"':''}>›</button></div><div class="d-zwei d-wzwei">`;
   const kopf='<tr><th></th><th class="r">Ist</th><th class="r">Geplant</th></tr>';
   const kz=c=>`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${R.S[c]}</b></td><td class="r">${R.P[c]}</td></tr>`;
   const qz=(q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${qIst(q)}</b></td><td class="r${R.vor[i]?' d-vs':''}">${R.n?qFmt(i,R.PQ[i]):'–'}</td></tr>`;
