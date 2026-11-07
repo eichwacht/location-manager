@@ -856,6 +856,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   td.r,th.r{text-align:right}
   .seg{display:inline-flex;background:var(--fl2);border-radius:10px;overflow:hidden}
   #d-tabs select{width:auto;flex:none;margin:3px;padding:5px 28px 5px 10px;border:1px solid var(--rand2);border-radius:8px;background:var(--fl) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%231f2328' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 9px center;-webkit-appearance:none;appearance:none;font:inherit;font-size:13.333px;font-weight:600;color:var(--ink);cursor:pointer} /* Vertriebler (seit v154), Schrift wie die Reiter */
+  #d-tabs [data-t="gesamt"]{margin-left:auto} /* Insgesamt am rechten Rand (seit v155) */
   @media (max-width:700px){ #v-dash #d-tabs{flex-wrap:wrap} }
   .seg button{border:0;background:transparent;color:var(--ink);padding:8px 12px;font-weight:600}
   .seg button.on{background:var(--akz);color:var(--auf)}
@@ -1120,7 +1121,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     <section class="win" id="v-dash">
       <header><h2><span class="t">KPIs</span></h2></header><!-- seit v136 ohne Reiter Shifts und ohne Zeitraumwahl --><!-- seit v132 ohne Untertitel und ohne Schließen-Knopf: schließen per Klick in die Karte, Rechtsklick ins Fenster oder Dashboard-Kachel -->
       <div class="body">
-        <div class="seg tabs" id="d-tabs"><select id="d-vb" aria-label="Vertriebler"></select><button data-t="woche" class="on">Woche</button><button data-t="monat">Monat</button><button data-t="quartal">Quartal</button><button data-t="jahr">Jahr</button><button data-t="gesamt">Insgesamt</button></div><!-- seit v153: Ranking eigenes Fenster über das Schnellmenü -->
+        <div class="seg tabs" id="d-tabs"><select id="d-vb" aria-label="Vertriebler"></select><button data-t="woche" class="on">KW</button><button data-t="monat">Monat</button><button data-t="quartal">Quartal</button><button data-t="jahr">Jahr</button><button data-t="gesamt">Insgesamt</button></div><!-- seit v153: Ranking eigenes Fenster über das Schnellmenü -->
         <div id="d-woche" class="d-pane"></div>
         <div id="d-monat" class="d-pane" style="display:none"></div>
         <div id="d-quartal" class="d-pane" style="display:none"></div>
@@ -2676,7 +2677,7 @@ let dModus='kpi'; function dashOeffnen(m){ dModus=m; if(openWin==='dash') openWi
 let dTab='woche', wk=isoWeekOf(today()); // Dashboard öffnet immer mit der aktuellen KW (seit v133)
 $$('#d-tabs button').forEach(b=>b.onclick=()=>{ dTab=b.dataset.t; kDashTab(); });
 // Reiter zeigt die aktuelle KW statt „Woche“ (seit v135)
-function kwReiter(){ const b=$('#d-tabs [data-t="woche"]'); if(b) b.textContent='KW '+isoWeekOf(today()).week; const t=new Date(today()+'T00:00'), L={monat:MONATE[t.getMonth()],quartal:'Q'+(Math.floor(t.getMonth()/3)+1),jahr:String(t.getFullYear()),gesamt:'Insgesamt'}; ZART.forEach(a=>{ const x=$('#d-tabs [data-t="'+a+'"]'); if(x) x.textContent=L[a]; }); } // seit v152 auch Monat, Quartal, Jahr
+function kwReiter(){ const L={woche:'KW',monat:'Monat',quartal:'Quartal',jahr:'Jahr',gesamt:'Insgesamt'}; Object.entries(L).forEach(([a,t])=>{ const x=$('#d-tabs [data-t="'+a+'"]'); if(x) x.textContent=t; }); } /* seit v155 feste Namen: KW, Monat, Quartal, Jahr, Insgesamt */
 kwReiter();
 const _renderDash=renderDash; renderDash=function(){ _renderDash(); kDashTab(); };
 function kDashTab(){ kwReiter(); $('#v-dash h2 .t').textContent=dModus==='rank'?'Ranking':'KPIs'; $('#d-tabs').style.display=dModus==='rank'?'none':''; $$('#d-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===dTab)); ['einsatz','woche','monat','quartal','jahr','gesamt','rank'].forEach(t=>{ const el=$('#d-'+t); if(el) el.style.display=t===dTab?'':'none'; }); if($('#d-range')) $('#d-range').style.display=dTab==='einsatz'?'':'none';
