@@ -838,7 +838,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   #v-dash .empty{padding:10px 6px;font-size:13px}
   #v-dash .d-nav{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:auto;padding-top:4px;font-size:12px}
   #v-dash .d-nav .btn{padding:1px 10px;font-size:13px}
-  #v-dash .d-wkopf{flex:none;margin:0} #v-dash .d-wtitel{text-align:center;min-width:0} #v-dash .d-wtitel .s{font-size:11px;opacity:.85}
+  #v-dash .d-wkopf{flex:none;margin:0;flex-wrap:nowrap;gap:6px} #v-dash .d-wkopf .btn{flex:none} #v-dash .d-wtitel{text-align:center;min-width:0;flex:1} #v-dash .d-wtitel .s{font-size:11px;opacity:.85}
   #v-dash .d-wzwei{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   #v-dash .d-plan td:first-child{white-space:normal} #v-dash .d-plan .d-vs{font-style:italic;opacity:.75} #v-dash .d-plan .d-zin[data-q]{width:38px}
   #v-dash .d-plan .d-sek th{padding-top:7px;font-size:11px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--ink2);text-align:left}
@@ -998,7 +998,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
       <div id="search"><div class="box"><input id="q" placeholder="Adresse oder Ort, z. B. Hafenstraße 12 Bremerhaven" autocomplete="off"><button class="w-close" id="q-close" aria-label="Schließen">✕</button></div><div id="sug"></div></div>
       <div class="bottombar">
         <button class="ltile" id="b-search" style="display:none" aria-label="Adresse suchen"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></svg></button>
-        <button class="ltile" data-view="dash" aria-label="Dashboard"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></button>
+        <button class="ltile" data-view="dash" aria-label="KPIs"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></button>
         <div id="ebbox" style="display:none">
           <button class="ltile" id="eb-main" aria-label="Alle Ebenen an oder aus"><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 17.5l9 5 9-5"/></svg></button>
           <div id="ebmenu" class="flymenu">
@@ -1046,7 +1046,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <button class="ltile rad ring" id="rad-karte" aria-label="Grundkarte wechseln"></button>
         <button class="ltile rad ring" id="rad-ebenen" aria-label="Kartenebenen aufklappen, Rechtsklick alle an oder aus" aria-expanded="false"></button>
         <button class="ltile rad ring" id="rad-b2c" aria-label="B2C aufklappen, Rechtsklick alle an oder aus" aria-expanded="false"></button>
-        <button class="ltile rad ring" id="rad-dash" aria-label="Dashboard öffnen"></button>
+        <button class="ltile rad ring" id="rad-dash" aria-label="KPIs öffnen"></button>
         <div class="ltile rad" id="rad-zoom" aria-label="Zoomstufe"><b id="rad-zoomval">12</b></div>
         <button class="ltile rad ring" id="rad-set" aria-label="Einstellungen öffnen"></button>
         <button class="ltile rad ring kind" data-ast="ebenen" id="rad-wp" aria-label="Wärmeplanung an oder aus"></button>
@@ -1114,10 +1114,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
     <!-- Dashboard -->
     <section class="win" id="v-dash">
-      <header><h2><span class="t">Dashboard</span></h2></header><!-- seit v136 ohne Reiter Shifts und ohne Zeitraumwahl --><!-- seit v132 ohne Untertitel und ohne Schließen-Knopf: schließen per Klick in die Karte, Rechtsklick ins Fenster oder Dashboard-Kachel -->
+      <header><h2><span class="t">KPIs</span></h2></header><!-- seit v136 ohne Reiter Shifts und ohne Zeitraumwahl --><!-- seit v132 ohne Untertitel und ohne Schließen-Knopf: schließen per Klick in die Karte, Rechtsklick ins Fenster oder Dashboard-Kachel -->
       <div class="body">
-        <div class="seg tabs" id="d-tabs"><button data-t="woche" class="on">Woche</button><button data-t="rank">Ranking</button></div>
+        <div class="seg tabs" id="d-tabs"><button data-t="woche" class="on">Woche</button><button data-t="monat">Monat</button><button data-t="quartal">Quartal</button><button data-t="jahr">Jahr</button><button data-t="rank">Ranking</button></div>
         <div id="d-woche" class="d-pane"></div>
+        <div id="d-monat" class="d-pane" style="display:none"></div>
+        <div id="d-quartal" class="d-pane" style="display:none"></div>
+        <div id="d-jahr" class="d-pane" style="display:none"></div>
         <div id="d-rank" class="d-pane" style="display:none"></div>
       </div>
     </section>
@@ -2275,7 +2278,7 @@ function legendHtml(){
     h+='<div class="s" style="opacity:.8">Hausnummern ohne Planfläche gelten als dezentral, im Umkreis von 800 m um Biogasanlagen als unklar. Kommunen mit Plan: '+esc(kom.join(', '))+'. Sperrzonen sind ausgespart. Strategische Planung ohne Rechtswirkung, Quellen im Fenster Einstellungen und Daten.</div>'; }
   if(wpIdx>=0){ h+='<h4>Wärmeplan Bremen: '+WP_STUFEN[wpIdx].t+' (Zoom 10 bis 13)</h4><img src="'+$(wpIdx===0?'#wp-leg1':'#wp-leg2').src+'" alt="Legende Wärmeplan Bremen"><div class="s">Quelle: GeoInformation Bremen, Wärmeplan 2025, nur Stadtgebiet Bremen, ohne Rechtswirkung</div>'; }
   h+='<h4>Punkte</h4>'+ci('background:#2e5bff;border:2px solid #ffffff','Suchtreffer (mit Adresse beim Drüberfahren)')+ci('background:#2e5bff;border:2px solid #ffffff','Mein Standort, wenn „Mein Standort“ im Zahnrad-Menü an ist');
-  h+='<h4>Bedienung</h4><div class="s">Street View: ab Zoom 17 auf eine Straße klicken, Street View öffnet sich genau dort mit Blick auf das nächste Haus. Innerhalb einer Location öffnet ein Klick neben die Straße das Location-Fenster. Dashboard steht im Schnellmenü oben, Einstellungen unten, Suchen links oben, die Grundkarte links unten (Linksklick wechselt zwischen Satellit und Luftbild amtlich) und die Zoomstufe rechts oben neben Neue Location (Rechtsklick in die Karte, auf dem Handy langes Drücken).</div><div class="s">Rechtsklick in die Karte (ohne offenes Fenster) öffnet das Schnellmenü am Mauszeiger: in der Mitte Neue Location (erster Eckpunkt genau dort), darum wie eine Mindmap Dashboard (oben), Kartenebenen (rechts), B2C (links) und Einstellungen (unten), dicht daneben Suchen (links oben), Grundkarte (links unten) und Zoomstufe (rechts oben). Linksklick auf Kartenebenen klappt deren Ast auf (Wärmeplanung, PLZ, Ortsnamen, Bahnhöfe und Haltestellen, Straßennamen und Hausnummern), Rechtsklick darauf schaltet alle Kartenebenen samt Sperrzonen an oder aus. Linksklick auf B2C klappt Locations, Leads, Potenzialanalysen, Festpreisgespräche und Abschlüsse auf, Rechtsklick darauf schaltet alle an oder aus. Grün heißt: alles im Ast ist an. Rechtsklick an anderer Stelle im Menü klappt erst die Äste zu, dann das Menü. Die Ebenen-Schalter und die Grundkarte lassen das Menü offen; es schließt mit Neue Location, Suchen, Rechtsklick oder Klick in die Karte. Zoomen geht bei offenem Menü weiter.</div><div class="s">Neues Gebiet eingezeichnet: Linksklick hinein speichert und öffnet die Shift-Planung, Rechtsklick hinein verwirft und zeichnet ab dem vorletzten Punkt weiter, Klick daneben verwirft.</div><div class="s">Fenster: Rechtsklick ins Fenster geht einen Schritt zurück, bis es sich schließt. Ein Klick in die Karte schließt alle offenen Fenster.</div>';
+  h+='<h4>Bedienung</h4><div class="s">Street View: ab Zoom 17 auf eine Straße klicken, Street View öffnet sich genau dort mit Blick auf das nächste Haus. Innerhalb einer Location öffnet ein Klick neben die Straße das Location-Fenster. KPIs stehen im Schnellmenü oben, Einstellungen unten, Suchen links oben, die Grundkarte links unten (Linksklick wechselt zwischen Satellit und Luftbild amtlich) und die Zoomstufe rechts oben neben Neue Location (Rechtsklick in die Karte, auf dem Handy langes Drücken).</div><div class="s">Rechtsklick in die Karte (ohne offenes Fenster) öffnet das Schnellmenü am Mauszeiger: in der Mitte Neue Location (erster Eckpunkt genau dort), darum wie eine Mindmap KPIs (oben), Kartenebenen (rechts), B2C (links) und Einstellungen (unten), dicht daneben Suchen (links oben), Grundkarte (links unten) und Zoomstufe (rechts oben). Linksklick auf Kartenebenen klappt deren Ast auf (Wärmeplanung, PLZ, Ortsnamen, Bahnhöfe und Haltestellen, Straßennamen und Hausnummern), Rechtsklick darauf schaltet alle Kartenebenen samt Sperrzonen an oder aus. Linksklick auf B2C klappt Locations, Leads, Potenzialanalysen, Festpreisgespräche und Abschlüsse auf, Rechtsklick darauf schaltet alle an oder aus. Grün heißt: alles im Ast ist an. Rechtsklick an anderer Stelle im Menü klappt erst die Äste zu, dann das Menü. Die Ebenen-Schalter und die Grundkarte lassen das Menü offen; es schließt mit Neue Location, Suchen, Rechtsklick oder Klick in die Karte. Zoomen geht bei offenem Menü weiter.</div><div class="s">Neues Gebiet eingezeichnet: Linksklick hinein speichert und öffnet die Shift-Planung, Rechtsklick hinein verwirft und zeichnet ab dem vorletzten Punkt weiter, Klick daneben verwirft.</div><div class="s">Fenster: Rechtsklick ins Fenster geht einen Schritt zurück, bis es sich schließt. Ein Klick in die Karte schließt alle offenen Fenster.</div>';
   h+='<h4>Grundkarte</h4><div class="li"><span>'+({sat:'Satellit (Esri)',dop:'Amtliches Luftbild (LGLN, GeoInformation Bremen, Geobasis NRW)'}[base])+'</span></div>';
   return h;
 }
@@ -2285,7 +2288,7 @@ map.on('mousedown dragstart',()=>legendOpen(false));
 
 /* ---------- Navigation ---------- */
 let openWin=null;
-function show(v){ if(v===openWin) v=null; openWin=v; if(v){ closePanel(); menuOpen(false); legendOpen(false); if($('#search').classList.contains('open')) searchOpen(false); } $$('.bottombar [data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v)); $$('.win[id^="v-"]').forEach(x=>x.classList.toggle('active',x.id==='v-'+v)); if(v==='dash'){ dTab='woche'; wk=isoWeekOf(today()); zielEdit=false; renderDash(); } if(v==='plan') renderPlan(); if(v==='set') renderData(); }
+function show(v){ if(v===openWin) v=null; openWin=v; if(v){ closePanel(); menuOpen(false); legendOpen(false); if($('#search').classList.contains('open')) searchOpen(false); } $$('.bottombar [data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v)); $$('.win[id^="v-"]').forEach(x=>x.classList.toggle('active',x.id==='v-'+v)); if(v==='dash'){ dTab='woche'; wk=isoWeekOf(today()); zr={monat:0,quartal:0,jahr:0}; zielEdit=false; renderDash(); } if(v==='plan') renderPlan(); if(v==='set') renderData(); }
 $$('.bottombar [data-view]').forEach(b=>b.onclick=()=>show(b.dataset.view));
 $$('.win [data-close]').forEach(b=>b.onclick=()=>show(null));
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if($('#gpanel').classList.contains('open')) gpClose(); else if($('#legend').classList.contains('open')) legendOpen(false); else if($('#search').classList.contains('open')) searchOpen(false); else if(map.pm.globalDrawModeEnabled()) map.pm.disableDraw(); else if(layerMenu.classList.contains('open')||ovMenu.classList.contains('open')||kMenu.classList.contains('open')) menuOpen(false); else if($('#panel').classList.contains('active')) closePanel(); else show(null); } });
@@ -2658,21 +2661,24 @@ function bookRender(l){ const F=$('#ld-form'), B=LD.book, art=B.art; const {list
   $('#bk-new').onclick=async()=>{ const d=$('#bk-d').value, t=$('#bk-t').value; if(!d||!t) return; try{ const o=opts(); await wechsel(); await calBookNew(l,art,new Date(d+'T'+t).toISOString(),o); LD.book=null; leadRender(); toast('Termin angelegt: '+tagKurz(d)+' '+t); }catch(x){ toast(x.message||String(x)); } }; }
 
 /* ---------- Dashboard: Reiter Woche und Ranking ---------- */
+const MONATE=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'], ZART=['monat','quartal','jahr'];
+let zr={monat:0,quartal:0,jahr:0};
 let dTab='woche', wk=isoWeekOf(today()); // Dashboard öffnet immer mit der aktuellen KW (seit v133)
 $$('#d-tabs button').forEach(b=>b.onclick=()=>{ dTab=b.dataset.t; kDashTab(); });
 // Reiter zeigt die aktuelle KW statt „Woche“ (seit v135)
-function kwReiter(){ const b=$('#d-tabs [data-t="woche"]'); if(b) b.textContent='KW '+isoWeekOf(today()).week; }
+function kwReiter(){ const b=$('#d-tabs [data-t="woche"]'); if(b) b.textContent='KW '+isoWeekOf(today()).week; const t=new Date(today()+'T00:00'), L={monat:MONATE[t.getMonth()],quartal:'Q'+(Math.floor(t.getMonth()/3)+1),jahr:String(t.getFullYear())}; ZART.forEach(a=>{ const x=$('#d-tabs [data-t="'+a+'"]'); if(x) x.textContent=L[a]; }); } // seit v152 auch Monat, Quartal, Jahr
 kwReiter();
 const _renderDash=renderDash; renderDash=function(){ _renderDash(); kDashTab(); };
-function kDashTab(){ kwReiter(); $$('#d-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===dTab)); ['einsatz','woche','rank'].forEach(t=>{ const el=$('#d-'+t); if(el) el.style.display=t===dTab?'':'none'; }); if($('#d-range')) $('#d-range').style.display=dTab==='einsatz'?'':'none';
-  if(dTab==='woche') wocheRender(); if(dTab==='rank') rankRender(); dEinpassen(); }
+function kDashTab(){ kwReiter(); $$('#d-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===dTab)); ['einsatz','woche','monat','quartal','jahr','rank'].forEach(t=>{ const el=$('#d-'+t); if(el) el.style.display=t===dTab?'':'none'; }); if($('#d-range')) $('#d-range').style.display=dTab==='einsatz'?'':'none';
+  if(dTab==='woche') wocheRender(); if(ZART.includes(dTab)) zeitRender(dTab); if(dTab==='rank') rankRender(); dEinpassen(); }
 /* Ziele selbst festlegen (seit v134): je KW gespeichert, gelten ab dieser KW bis zur nächsten KW mit eigenen Zielen; vorher gelten die Startziele */
 const QZIEL0=[[2.0,'x'],[0.3,'x'],[50,'%'],[50,'%'],[80,'%',1],[100,'%'],[90,'%',1],[40,'%',1],[30,'%'],[0,'%'],[1.0,'x']]; // Startwert, Art (x Verhältnis, % Prozent), 1 = Vorschlag
 let zielEdit=false; const DMOB='(max-width:700px)'; // Handy-Ansicht des KW-Reiters (seit v151)
-matchMedia(DMOB).addEventListener('change',()=>{ if(dTab==='woche'&&$('#v-dash').classList.contains('active')){ wocheRender(); dEinpassen(); } });
+matchMedia(DMOB).addEventListener('change',()=>{ if(dTab!=='rank'&&$('#v-dash').classList.contains('active')) kDashTab(); });
 function zieleFuer(year,week){ const W=(D.ziele&&D.ziele.wochen)||{}, id=weekId(year,week), ks=Object.keys(W).filter(k=>k<=id).sort(), k=ks[ks.length-1];
   if(k) return {k:Object.assign({},KZIEL,W[k].k||{}), q:QZIEL0.map((z,i)=>W[k].q&&W[k].q[i]!=null?W[k].q[i]:z[0]), eigen:true, ab:k};
   return {k:Object.assign({},KZIEL), q:QZIEL0.map(z=>z[0]), eigen:false, ab:null}; }
+const qIst=q=>q[1]?String(q[1]).replace('.',','):'–'; // Ist-Quote mit Komma (seit v152)
 function qFmt(i,v){ return QZIEL0[i][1]==='%'?Math.round(v)+' %':(Math.round(v*10)/10).toFixed(1).replace('.',','); }
 function zielZahl(x){ const n=parseFloat(String(x).replace(',','.').replace('%','').trim()); return isFinite(n)&&n>=0?n:null; }
 const kwAus=id=>'KW '+(+id.split('-kw')[1])+(id.slice(0,4)!==String(new Date().getFullYear())?' '+id.slice(0,4):'');
@@ -2692,12 +2698,12 @@ function wocheRender(){ const el=$('#d-woche'); if(!el) return; const days=kpiWe
   if(matchMedia(DMOB).matches){ // Handy: eine Tabelle, damit beide KW ohne Scrollen passen
     h+=`<div class="d-box"><strong class="d-h">KW ${wk.week}: Ist und geplant <span class="d-nkw">· rechts KW ${nw.week} geplant</span></strong><table class="kw d-plan"><tr><th></th><th class="r">Ist</th><th class="r">Geplant</th><th class="r">KW ${nw.week}</th></tr>`;
     KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${S[c]}</b></td><td class="r">${Z.k[c]}</td><td class="r">${nK(c)}</td></tr>`; });
-    h+=`<tr class="d-sek"><th colspan="4">Quoten</th></tr>`+kQuoten(S).map((q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${q[1]||'–'}</b></td><td class="r${vs(Z,i)?' d-vs':''}">${qFmt(i,Z.q[i])}</td><td class="r${vs(N,i)&&!E?' d-vs':''}">${nQ(i)}</td></tr>`).join('');
+    h+=`<tr class="d-sek"><th colspan="4">Quoten</th></tr>`+kQuoten(S).map((q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${qIst(q)}</b></td><td class="r${vs(Z,i)?' d-vs':''}">${qFmt(i,Z.q[i])}</td><td class="r${vs(N,i)&&!E?' d-vs':''}">${nQ(i)}</td></tr>`).join('');
     h+=`</table>${stZ}${zbar}${lage}</div></div>`;
   } else {
     h+=`<div class="d-box"><strong class="d-h">KW ${wk.week}: Ist und geplant</strong><table class="kw d-plan"><tr><th></th><th class="r">Ist</th><th class="r">Geplant</th></tr>`;
     KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${S[c]}</b></td><td class="r">${Z.k[c]}</td></tr>`; });
-    h+=`<tr class="d-sek"><th colspan="3">Quoten</th></tr>`+kQuoten(S).map((q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${q[1]||'–'}</b></td><td class="r${vs(Z,i)?' d-vs':''}">${qFmt(i,Z.q[i])}</td></tr>`).join('');
+    h+=`<tr class="d-sek"><th colspan="3">Quoten</th></tr>`+kQuoten(S).map((q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${qIst(q)}</b></td><td class="r${vs(Z,i)?' d-vs':''}">${qFmt(i,Z.q[i])}</td></tr>`).join('');
     h+=`</table><div class="s d-vsh">Geplant: ${quelle(Z,wk)}${QZIEL0.some((z,i)=>vs(Z,i))?' · kursiv: Vorschlag, noch nicht bestätigt':''}</div>${lage}</div>`;
     h+=`<div class="d-box"><strong class="d-h">KW ${nw.week}: geplant <span class="d-nkw">· ${tagKurz(nmon)} bis ${tagKurz(addDays(nmon,5))}</span></strong><table class="kw d-plan"><tr><th></th><th class="r">Geplant</th></tr>`;
     KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r">${nK(c)}</td></tr>`; });
@@ -2715,6 +2721,30 @@ function zieleSpeichern(){ const el=$('#d-woche'), nw=isoWeekOf(addDays(weekMond
   if(fehler){ toast('Bitte eine Zahl eintragen: '+fehler); return; }
   if(!D.ziele) D.ziele={wochen:{}}; if(!D.ziele.wochen) D.ziele.wochen={}; D.ziele.wochen[weekId(nw.year,nw.week)]={k,q,at:new Date().toISOString()}; Store.save();
   zielEdit=false; wocheRender(); dEinpassen(); toast('Geplant für KW '+nw.week+' gespeichert'); }
+/* Reiter Monat, Quartal, Jahr (seit v152): Ist und Geplant im gewählten Zeitraum. Geplant kommt aus der Wochenplanung: je Arbeitstag (Mo bis Sa) ein Sechstel der Wochenwerte, Quoten als Mittel über die Arbeitstage */
+function zeitraum(art,off){ const t=new Date(today()+'T00:00'); let y=t.getFullYear(), m=t.getMonth(), von, bis, titel;
+  const iso=(Y,M,T)=>{ const d=new Date(Y,M,T); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+  if(art==='monat'){ const d=new Date(y,m+off,1); y=d.getFullYear(); m=d.getMonth(); von=iso(y,m,1); bis=iso(y,m+1,0); titel=MONATE[m]+' '+y; }
+  else if(art==='quartal'){ const d=new Date(y,(Math.floor(m/3)+off)*3,1); y=d.getFullYear(); const q=Math.floor(d.getMonth()/3); von=iso(y,q*3,1); bis=iso(y,q*3+3,0); titel='Q'+(q+1)+' '+y; }
+  else { y+=off; von=iso(y,0,1); bis=iso(y,11,31); titel=String(y); }
+  return {von,bis,titel}; }
+// Geplant zählt erst ab der ersten Woche mit Daten (Shift, Lead-Eintrag oder eigene Planung), damit Wochen vor dem Start nicht als Soll erscheinen
+function planStart(){ let m=null; const n=d=>{ if(d&&(!m||d<m)) m=d; }; D.shifts.forEach(s=>n(s.date)); D.leads.forEach(l=>(l.verlauf||[]).forEach(e=>n(isoDay(e.at)))); Object.keys((D.ziele&&D.ziele.wochen)||{}).forEach(k=>{ const y=+k.slice(0,4), w=+k.split('-kw')[1]; if(y&&w) n(weekMonday(y,w)); }); const w=isoWeekOf(m||today()); return weekMonday(w.year,w.week); }
+function kpiRange(von,bis){ const S={}, P={}, PQ=QZIEL0.map(()=>0), vor=QZIEL0.map(()=>false), ps=planStart(); KCODES.forEach(c=>{ S[c]=0; P[c]=0; }); let n=0;
+  const w0=isoWeekOf(von); let mon=weekMonday(w0.year,w0.week);
+  while(mon<=bis){ const w=isoWeekOf(mon), days=kpiWeek(w.year,w.week), Z=zieleFuer(w.year,w.week);
+    WTAGE.forEach(k=>{ const o=days[k]; if(o.date<von||o.date>bis) return; KCODES.forEach(c=>S[c]+=o[c]||0); if(o.date<ps) return; n++; KCODES.forEach(c=>P[c]+=(Z.k[c]||0)/6); Z.q.forEach((v,i)=>{ PQ[i]+=v; if(!Z.eigen&&QZIEL0[i][2]) vor[i]=true; }); });
+    mon=addDays(mon,7); }
+  KCODES.forEach(c=>P[c]=Math.round(P[c])); return {S,P,PQ:PQ.map(v=>n?v/n:0),vor,ps,n}; }
+function zeitRender(art){ const el=$('#d-'+art); if(!el) return; const z=zeitraum(art,zr[art]), R=kpiRange(z.von,z.bis), Q=kQuoten(R.S), heute=today(), lfd=z.von<=heute&&heute<=z.bis;
+  let h=`<div class="row sb d-wkopf"><button class="btn small" id="zr-prev-${art}" aria-label="Vorheriger Zeitraum">‹</button><div class="d-wtitel"><strong>${z.titel} · ${tagKurz(z.von)} bis ${tagKurz(z.bis)}</strong><div class="s">${lfd?'Ist bis heute, Geplant für den ganzen Zeitraum':'Ist und Geplant für den ganzen Zeitraum'} · Geplant aus der Wochenplanung${R.ps>z.von&&R.ps<=z.bis?', ab '+tagKurz(R.ps):''}</div></div><button class="btn small" id="zr-next-${art}" aria-label="Nächster Zeitraum">›</button></div><div class="d-zwei d-wzwei">`;
+  const kopf='<tr><th></th><th class="r">Ist</th><th class="r">Geplant</th></tr>';
+  const kz=c=>`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${R.S[c]}</b></td><td class="r">${R.P[c]}</td></tr>`;
+  const qz=(q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${qIst(q)}</b></td><td class="r${R.vor[i]?' d-vs':''}">${R.n?qFmt(i,R.PQ[i]):'–'}</td></tr>`;
+  const fuss=R.vor.some(x=>x)?'<div class="s d-vsh">kursiv: Vorschlag, noch nicht bestätigt</div>':''; if(!R.n) KCODES.forEach(c=>R.P[c]='–');
+  if(matchMedia(DMOB).matches) h+=`<div class="d-box"><table class="kw d-plan">${kopf}${KCODES.map(kz).join('')}<tr class="d-sek"><th colspan="3">Quoten</th></tr>${Q.map(qz).join('')}</table>${fuss}</div></div>`;
+  else h+=`<div class="d-box"><strong class="d-h">Kennzahlen</strong><table class="kw d-plan">${kopf}${KCODES.map(kz).join('')}</table></div><div class="d-box"><strong class="d-h">Quoten</strong><table class="kw d-plan">${kopf}${Q.map(qz).join('')}</table>${fuss}</div></div>`;
+  el.innerHTML=h; $('#zr-prev-'+art).onclick=()=>{ zr[art]--; zeitRender(art); dEinpassen(); }; $('#zr-next-'+art).onclick=()=>{ zr[art]++; zeitRender(art); dEinpassen(); }; }
 function rankRender(){ const el=$('#d-rank'); if(!el) return; const rows=rankRows(); const f=(x,d=1)=>x==null?'':x.toFixed(d);
   el.innerHTML=`<div class="s d-rinfo">Sortiert nach Abschlüssen je 100 Türen (nur D2D), dann CSA je CHC, dann Leads je 100 Türen. Grau: unter 3 Abschlüssen.</div><div id="d-rankt" class="d-fill"></div>`; DSEITE['d-rankt']=0;
   dTabelle('d-rankt','<tr><th>Location</th><th class="r">Türen</th><th class="r">Leads</th><th class="r">SL</th><th class="r">CHC</th><th class="r">CSA</th><th class="r">CCW</th><th class="r">CCW/100</th><th class="r">CSA-Q.</th><th class="r">Leads/100</th></tr>',
