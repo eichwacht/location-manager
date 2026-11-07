@@ -2800,7 +2800,7 @@ function zeitRender(art){ const el=$('#d-'+art); if(!el) return; if(art!=='gesam
   if(matchMedia(DMOB).matches) h+=`<div class="d-box">${zKopf(z.titel,z)}<table class="kw d-plan">${kopf}${KCODES.map(kz).join('')}<tr class="d-sek"><th colspan="3">Quoten</th></tr>${Q.map(qz).join('')}</table></div></div>`;
   else h+=`<div class="d-box">${zKopf(z.titel,z)}<table class="kw d-plan">${kopf}${KCODES.map(kz).join('')}</table></div><div class="d-box">${zKopf('Quoten',null)}<table class="kw d-plan">${kopf}${Q.map(qz).join('')}</table></div></div>`;
   el.innerHTML=h; $('#zr-export-'+art).onclick=()=>evalPdf(art,z); }
-/* PDF-Export der Evaluation über den Druckdialog (seit v165 eigener Aufbau wie die Reiter, immer eine A4-Seite, ohne Locations), Dateiname nach Ablageregel */
+/* PDF-Export der Evaluation über den Druckdialog (seit v165 eigener Aufbau wie die Reiter, immer eine A4-Seite, ohne Locations und ohne Reiterleiste; Vertriebler steht rechts im Kopf), Dateiname nach Ablageregel */
 function evalPdfHtml(art,z){ const wer=dVb==='alle'?'Alle Vertriebler':dVb, name={quartal:'Quartals-Evaluation',jahr:'Jahres-Evaluation',gesamt:'Gesamt-Evaluation'}[art];
   const R=kpiRange(z.von,z.bis), Q=kQuoten(R.S), kopfT=(t,zz)=>`<div class="bk"><strong>${esc(t)}</strong><span>${zz?zDmy(zz.von)+' - '+zDmy(zz.bis):'&nbsp;'}</span></div>`;
   const kz=(c,P,mitIst)=>`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td>${mitIst?`<td class="r"><b>${R.S[c]}</b></td>`:''}<td class="r">${zGk(P,c)}</td></tr>`;
@@ -2814,15 +2814,14 @@ function evalPdfHtml(art,z){ const wer=dVb==='alle'?'Alle Vertriebler':dVb, name
     links=kopfT(z.titel,z)+`<table>${th(true)}${KCODES.map(c=>kz(c,P,true)).join('')}<tr class="sek"><th colspan="3">Quoten</th></tr>${QKURZ.map((t,i)=>qz(i,P,true)).join('')}</table>`;
     rechts=kopfT(zn.titel,zn)+`<table>${th(false)}${KCODES.map(c=>kz(c,PN,false)).join('')}<tr class="sek"><th colspan="2">Quoten</th></tr>${QKURZ.map((t,i)=>qz(i,PN,false)).join('')}</table>`; }
   const css='@page{size:A4;margin:12mm}*{box-sizing:border-box}html,body{margin:0}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;color:#1f2328;font-size:8.6pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
-    '.fenster{border:.6pt solid #e4e7ec;border-radius:8pt;overflow:hidden}.fk{display:flex;justify-content:space-between;align-items:center;padding:8pt 11pt;border-bottom:.6pt solid #e4e7ec}.fk h1{font-size:13pt;margin:0}.fk .meta{color:#667085;font-size:8pt}'+
-    '.reiter{display:flex;gap:4pt;align-items:center;margin:8pt 11pt 0;padding:3pt;background:#f2f4f7;border-radius:6pt}.reiter span{padding:3pt 8pt;border-radius:5pt;font-weight:600;font-size:8.4pt}.reiter .vb{background:#fff;border:.6pt solid #d0d5dd}.reiter .an{background:#2e5bff;color:#fff}'+
+    '.fenster{border:.6pt solid #e4e7ec;border-radius:8pt;overflow:hidden}.fk{display:flex;justify-content:space-between;align-items:center;padding:8pt 11pt;border-bottom:.6pt solid #e4e7ec}.fk h1{font-size:13pt;margin:0}.fk .meta{color:#667085;font-size:8pt;text-align:right}'+
+    
     '.inhalt{padding:8pt 11pt 10pt}.zwei{display:grid;grid-template-columns:1fr 1fr;gap:9pt}.bk{display:flex;flex-direction:column;margin-bottom:3pt}.bk strong{font-size:10.5pt}.bk span{color:#667085;font-size:7.8pt}'+
     'table{width:100%;border-collapse:collapse}th,td{padding:1.4pt 3pt;border-bottom:.5pt solid #e4e7ec;text-align:left;white-space:nowrap}th{font-size:7.6pt;font-weight:700}.r{text-align:right}.bez{color:#667085;font-size:7.4pt}'+
     '.sek th{padding-top:5pt;color:#667085;font-size:7pt;letter-spacing:.3pt;text-transform:uppercase}.d-vs{font-style:italic;color:#667085}'+
     '';
-  const reiter=`<div class="reiter"><span class="vb">${esc(wer)}</span>${['KW','Quartal','Jahr'].map(t=>`<span class="${({quartal:'Quartal',jahr:'Jahr'}[art]===t)?'an':''}">${t}</span>`).join('')}<span style="margin-left:auto" class="${art==='gesamt'?'an':''}">Insgesamt</span></div>`;
-  return `<div class="fenster"><div class="fk"><h1>${name} ${art==='gesamt'?'':esc(z.titel)}</h1><div class="meta">erstellt ${fmtDT(nowIso())}</div></div>${reiter}<div class="inhalt"><div class="zwei"><div>${links}</div><div>${rechts}</div></div></div></div>`.replace(/^/,`<style>${css}</style>`); }
-function evalPdf(art,z){ const datei=today()+'_'+({quartal:'quartals',jahr:'jahres',gesamt:'gesamt'}[art])+'-evaluation_'+z.titel.toLowerCase().replace(/\s+/g,'-')+'_'+(dVb==='alle'?'alle':dVb.toLowerCase());
+  return `<div class="fenster"><div class="fk"><h1>${name} ${art==='gesamt'?'':esc(z.titel)}</h1><div class="meta">${esc(wer)}<br>erstellt ${fmtDT(nowIso())}</div></div><div class="inhalt"><div class="zwei"><div>${links}</div><div>${rechts}</div></div></div></div>`.replace(/^/,`<style>${css}</style>`); }
+function evalPdf(art,z){ const datei=today()+'_'+({quartal:'quartals',jahr:'jahres',gesamt:'gesamt'}[art])+'-evaluation_'+(art==='gesamt'?'':z.titel.toLowerCase().replace(/\s+/g,'-')+'_')+(dVb==='alle'?'alle':dVb.toLowerCase());
   const html=`<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${datei}</title></head><body>${evalPdfHtml(art,z)}</body></html>`;
   const f=document.createElement('iframe'); f.setAttribute('aria-hidden','true'); f.tabIndex=-1; f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0'; document.body.appendChild(f);
   const d=f.contentWindow.document; d.open(); d.write(html); d.close(); const alt=document.title; let weg=false;
