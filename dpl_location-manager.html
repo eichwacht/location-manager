@@ -2703,7 +2703,7 @@ function wocheRender(){ const el=$('#d-woche'); if(!el) return; const days=kpiWe
     <div class="d-zwei d-wzwei">`;
   const nK=c=>E?`<input class="d-zin" data-k="${c}" inputmode="numeric" aria-label="Geplant KW ${nw.week} ${c}" value="${N.k[c]}">`:N.k[c];
   const nQ=i=>E?`<input class="d-zin" data-q="${i}" inputmode="decimal" aria-label="Geplant KW ${nw.week} ${QKURZ[i]}" value="${qWert(N,i)}">${QZIEL0[i][1]==='%'?' %':''}`:qFmt(i,N.q[i]);
-  const stZ=!planOk?`<div class="s d-vsh">Geplant gibt es nur für ${ME}.</div>`:`<div class="s d-vsh">Geplant KW ${wk.week}: ${quelle(Z,wk)}${QZIEL0.some((z,i)=>planOk&&vs(Z,i)||(!E&&planOk&&vs(N,i)))?' · kursiv: Vorschlag, noch nicht bestätigt':''}</div>`;
+  const stZ=''; // seit v156 ohne Hinweiszeilen unter den Tabellen
   const zbar=!planOk?'':`<div class="d-zbar">${E?`<button class="btn small primary" id="z-save">Speichern</button><button class="btn small" id="z-cancel">Abbrechen</button><span class="s">gilt ab KW ${nw.week}</span>`:`<button class="btn small" id="z-edit">KW ${nw.week} planen</button><span class="s">${quelle(N,nw)}</span>`}</div>`;
   const lage=`<strong class="d-h d-h2">Location je Tag</strong>${orte}`;
   if(matchMedia(DMOB).matches){ // Handy: eine Tabelle, damit beide KW ohne Scrollen passen
@@ -2715,11 +2715,11 @@ function wocheRender(){ const el=$('#d-woche'); if(!el) return; const days=kpiWe
     h+=`<div class="d-box"><strong class="d-h">KW ${wk.week}: Ist und geplant</strong><table class="kw d-plan"><tr><th></th><th class="r">Ist</th><th class="r">Geplant</th></tr>`;
     KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${S[c]}</b></td><td class="r">${planOk?Z.k[c]:'–'}</td></tr>`; });
     h+=`<tr class="d-sek"><th colspan="3">Quoten</th></tr>`+kQuoten(S).map((q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${qIst(q)}</b></td><td class="r${planOk&&vs(Z,i)?' d-vs':''}">${planOk?qFmt(i,Z.q[i]):'–'}</td></tr>`).join('');
-    h+=`</table><div class="s d-vsh">${planOk?'Geplant: '+quelle(Z,wk):'Geplant gibt es nur für '+ME}${QZIEL0.some((z,i)=>planOk&&vs(Z,i))?' · kursiv: Vorschlag, noch nicht bestätigt':''}</div>${lage}</div>`;
+    h+=`</table>${lage}</div>`;
     h+=`<div class="d-box"><strong class="d-h">KW ${nw.week}: geplant <span class="d-nkw">· ${tagKurz(nmon)} bis ${tagKurz(addDays(nmon,5))}</span></strong><table class="kw d-plan"><tr><th></th><th class="r">Geplant</th></tr>`;
     KCODES.forEach(c=>{ h+=`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r">${planOk?nK(c):'–'}</td></tr>`; });
     h+=`<tr class="d-sek"><th colspan="2">Quoten</th></tr>`+QKURZ.map((t,i)=>`<tr><td>${t}</td><td class="r${planOk&&vs(N,i)&&!E?' d-vs':''}">${planOk?nQ(i):'–'}</td></tr>`).join('');
-    h+=`</table>${!E&&QZIEL0.some((z,i)=>planOk&&vs(N,i))?'<div class="s d-vsh">kursiv: Vorschlag, noch nicht bestätigt</div>':''}${zbar}</div></div>`;
+    h+=`</table>${zbar}</div></div>`;
   }
   el.innerHTML=h; $('#wk-prev').onclick=()=>{ zielEdit=false; wk=isoWeekOf(addDays(mon,-7)); wocheRender(); dEinpassen(); }; $('#wk-next').onclick=()=>{ zielEdit=false; wk=isoWeekOf(addDays(mon,7)); wocheRender(); dEinpassen(); };
   if($('#z-edit')) $('#z-edit').onclick=()=>{ zielEdit=true; wocheRender(); dEinpassen(); const f=el.querySelector('.d-zin'); if(f){ f.focus(); f.select(); } };
@@ -2753,7 +2753,7 @@ function zeitRender(art){ const el=$('#d-'+art); if(!el) return; const z=zeitrau
   const kopf='<tr><th></th><th class="r">Ist</th><th class="r">Geplant</th></tr>';
   const kz=c=>`<tr><td><b>${c}</b> <span class="bez">${KDE[c]}</span></td><td class="r"><b>${R.S[c]}</b></td><td class="r">${R.P[c]}</td></tr>`;
   const qz=(q,i)=>`<tr><td>${QKURZ[i]||q[0]}</td><td class="r"><b>${qIst(q)}</b></td><td class="r${R.vor[i]?' d-vs':''}">${R.n?qFmt(i,R.PQ[i]):'–'}</td></tr>`;
-  const fuss=R.vor.some(x=>x)?'<div class="s d-vsh">kursiv: Vorschlag, noch nicht bestätigt</div>':''; if(!R.n) KCODES.forEach(c=>R.P[c]='–');
+  const fuss=''; if(!R.n) KCODES.forEach(c=>R.P[c]='–');
   if(matchMedia(DMOB).matches) h+=`<div class="d-box"><table class="kw d-plan">${kopf}${KCODES.map(kz).join('')}<tr class="d-sek"><th colspan="3">Quoten</th></tr>${Q.map(qz).join('')}</table>${fuss}</div></div>`;
   else h+=`<div class="d-box"><strong class="d-h">Kennzahlen</strong><table class="kw d-plan">${kopf}${KCODES.map(kz).join('')}</table></div><div class="d-box"><strong class="d-h">Quoten</strong><table class="kw d-plan">${kopf}${Q.map(qz).join('')}</table>${fuss}</div></div>`;
   el.innerHTML=h; $('#zr-prev-'+art).onclick=()=>{ zr[art]--; zeitRender(art); dEinpassen(); }; $('#zr-next-'+art).onclick=()=>{ zr[art]++; zeitRender(art); dEinpassen(); }; }
